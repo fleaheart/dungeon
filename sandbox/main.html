@@ -1,0 +1,45 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>3Dダンジョン</title>
+
+<script type="text/javascript">
+
+window.onload = function() {
+
+    window.setTimeout(susumu, 1000);
+
+
+}
+
+function susumu() {
+
+    var main_display = document.getElementById('main_display');
+
+    main_display.src =  '2.png';
+
+   window.setTimeout(susumu3, 1000);
+
+}
+
+function susumu3() {
+
+    var main_display = document.getElementById('main_display');
+
+    main_display.src =  '3.png';
+
+}
+
+</script>
+
+</head>
+
+<body>
+
+<img id="main_display" src="1.png" style="width:480px;height:320px;">
+
+
+</body>
+
+</html>
