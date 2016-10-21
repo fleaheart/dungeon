@@ -106,63 +106,45 @@
     }
 
     </style>
+
+    <script type="text/javascript">
+        var mapdata = ['95555513',
+        'A95553AA',
+        'AAD53AAA',
+        'AC556AAA',
+        'C5515406',
+        '93FAD3AB',
+        'AAD452AA',
+        'EC5556C6']
+
+        window.onload = function() {
+            var div_map, i, l, c, kukaku, map, br, y, yl;
+
+            div_map = document.getElementById('div_map');
+
+            for (y = 0, yl = mapdata.length; y < yl; y++) {
+                for (i = 0, l = mapdata[y].length; i < l; i++) {
+                    c = mapdata[y].charAt(i);
+
+                    kukaku = document.createElement('DIV');
+                    kukaku.className = 'kukaku';
+
+                    map = document.createElement('DIV');
+                    map.className = 'box' + c;
+                    kukaku.appendChild(map);
+                    div_map.appendChild(kukaku);
+                }
+                br = document.createElement('BR');
+                div_map.appendChild(br);
+            }
+        }
+
+
+    </script>
 </head>
 
 <body>
-    <div class="map">
-        <div class="kukaku">
-            <div class="box9">
-                ←
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-                ↓
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-            </div>
-        </div><div class="kukaku">
-            <div class="box1">
-            </div>
-        </div>
-        <br>
-        <div class="kukaku">
-            <div class="boxA">
-            </div>
-        </div><div class="kukaku">
-            <div class="boxD">
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-            </div>
-        </div><div class="kukaku">
-            <div class="box3">
-            </div>
-        </div><div class="kukaku">
-            <div class="boxA">
-            </div>
-        </div>
-        <br>
-        <div class="kukaku">
-            <div class="box8">
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-            </div>
-        </div><div class="kukaku">
-            <div class="box5">
-            </div>
-        </div><div class="kukaku">
-            <div class="box4">
-            </div>
-        </div><div class="kukaku">
-            <div class="box4">
-            </div>
-        </div>
-        <br>
+    <div id="div_map" class="map">
     </div>
 </body>
 
