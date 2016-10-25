@@ -1,0 +1,113 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>キーコードチェック</title>
+
+<style type="text/css">
+    .kukaku {
+        display: table-cell;
+        margin: 0px;
+        border: 1px solid black;
+        padding: 0px;
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        font-size:24px;
+        vertical-align: middle;
+        text-align: center;
+    }
+</style>
+
+<script type="text/javascript">
+    var _muki;
+
+window.addEventListener('load', function() {
+    document.addEventListener('keydown', checkKeyCode);
+//    document.addEventListener('keypress', checkKeyCode);
+//    document.addEventListener('keyup', checkKeyCode);
+
+    _muki = 0;
+});
+
+function checkKeyCode(evt) {
+    var div_yajirushi, keyCode, mukiArray, mukiArrayLengt;
+
+//    debug(evt.type + ' evt.which:' + evt.which + ' evt.keyCode:' + evt.keyCode + ' evt.repeat:' + evt.repeat);
+    keyCode = evt.keyCode;
+
+    document.getElementById('spn_keyCode').innerHTML = keyCode;
+
+    div_yajirushi = document.getElementById('div_yajirushi');
+
+    mukiArray = ['↑','→','↓','←'];
+    mukiArrayLength = mukiArray.length;
+
+    // 68がD、65がA.
+ 
+
+    if (keyCode == '65') {
+        _muki--;
+        if (_muki < 0) {
+            _muki = mukiArrayLength - 1;
+        }
+    } else if (keyCode == '68') {
+        _muki++;
+        if (mukiArrayLength - 1 < _muki) {
+            _muki = 0;
+        }
+    }
+
+    div_yajirushi.innerHTML = mukiArray[_muki];
+
+/*
+    if (keyCode == '65') {
+        if (muki == '↑') {
+            muki = '←';
+        } else if (muki == '←') {
+            muki = '↓';
+        } else if (muki == '↓') {
+            muki = '→';
+        } else if (muki == '→') {
+            muki = '↑';
+        }
+    } else if (keyCode == '68') {
+        if (muki == '↑') {
+            muki = '→';
+        } else if (muki == '←') {
+            muki = '↑';
+        } else if (muki == '↓') {
+            muki = '←';
+        } else if (muki == '→') {
+            muki = '↓';
+        }
+    }
+    div_yajirushi.innerHTML = muki;
+*/
+}
+
+function debug(message) {
+    var div, html;
+    div = document.getElementById('div_debug');
+    html = div.innerHTML + '<br>' + message;
+    div.innerHTML = html;
+}
+
+</script>
+
+</head>
+
+<body>
+
+キーコードは？：<span id="spn_keyCode"></span>
+
+<div id="div_yajirushi" class="kukaku">
+</div>
+
+
+<div id="div_debug">
+</div>
+
+</body>
+
+</html>
