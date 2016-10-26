@@ -116,30 +116,27 @@
     </style>
 
     <script type="text/javascript">
-        var _mapdata, _xmax, _ymax, _ypos, _xpos, _muki;
+        var _ypos, _xpos, _muki;
         
-        _mapdata = ['95555513',
-        'A95553AA',
-        'AAD53AAA',
-        'AC556AAA',
-        'C5515406',
-        '93FAD3AB',
-        'AAD452AA',
-        'EC5556C6'];
-
-        _ymax = 8;
-        _xmax = 8;
-
         window.onload = function() {
-            var x, xl, y, yl, c, div_map, kukaku, map, nakami, br;
+            var x, xl, y, yl, c, mapdata, div_map, kukaku, map, nakami, br;
+
+            mapdata = ['95555513',
+            'A95553AA',
+            'AAD53AAA',
+            'AC556AAA',
+            'C5515406',
+            '93FAD3AB',
+            'AAD452AA',
+            'EC5556C6'];
 
             document.addEventListener('keydown', keyDownEvent);
 
             div_map = document.getElementById('div_map');
 
-            for (y = 0, yl = _mapdata.length; y < yl; y++) {
-                for (x = 0, xl = _mapdata[y].length; x < xl; x++) {
-                    c = _mapdata[y].charAt(x);
+            for (y = 0, yl = mapdata.length; y < yl; y++) {
+                for (x = 0, xl = mapdata[y].length; x < xl; x++) {
+                    c = mapdata[y].charAt(x);
 
                     kukaku = document.createElement('DIV');
                     kukaku.className = 'kukaku';
