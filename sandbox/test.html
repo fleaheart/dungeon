@@ -105,38 +105,108 @@
         border-width: 2px 2px 2px 2px;
     }
 
+    .nakami {
+        display: table-cell;
+        width: 36px;
+        height: 36px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
     </style>
 
     <script type="text/javascript">
-        var mapdata = ['95555513',
+        var _mapdata, _xmax, _ymax, _ypos, _xpos, _muki;
+        
+        _mapdata = ['95555513',
         'A95553AA',
         'AAD53AAA',
         'AC556AAA',
         'C5515406',
         '93FAD3AB',
         'AAD452AA',
-        'EC5556C6']
+        'EC5556C6'];
+
+        _ymax = 8;
+        _xmax = 8;
 
         window.onload = function() {
-            var div_map, i, l, c, kukaku, map, br, y, yl;
+            var x, xl, y, yl, c, div_map, kukaku, map, nakami, br;
+
+            document.addEventListener('keydown', keyDownEvent);
 
             div_map = document.getElementById('div_map');
 
-            for (y = 0, yl = mapdata.length; y < yl; y++) {
-                for (i = 0, l = mapdata[y].length; i < l; i++) {
-                    c = mapdata[y].charAt(i);
+            for (y = 0, yl = _mapdata.length; y < yl; y++) {
+                for (x = 0, xl = _mapdata[y].length; x < xl; x++) {
+                    c = _mapdata[y].charAt(x);
 
                     kukaku = document.createElement('DIV');
                     kukaku.className = 'kukaku';
 
                     map = document.createElement('DIV');
+                    map.id = 'map[' + x + '][' + y + ']';
                     map.className = 'box' + c;
+
+                    nakami = document.createElement('DIV');
+                    nakami.id = 'nakami[' + x + '][' + y + ']';
+                    nakami.className = 'nakami';
+
+                    map.appendChild(nakami);
                     kukaku.appendChild(map);
                     div_map.appendChild(kukaku);
+                    
                 }
                 br = document.createElement('BR');
                 div_map.appendChild(br);
             }
+
+            _xpos = 0;
+            _ypos = 7;
+            _muki = 0;
+
+            document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '↑';
+        }
+
+        function keyDownEvent(evt) {
+            var keyCode, mukiArray, mukiArrayLengt, map;
+
+            keyCode = evt.keyCode;
+            
+            mukiArray = ['↑','→','↓','←'];
+            mukiArrayLength = mukiArray.length;
+
+            if (keyCode == '87') {
+                map = document.getElementById('map[' + _xpos + '][' + _ypos + ']');
+
+                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '';
+
+                if (_muki == 0) {
+                    _ypos--;
+                } else if (_muki == 1) {
+                    _xpos++;
+                } else if (_muki == 2) {
+                    _ypos++;
+                } else if (_muki == 3) {
+                    _xpos--;
+                }
+                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+
+            } else if (keyCode == '65') {
+                _muki--;
+                if (_muki < 0) {
+                    _muki = mukiArrayLength - 1;
+                }
+                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+
+            } else if (keyCode == '68') {
+                _muki++;
+                if (mukiArrayLength - 1 < _muki) {
+                    _muki = 0;
+                }
+                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+            }
+
         }
 
 
