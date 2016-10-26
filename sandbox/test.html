@@ -169,7 +169,7 @@
         }
 
         function keyDownEvent(evt) {
-            var keyCode, mukiArray, mukiArrayLengt, map;
+            var keyCode, mukiArray, mukiArrayLengt, map, kabeChar, kabeType, xdiff, ydiff;
 
             keyCode = evt.keyCode;
             
@@ -178,19 +178,35 @@
 
             if (keyCode == '87') {
                 map = document.getElementById('map[' + _xpos + '][' + _ypos + ']');
+                kabeChar = map.className.replace(/box/, '');
+                kabeType = parseInt(kabeChar, 16);
 
-                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '';
-
+                xdiff = 0;
+                ydiff = 0;
                 if (_muki == 0) {
-                    _ypos--;
+                    if ((kabeType & 1) == 0) {
+                        ydiff = -1;
+                    }
                 } else if (_muki == 1) {
-                    _xpos++;
+                    if ((kabeType & 2) == 0) {
+                        xdiff = +1;
+                    }
                 } else if (_muki == 2) {
-                    _ypos++;
+                    if ((kabeType & 4) == 0) {
+                        ydiff = +1;
+                    }
                 } else if (_muki == 3) {
-                    _xpos--;
+                    if ((kabeType & 8) == 0) {
+                        xdiff = -1;
+                    }
                 }
-                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+
+                if (xdiff != 0 || ydiff != 0) {
+                    document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '';
+                    _xpos += xdiff;
+                    _ypos += ydiff;
+                    document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+                }
 
             } else if (keyCode == '65') {
                 _muki--;
