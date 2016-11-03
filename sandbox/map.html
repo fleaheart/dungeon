@@ -1,0 +1,90 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>3D描画</title>
+
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+
+
+<script type="text/javascript">
+var kabex, kabey, width, height;
+
+    kabex = [ 5, 20, 94, 150, 185 ];
+    kabey = [ 5, 13, 54, 84, 104 ];
+
+    width = 400 - kabex[0] - kabex[0];
+    height = 225 - kabey[0] - kabey[0];
+
+window.onload = function() {
+    var cvs, context;
+
+
+
+    cvs = document.getElementById('map3d');
+
+    context = cvs.getContext('2d');
+
+    kabeyokokaku(context, 1);
+    kabetatekaku(context, 2);
+    kabeyokokaku(context, 3);
+    kabetatekaku(context, 4);
+
+    kabetatemigikaku(context, 1);
+    kabetatemigikaku(context, 2);
+    kabetatemigikaku(context, 3);
+    kabetatemigikaku(context, 4);
+
+};
+
+function kabetatekaku(context, fukasa) {
+    context.beginPath();
+
+    context.moveTo(kabex[fukasa - 1], kabey[fukasa - 1]);
+    context.lineTo(kabex[fukasa], kabey[fukasa]);
+    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(kabex[fukasa - 1], height - kabey[fukasa - 1]);
+
+    context.closePath();
+    context.stroke();
+}
+
+
+function kabeyokokaku(context, fukasa) {
+    context.beginPath();
+
+    context.moveTo(kabex[fukasa - 1], kabey[fukasa]);
+    context.lineTo(kabex[fukasa], kabey[fukasa]);
+    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(kabex[fukasa - 1], height - kabey[fukasa]);
+
+    context.closePath();
+    context.stroke();
+}
+
+function kabetatemigikaku(context, fukasa) {
+    context.beginPath();
+
+    context.moveTo(width - kabex[fukasa - 1], kabey[fukasa - 1]);
+    context.lineTo(width - kabex[fukasa], kabey[fukasa]);
+    context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(width - kabex[fukasa - 1], height - kabey[fukasa - 1]);
+
+    context.closePath();
+    context.stroke();
+}
+
+
+</script>
+
+</head>
+
+<body>
+<canvas id="map3d" width="400" height="225"></canvas>
+
+
+</body>
+
+</html>
