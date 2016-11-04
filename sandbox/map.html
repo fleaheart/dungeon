@@ -10,7 +10,7 @@
 
 
 <script type="text/javascript">
-var kabex, kabey, width, height;
+var kabex, kabey, width, height, $HIDARI, $MIGI;
 
     kabex = [ 5, 20, 94, 150, 185 ];
     kabey = [ 5, 13, 54, 84, 104 ];
@@ -18,64 +18,70 @@ var kabex, kabey, width, height;
     width = 400 - kabex[0] - kabex[0];
     height = 225 - kabey[0] - kabey[0];
 
+    $HIDARI = 'hidari';
+    $MIGI = 'migi';
+
 window.onload = function() {
     var cvs, context;
-
-
-
     cvs = document.getElementById('map3d');
 
     context = cvs.getContext('2d');
 
-    kabeyokokaku(context, 1);
-    kabetatekaku(context, 2);
-    kabeyokokaku(context, 3);
-    kabetatekaku(context, 4);
+    kabetatekaku(context, $HIDARI, 1);
+    kabetatekaku(context, $HIDARI, 2);
+    kabetatekaku(context, $HIDARI, 3);
+    kabeyokokaku(context, $HIDARI, 4);
 
-    kabetatemigikaku(context, 1);
-    kabetatemigikaku(context, 2);
-    kabetatemigikaku(context, 3);
-    kabetatemigikaku(context, 4);
-
+    kabetatekaku(context, $MIGI, 1);
+    kabetatekaku(context, $MIGI, 2);
+    kabetatekaku(context, $MIGI, 3);
+    kabetatekaku(context, $MIGI, 4);
 };
 
-function kabetatekaku(context, fukasa) {
+function kabetatekaku(context, side, fukasa) {
+    var startx, fugou;
     context.beginPath();
 
-    context.moveTo(kabex[fukasa - 1], kabey[fukasa - 1]);
-    context.lineTo(kabex[fukasa], kabey[fukasa]);
-    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
-    context.lineTo(kabex[fukasa - 1], height - kabey[fukasa - 1]);
+    if (side == $HIDARI) {
+        startx = 0;
+        fugou = 1;
+    }
+    if (side == $MIGI) {
+        startx = width;
+        fugou = -1;
+    }
+
+    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa - 1]);
+    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
 
     context.closePath();
     context.stroke();
 }
 
+function kabeyokokaku(context, side, fukasa) {
+    var startx, fugou;
 
-function kabeyokokaku(context, fukasa) {
     context.beginPath();
 
-    context.moveTo(kabex[fukasa - 1], kabey[fukasa]);
-    context.lineTo(kabex[fukasa], kabey[fukasa]);
-    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
-    context.lineTo(kabex[fukasa - 1], height - kabey[fukasa]);
+    if (side == $HIDARI) {
+        startx = 0;
+        fugou = 1;
+    }
+    if (side == $MIGI) {
+        startx = width;
+        fugou = -1;
+    }
+
+    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa]);
 
     context.closePath();
     context.stroke();
 }
-
-function kabetatemigikaku(context, fukasa) {
-    context.beginPath();
-
-    context.moveTo(width - kabex[fukasa - 1], kabey[fukasa - 1]);
-    context.lineTo(width - kabex[fukasa], kabey[fukasa]);
-    context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
-    context.lineTo(width - kabex[fukasa - 1], height - kabey[fukasa - 1]);
-
-    context.closePath();
-    context.stroke();
-}
-
 
 </script>
 
