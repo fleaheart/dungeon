@@ -229,44 +229,115 @@
         }
 
         function submapview() {
-            var div_submap, x, y, kukaku, map, br, xstart, xend, ystart, yend;
+            var div_submap, x, y, kukaku, map, br, xstart, xend, xzoubun, ystart, yend, yzoubun, genshidata, line, chukandata, submapdata,
+            c, n,
+            xwidth = 3, ywidth= 2;
 
             div_submap = document.getElementById('div_submap');
             div_submap.innerHTML = '';
 
+            genshidata = new Array();
             if (_muki == 0) {
-                xstart = _xpos - 1;
-                xend = _xpos + 1;
-                ystart = _ypos - 1;
-                yend = _ypos;
+                for (y = -2; y <= 0; y++) {
+                    line = '';
+                    for (x = -1; x <= 1; x++) {
+                        c = getPosChar(_xpos + x, _ypos + y);
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
             } else if (_muki == 1) {
-                xstart = _xpos;
-                xend = _xpos + 1;
-                ystart = _ypos - 1;
-                yend = _ypos + 1;
+                for (x = 2; 0 <= x; x--) {
+                    line = '';
+                    for (y = -1; y <= 1; y++) {
+                        c = getPosChar(_xpos + x, _ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
             } else if (_muki == 2) {
-                xstart = _xpos - 1;
-                xend = _xpos + 1;
-                ystart = _ypos;
-                yend = _ypos + 1;
+                for (y = 2; 0 <= y; y--) {
+                    line = '';
+                    for (x = 1; -1 <= x; x--) {
+                        c = getPosChar(_xpos + x, _ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
             } else if (_muki == 3) {
-                xstart = _xpos - 1;
-                xend = _xpos;
-                ystart = _ypos - 1;
-                yend = _ypos + 1;
+                for (x = -2; x <= 0; x++) {
+                    line = '';
+                    for (y = 1; -1 <= y; y--) {
+                        c = getPosChar(_xpos + x, _ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
             }
 
-            for (y =ystart; y <= yend; y++) {
-                for (x = xstart; x <= xend; x++) {
-                    if (y < 0 || mapdata.length <= y) {
-                        c = '0';
-                    } else {
-                        if (x < 0) {
-                            c = '0';
-                        } else {
-                            c = mapdata[y].charAt(x);
-                        }
-                    }
+            mapview(div_submap, genshidata);
+
+//            div_submap.innerHTML = genshidata;
+        }
+
+        function getPosChar(x, y) {
+            var c;
+            if (y < 0 || mapdata.length <= y) {
+                c = '0';
+            } else {
+                if (x < 0 || mapdata[y].length <= x) {
+                    c = '0';
+                } else {
+                    c = mapdata[y].charAt(x);
+                }
+            }
+            return c;
+        }
+
+        function mapview(div_map_p, kakumapdata) {
+            for (y = 0, yl = kakumapdata.length; y < yl; y++) {
+                for (x = 0, xl = kakumapdata[y].length; x < xl; x++) {
+                    c = kakumapdata[y].charAt(x);
 
                     kukaku = document.createElement('DIV');
                     kukaku.className = 'kukaku';
@@ -281,13 +352,15 @@
 
                     map.appendChild(nakami);
                     kukaku.appendChild(map);
-                    div_submap.appendChild(kukaku);
+                    div_map_p.appendChild(kukaku);
+                    
                 }
                 br = document.createElement('BR');
-                div_submap.appendChild(br);
+                div_map_p.appendChild(br);
             }
 
         }
+
     </script>
 </head>
 
