@@ -116,10 +116,7 @@
     </style>
 
     <script type="text/javascript">
-        var _ypos, _xpos, _muki;
-        
-        window.onload = function() {
-            var x, xl, y, yl, c, mapdata, div_map, kukaku, map, nakami, br;
+        var _ypos, _xpos, _muki, mapdata;
 
             mapdata = ['95555513',
             'A95553AA',
@@ -129,6 +126,9 @@
             '93FAD3AB',
             'AAD452AA',
             'EC5556C6'];
+        
+        window.onload = function() {
+            var x, xl, y, yl, c, div_map, kukaku, map, nakami, br;
 
             document.addEventListener('keydown', keyDownEvent);
 
@@ -203,6 +203,8 @@
                     _xpos += xdiff;
                     _ypos += ydiff;
                     document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+
+                    submapview();
                 }
 
             } else if (keyCode == '65') {
@@ -212,22 +214,88 @@
                 }
                 document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
 
+                submapview();
+
             } else if (keyCode == '68') {
                 _muki++;
                 if (mukiArrayLength - 1 < _muki) {
                     _muki = 0;
                 }
                 document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+
+                submapview();
             }
 
         }
 
+        function submapview() {
+            var div_submap, x, y, kukaku, map, br, xstart, xend, ystart, yend;
 
+            div_submap = document.getElementById('div_submap');
+            div_submap.innerHTML = '';
+
+            if (_muki == 0) {
+                xstart = _xpos - 1;
+                xend = _xpos + 1;
+                ystart = _ypos - 1;
+                yend = _ypos;
+            } else if (_muki == 1) {
+                xstart = _xpos;
+                xend = _xpos + 1;
+                ystart = _ypos - 1;
+                yend = _ypos + 1;
+            } else if (_muki == 2) {
+                xstart = _xpos - 1;
+                xend = _xpos + 1;
+                ystart = _ypos;
+                yend = _ypos + 1;
+            } else if (_muki == 3) {
+                xstart = _xpos - 1;
+                xend = _xpos;
+                ystart = _ypos - 1;
+                yend = _ypos + 1;
+            }
+
+            for (y =ystart; y <= yend; y++) {
+                for (x = xstart; x <= xend; x++) {
+                    if (y < 0 || mapdata.length <= y) {
+                        c = '0';
+                    } else {
+                        if (x < 0) {
+                            c = '0';
+                        } else {
+                            c = mapdata[y].charAt(x);
+                        }
+                    }
+
+                    kukaku = document.createElement('DIV');
+                    kukaku.className = 'kukaku';
+
+                    map = document.createElement('DIV');
+                    map.id = 'map[' + x + '][' + y + ']';
+                    map.className = 'box' + c;
+
+                    nakami = document.createElement('DIV');
+                    nakami.id = 'nakami[' + x + '][' + y + ']';
+                    nakami.className = 'nakami';
+
+                    map.appendChild(nakami);
+                    kukaku.appendChild(map);
+                    div_submap.appendChild(kukaku);
+                }
+                br = document.createElement('BR');
+                div_submap.appendChild(br);
+            }
+
+        }
     </script>
 </head>
 
 <body>
     <div id="div_map" class="map">
+    </div>
+    <br>
+    <div id="div_submap" class="map" style="position:absolute; top:20px; left:400px;">
     </div>
 </body>
 
