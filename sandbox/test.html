@@ -133,7 +133,6 @@
         kabex = [ 5, 40, 114, 155, 180 ];
         kabey = [ 5, 31, 85, 115, 134 ];
 
-
         kabe2x = [ 5, 20, 114, 160, 180 ];
         kabe2y = [ 5, 16, 85, 120, 140 ];
 
@@ -471,6 +470,7 @@ function kabetatekaku(context, side, fukasa) {
     context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
     context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
 
+
     context.closePath();
     context.stroke();
 }
@@ -490,13 +490,19 @@ function kabeyokokaku(context, side, fukasa) {
     }
 
     nagasa = (height - kabey[fukasa]) - kabey[fukasa];
- 
-    context.moveTo(startx + fugou * (kabex[fukasa] - nagasa), kabey[fukasa]); // 1
 
+/* 
+    context.moveTo(startx + fugou * (kabex[fukasa] - nagasa), kabey[fukasa]); // 1
     context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]); // 2
     context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]); // 3
- 
     context.lineTo(startx + fugou * (kabex[fukasa] - nagasa), height - kabey[fukasa]); // 4
+*/
+
+    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa]);  
+    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);  
+    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);  
+    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa]);  
+
 
     context.closePath();
     context.stroke();
