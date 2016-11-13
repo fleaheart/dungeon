@@ -142,36 +142,14 @@
         $HIDARI = 'hidari';
         $MIGI = 'migi';
         
-        window.onload = function() {
-            var x, xl, y, yl, c, div_map, kukaku, map, nakami, br;
+        window.addEventListener('load', function() {
+            var div_map;
 
             document.addEventListener('keydown', keyDownEvent);
 
             div_map = document.getElementById('div_map');
 
-            for (y = 0, yl = mapdata.length; y < yl; y++) {
-                for (x = 0, xl = mapdata[y].length; x < xl; x++) {
-                    c = mapdata[y].charAt(x);
-
-                    kukaku = document.createElement('DIV');
-                    kukaku.className = 'kukaku';
-
-                    map = document.createElement('DIV');
-                    map.id = 'map[' + x + '][' + y + ']';
-                    map.className = 'box' + c;
-
-                    nakami = document.createElement('DIV');
-                    nakami.id = 'nakami[' + x + '][' + y + ']';
-                    nakami.className = 'nakami';
-
-                    map.appendChild(nakami);
-                    kukaku.appendChild(map);
-                    div_map.appendChild(kukaku);
-                    
-                }
-                br = document.createElement('BR');
-                div_map.appendChild(br);
-            }
+            mapview(div_map, mapdata);
 
             _xpos = 0;
             _ypos = 7;
@@ -180,7 +158,7 @@
             document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '↑';
 
             submapview();
-        }
+        });
 
         function keyDownEvent(evt) {
             var keyCode, mukiArray, mukiArrayLengt, map, kabeChar, kabeType, xdiff, ydiff;
@@ -363,13 +341,13 @@
                 }
                 if ((n & 8) == 8) {
                     if (kabe == -1 || i <= kabe) {
-                        kabetatekaku(context, $HIDARI, i + 1);
+                        kabetatekaku(context, i + 1, $HIDARI);
                         hidarikabeflg = 1;
                     }
                 }
                 if ((n & 2) == 2) {
                     if (kabe == -1 || i <= kabe) {
-                        kabetatekaku(context, $MIGI, i + 1);
+                        kabetatekaku(context, i + 1, $MIGI);
                         migikabeflg = 1;
                     }
                 }
@@ -379,7 +357,7 @@
                 if ((n & 1) == 1) {
                     if (kabe == -1 || i <= kabe) {
                         if (hidarikabeflg != 1) {
-                            kabeyokokaku(context, $HIDARI, i + 1);
+                            kabeyokokaku(context, i + 1, $HIDARI);
                         }
                     }
                 }
@@ -389,13 +367,11 @@
                 if ((n & 1) == 1) {
                     if (kabe == -1 || i <= kabe) {
                         if (migikabeflg != 1) {
-                            kabeyokokaku(context, $MIGI, i + 1);
+                            kabeyokokaku(context, i + 1, $MIGI);
                         }
                     }
                 }
             }
-
-//            div_submap.innerHTML = genshidata;
         }
 
         function getPosChar(x, y) {
@@ -412,7 +388,9 @@
             return c;
         }
 
-        function mapview(div_map_p, kakumapdata) {
+        function mapview(div_map, kakumapdata) {
+            var x, xl, y, yl, c, kukaku, map, makami, br;
+
             for (y = 0, yl = kakumapdata.length; y < yl; y++) {
                 for (x = 0, xl = kakumapdata[y].length; x < xl; x++) {
                     c = kakumapdata[y].charAt(x);
@@ -430,83 +408,74 @@
 
                     map.appendChild(nakami);
                     kukaku.appendChild(map);
-                    div_map_p.appendChild(kukaku);
+                    div_map.appendChild(kukaku);
                     
                 }
-                br = document.createElement('BR');
-                div_map_p.appendChild(br);
-            }
 
+                br = document.createElement('BR');
+                div_map.appendChild(br);
+            }
         }
 
-function kabemaekaku(context, fukasa) {
-    var startx, fugou;
-    context.beginPath();
+        function kabemaekaku(context, fukasa) {
+            var startx, fugou;
 
-    context.moveTo(kabex[fukasa], kabey[fukasa]);
-    context.lineTo(width - kabex[fukasa], kabey[fukasa]);
-    context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
-    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
+            context.beginPath();
 
-    context.closePath();
-    context.stroke();
-}
+            context.moveTo(kabex[fukasa], kabey[fukasa]);
+            context.lineTo(width - kabex[fukasa], kabey[fukasa]);
+            context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
+            context.lineTo(kabex[fukasa], height - kabey[fukasa]);
 
-function kabetatekaku(context, side, fukasa) {
-    var startx, fugou;
-    context.beginPath();
+            context.closePath();
+            context.stroke();
+        }
 
-    if (side == $HIDARI) {
-        startx = 0;
-        fugou = 1;
-    }
-    if (side == $MIGI) {
-        startx = width;
-        fugou = -1;
-    }
+        function kabetatekaku(context, fukasa, side) {
+            var startx, fugou;
 
-    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa - 1]);
-    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
-    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
-    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
+            if (side == $HIDARI) {
+                startx = 0;
+                fugou = 1;
+            }
+            if (side == $MIGI) {
+                startx = width;
+                fugou = -1;
+            }
 
+            context.beginPath();
 
-    context.closePath();
-    context.stroke();
-}
+            context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa - 1]);
+            context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
+            context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
+            context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
 
-function kabeyokokaku(context, side, fukasa) {
-    var startx, fugou, nagasa;
+            context.closePath();
+            context.stroke();
+        }
 
-    context.beginPath();
+        function kabeyokokaku(context, fukasa, side) {
+            var startx, fugou;
 
-    if (side == $HIDARI) {
-        startx = 0;
-        fugou = 1;
-    }
-    if (side == $MIGI) {
-        startx = width;
-        fugou = -1;
-    }
+            if (side == $HIDARI) {
+                startx = 0;
+                fugou = 1;
+            }
+            if (side == $MIGI) {
+                startx = width;
+                fugou = -1;
+            }
 
-    nagasa = (height - kabey[fukasa]) - kabey[fukasa];
+            context.beginPath();
 
-/* 
-    context.moveTo(startx + fugou * (kabex[fukasa] - nagasa), kabey[fukasa]); // 1
-    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]); // 2
-    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]); // 3
-    context.lineTo(startx + fugou * (kabex[fukasa] - nagasa), height - kabey[fukasa]); // 4
-*/
+            context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa]);  
+            context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);  
+            context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);  
+            context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa]);  
 
-    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa]);  
-    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);  
-    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);  
-    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa]);  
-
-
-    context.closePath();
-    context.stroke();
-}
+            context.closePath();
+            context.stroke();
+        }
 
     </script>
 </head>
@@ -518,7 +487,7 @@ function kabeyokokaku(context, side, fukasa) {
 
     <canvas id="map3d" width="400" height="300" style="position:absolute; top:20px; left:340px;"></canvas>
 
-    <div id="div_submap" class="map" style="position:absolute; top:20px; left:680px;">
+    <div id="div_submap" class="map" style="display:nonex; position:absolute; top:20px; left:680px;">
     </div>
 
 </body>
