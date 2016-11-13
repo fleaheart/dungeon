@@ -7,6 +7,7 @@
     <title>マップ</title>
 
     <style type="text/css">
+      canvas { border: 1px solid black; }
 
     .map {
         border: solid 2px black;
@@ -126,6 +127,21 @@
             '93FAD3AB',
             'AAD452AA',
             'EC5556C6'];
+
+    var kabex, kabey, kabe2x, kabe2y, width, height, $HIDARI, $MIGI;
+
+        kabex = [ 5, 40, 114, 155, 180 ];
+        kabey = [ 5, 31, 85, 115, 134 ];
+
+
+        kabe2x = [ 5, 20, 114, 160, 180 ];
+        kabe2y = [ 5, 16, 85, 120, 140 ];
+
+        width = 400 - kabex[0] - kabex[0];
+        height = 300 - kabey[0] - kabey[0];
+
+        $HIDARI = 'hidari';
+        $MIGI = 'migi';
         
         window.onload = function() {
             var x, xl, y, yl, c, div_map, kukaku, map, nakami, br;
@@ -163,6 +179,8 @@
             _muki = 0;
 
             document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '↑';
+
+            submapview();
         }
 
         function keyDownEvent(evt) {
@@ -238,7 +256,7 @@
 
             genshidata = new Array();
             if (_muki == 0) {
-                for (y = -2; y <= 0; y++) {
+                for (y = -3; y <= 0; y++) {
                     line = '';
                     for (x = -1; x <= 1; x++) {
                         c = getPosChar(_xpos + x, _ypos + y);
@@ -248,7 +266,7 @@
                 }
 
             } else if (_muki == 1) {
-                for (x = 2; 0 <= x; x--) {
+                for (x = 3; 0 <= x; x--) {
                     line = '';
                     for (y = -1; y <= 1; y++) {
                         c = getPosChar(_xpos + x, _ypos + y);
@@ -275,7 +293,7 @@
                 }
 
             } else if (_muki == 2) {
-                for (y = 2; 0 <= y; y--) {
+                for (y = 3; 0 <= y; y--) {
                     line = '';
                     for (x = 1; -1 <= x; x--) {
                         c = getPosChar(_xpos + x, _ypos + y);
@@ -297,7 +315,7 @@
                 }
 
             } else if (_muki == 3) {
-                for (x = -2; x <= 0; x++) {
+                for (x = -3; x <= 0; x++) {
                     line = '';
                     for (y = 1; -1 <= y; y--) {
                         c = getPosChar(_xpos + x, _ypos + y);
@@ -316,6 +334,67 @@
             }
 
             mapview(div_submap, genshidata);
+
+            var html = div_submap.innerHTML;
+            html = html + genshidata[0] + '<br>' + genshidata[1] + '<br>' + genshidata[2] + '<br>' + genshidata[3] + '<br>';
+            div_submap.innerHTML = html;
+
+    var cvs, context;
+    cvs = document.getElementById('map3d');
+
+    context = cvs.getContext('2d');
+
+    context.beginPath();
+    context.clearRect(0, 0, 400, 300);
+
+    var kabe = -1;
+
+            for (var i = 0; i <=3; i++) {
+                c = genshidata[3 - i].charAt(1);
+                n = parseInt(c, 16);
+
+                var hidarikabeflg = 0;
+                var migikabeflg = 0;
+
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i < kabe) {
+                        kabemaekaku(context, i + 1);
+                        kabe = i;
+                    }
+                }
+                if ((n & 8) == 8) {
+                    if (kabe == -1 || i <= kabe) {
+                        kabetatekaku(context, $HIDARI, i + 1);
+                        hidarikabeflg = 1;
+                    }
+                }
+                if ((n & 2) == 2) {
+                    if (kabe == -1 || i <= kabe) {
+                        kabetatekaku(context, $MIGI, i + 1);
+                        migikabeflg = 1;
+                    }
+                }
+
+                var c = genshidata[3 - i].charAt(0);
+                n = parseInt(c, 16);
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i <= kabe) {
+                        if (hidarikabeflg != 1) {
+                            kabeyokokaku(context, $HIDARI, i + 1);
+                        }
+                    }
+                }
+
+                var c = genshidata[3 - i].charAt(2);
+                n = parseInt(c, 16);
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i <= kabe) {
+                        if (migikabeflg != 1) {
+                            kabeyokokaku(context, $MIGI, i + 1);
+                        }
+                    }
+                }
+            }
 
 //            div_submap.innerHTML = genshidata;
         }
@@ -361,6 +440,68 @@
 
         }
 
+function kabemaekaku(context, fukasa) {
+    var startx, fugou;
+    context.beginPath();
+
+    context.moveTo(kabex[fukasa], kabey[fukasa]);
+    context.lineTo(width - kabex[fukasa], kabey[fukasa]);
+    context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(kabex[fukasa], height - kabey[fukasa]);
+
+    context.closePath();
+    context.stroke();
+}
+
+function kabetatekaku(context, side, fukasa) {
+    var startx, fugou;
+    context.beginPath();
+
+    if (side == $HIDARI) {
+        startx = 0;
+        fugou = 1;
+    }
+    if (side == $MIGI) {
+        startx = width;
+        fugou = -1;
+    }
+
+    context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa - 1]);
+    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
+    context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
+
+    context.closePath();
+    context.stroke();
+}
+
+function kabeyokokaku(context, side, fukasa) {
+    var startx, fugou, nagasa;
+
+    context.beginPath();
+
+    if (side == $HIDARI) {
+        startx = 0;
+        fugou = 1;
+    }
+    if (side == $MIGI) {
+        startx = width;
+        fugou = -1;
+    }
+
+    nagasa = (height - kabey[fukasa]) - kabey[fukasa];
+ 
+    context.moveTo(startx + fugou * (kabex[fukasa] - nagasa), kabey[fukasa]); // 1
+
+    context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]); // 2
+    context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]); // 3
+ 
+    context.lineTo(startx + fugou * (kabex[fukasa] - nagasa), height - kabey[fukasa]); // 4
+
+    context.closePath();
+    context.stroke();
+}
+
     </script>
 </head>
 
@@ -368,8 +509,12 @@
     <div id="div_map" class="map">
     </div>
     <br>
-    <div id="div_submap" class="map" style="position:absolute; top:20px; left:400px;">
+
+    <canvas id="map3d" width="400" height="300" style="position:absolute; top:20px; left:340px;"></canvas>
+
+    <div id="div_submap" class="map" style="position:absolute; top:20px; left:680px;">
     </div>
+
 </body>
 
 </html>
