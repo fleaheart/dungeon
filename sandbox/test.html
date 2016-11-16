@@ -121,7 +121,7 @@
         * 俺ルール：グローバル変数には先頭に$をつける
         */
         var $pc = new Object(), $mapdata,
-        $kabex, $kabey, $kabe2x, $kabe2y, $SCREEN_WIDTH, $SCREEN_HEIGHT, $HIDARI, $MIGI;
+        $kabex, $kabey, $kabe2x, $kabe2y, $SCREEN_WIDTH, $SCREEN_HEIGHT, $DRAW_WIDTH, $DRAW_HEIGHT, $HIDARI, $MIGI;
 
             $mapdata = ['95555513',
             'A95553AA',
@@ -137,9 +137,12 @@
 
         $kabe2x = [ 5, 20, 114, 160, 180 ];
         $kabe2y = [ 5, 16, 85, 120, 140 ];
+        
+        $SCREEN_WIDTH = 400;
+        $SCREEN_HEIGHT = 300;
 
-        $SCREEN_WIDTH = 400 - $kabex[0] - $kabex[0];
-        $SCREEN_HEIGHT = 300 - $kabey[0] - $kabey[0];
+        $DRAW_WIDTH = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
+        $DRAW_HEIGHT = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
 
         $HIDARI = 'hidari';
         $MIGI = 'migi';
@@ -235,9 +238,7 @@
              * 切り取る範囲 左側右側は、真ん中を除いた数
              * 0093F は、00:hidarigawa、3F:migigawa、9:真ん中
              */
-            zenpou = 3, hidarigawa = 2, migigawa = 2;
-
-
+            zenpou = 3, hidarigawa = 1, migigawa = 1;
 
             div_submap = document.getElementById('div_submap');
             div_submap.innerHTML = '';
@@ -333,7 +334,7 @@
     context = cvs.getContext('2d');
 
     context.beginPath();
-    context.clearRect(0, 0, 400, 300);
+    context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
 
     var kabe = -1;
 
@@ -434,9 +435,9 @@
             context.beginPath();
 
             context.moveTo($kabex[fukasa], $kabey[fukasa]);
-            context.lineTo($SCREEN_WIDTH - $kabex[fukasa], $kabey[fukasa]);
-            context.lineTo($SCREEN_WIDTH - $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
-            context.lineTo($kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
+            context.lineTo($DRAW_WIDTH - $kabex[fukasa], $kabey[fukasa]);
+            context.lineTo($DRAW_WIDTH - $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
+            context.lineTo($kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
 
             context.closePath();
             context.stroke();
@@ -450,7 +451,7 @@
                 fugou = 1;
             }
             if (side == $MIGI) {
-                startx = $SCREEN_WIDTH;
+                startx = $DRAW_WIDTH;
                 fugou = -1;
             }
 
@@ -458,8 +459,8 @@
 
             context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa - 1]);
             context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);
-            context.lineTo(startx + fugou * $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
-            context.lineTo(startx + fugou * $kabex[fukasa - 1], $SCREEN_HEIGHT - $kabey[fukasa - 1]);
+            context.lineTo(startx + fugou * $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
+            context.lineTo(startx + fugou * $kabex[fukasa - 1], $DRAW_HEIGHT - $kabey[fukasa - 1]);
 
             context.closePath();
             context.stroke();
@@ -473,7 +474,7 @@
                 fugou = 1;
             }
             if (side == $MIGI) {
-                startx = $SCREEN_WIDTH;
+                startx = $DRAW_WIDTH;
                 fugou = -1;
             }
 
@@ -481,8 +482,8 @@
 
             context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa]);  
             context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);  
-            context.lineTo(startx + fugou * $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);  
-            context.lineTo(startx + fugou * $kabex[fukasa - 1], $SCREEN_HEIGHT - $kabey[fukasa]);  
+            context.lineTo(startx + fugou * $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);  
+            context.lineTo(startx + fugou * $kabex[fukasa - 1], $DRAW_HEIGHT - $kabey[fukasa]);  
 
             context.closePath();
             context.stroke();
