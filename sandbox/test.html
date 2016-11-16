@@ -319,6 +319,7 @@
                     line = '';
                     for (x = hidarigawa * -1; x <= migigawa; x++) {
                         c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
+                        c = charkaiten(c, $pc.muki);
                         line += c;
                     }
                     genshidata.push(line);
@@ -329,23 +330,7 @@
                     line = '';
                     for (y = hidarigawa * -1; y <= migigawa; y++) {
                         c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
+                        c = charkaiten(c, $pc.muki);
                         line += c;
                     }
                     genshidata.push(line);
@@ -356,18 +341,7 @@
                     line = '';
                     for (x = hidarigawa; migigawa * -1 <= x; x--) {
                         c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
+                        c = charkaiten(c, $pc.muki);
                         line += c;
                     }
                     genshidata.push(line);
@@ -378,13 +352,7 @@
                     line = '';
                     for (y = hidarigawa; migigawa * -1 <= y; y--) {
                         c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
+                        c = charkaiten(c, $pc.muki);
                         line += c;
                     }
                     genshidata.push(line);
@@ -405,6 +373,21 @@
                     c = mapdata[y].charAt(x);
                 }
             }
+            return c;
+        }
+
+        function charkaiten(c, muki) {
+            var n, i;
+            n = parseInt(c, 16);
+            for (i = 0; i < (4 - muki) % 4; i++) {
+                n = n * 2;
+                if (16 <= n) {
+                    n = n - 16;
+                    n = n + 1;
+                }
+            }
+            c = n.toString(16).toUpperCase();
+
             return c;
         }
 
