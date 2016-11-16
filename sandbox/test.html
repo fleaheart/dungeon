@@ -243,84 +243,7 @@
             div_submap = document.getElementById('div_submap');
             div_submap.innerHTML = '';
 
-            genshidata = new Array();
-            if ($pc.muki == 0) {
-                for (y = zenpou * -1; y <= 0; y++) {
-                    line = '';
-                    for (x = hidarigawa * -1; x <= migigawa; x++) {
-                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
-                        line += c;
-                    }
-                    genshidata.push(line);
-                }
-
-            } else if ($pc.muki == 1) {
-                for (x = zenpou; 0 <= x; x--) {
-                    line = '';
-                    for (y = hidarigawa * -1; y <= migigawa; y++) {
-                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
-                        line += c;
-                    }
-                    genshidata.push(line);
-                }
-
-            } else if ($pc.muki == 2) {
-                for (y = zenpou; 0 <= y; y--) {
-                    line = '';
-                    for (x = hidarigawa; migigawa * -1 <= x; x--) {
-                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
-                        line += c;
-                    }
-                    genshidata.push(line);
-                }
-
-            } else if ($pc.muki == 3) {
-                for (x = zenpou * -1; x <= 0; x++) {
-                    line = '';
-                    for (y = hidarigawa; migigawa * -1 <= y; y--) {
-                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
-                        n = parseInt(c, 16);
-                        n = n * 2;
-                        if (16 <= n) {
-                            n = n - 16;
-                            n = n + 1;
-                        }
-                        c = n.toString(16).toUpperCase();
-                        line += c;
-                    }
-                    genshidata.push(line);
-                }
-
-            }
+            genshidata = submapview_kiritori($mapdata, zenpou, hidarigawa, migigawa);
 
             mapview(div_submap, genshidata);
 
@@ -384,6 +307,91 @@
                     }
                 }
             }
+        }
+
+        function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
+            var genshidata, x, y, line, c,
+            n;
+
+            genshidata = new Array();
+            if ($pc.muki == 0) {
+                for (y = zenpou * -1; y <= 0; y++) {
+                    line = '';
+                    for (x = hidarigawa * -1; x <= migigawa; x++) {
+                        c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
+            } else if ($pc.muki == 1) {
+                for (x = zenpou; 0 <= x; x--) {
+                    line = '';
+                    for (y = hidarigawa * -1; y <= migigawa; y++) {
+                        c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
+            } else if ($pc.muki == 2) {
+                for (y = zenpou; 0 <= y; y--) {
+                    line = '';
+                    for (x = hidarigawa; migigawa * -1 <= x; x--) {
+                        c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+
+            } else if ($pc.muki == 3) {
+                for (x = zenpou * -1; x <= 0; x++) {
+                    line = '';
+                    for (y = hidarigawa; migigawa * -1 <= y; y--) {
+                        c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
+                        n = parseInt(c, 16);
+                        n = n * 2;
+                        if (16 <= n) {
+                            n = n - 16;
+                            n = n + 1;
+                        }
+                        c = n.toString(16).toUpperCase();
+                        line += c;
+                    }
+                    genshidata.push(line);
+                }
+            }
+
+            return genshidata;
         }
 
         function getPosChar(mapdata, x, y) {
