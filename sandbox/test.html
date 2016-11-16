@@ -328,15 +328,15 @@
             html = html + genshidata[0] + '<br>' + genshidata[1] + '<br>' + genshidata[2] + '<br>' + genshidata[3] + '<br>';
             div_submap.innerHTML = html;
 
-    var cvs, context;
-    cvs = document.getElementById('map3d');
+            var cvs, context;
+            cvs = document.getElementById('map3d');
 
-    context = cvs.getContext('2d');
+            context = cvs.getContext('2d');
 
-    context.beginPath();
-    context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
+            context.beginPath();
+            context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
 
-    var kabe = -1;
+            var kabe = -1;
 
             for (var i = 0; i <= zenpou; i++) {
                 c = genshidata[zenpou - i].charAt(hidarigawa);
