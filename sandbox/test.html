@@ -131,16 +131,16 @@
             'AAD452AA',
             'EC5556C6'];
 
-    var kabex, kabey, kabe2x, kabe2y, width, height, $HIDARI, $MIGI;
+    var $kabex, $kabey, $kabe2x, $kabe2y, width, height, $HIDARI, $MIGI;
 
-        kabex = [ 5, 40, 114, 155, 180 ];
-        kabey = [ 5, 31, 85, 115, 134 ];
+        $kabex = [ 5, 40, 114, 155, 180 ];
+        $kabey = [ 5, 31, 85, 115, 134 ];
 
-        kabe2x = [ 5, 20, 114, 160, 180 ];
-        kabe2y = [ 5, 16, 85, 120, 140 ];
+        $kabe2x = [ 5, 20, 114, 160, 180 ];
+        $kabe2y = [ 5, 16, 85, 120, 140 ];
 
-        width = 400 - kabex[0] - kabex[0];
-        height = 300 - kabey[0] - kabey[0];
+        width = 400 - $kabex[0] - $kabex[0];
+        height = 300 - $kabey[0] - $kabey[0];
 
         $HIDARI = 'hidari';
         $MIGI = 'migi';
@@ -363,7 +363,7 @@
                 if ((n & 1) == 1) {
                     if (kabe == -1 || i <= kabe) {
                         if (hidarikabeflg != 1) {
-                            kabeyokokaku(context, i + 1, $HIDARI);
+                            $kabeyokokaku(context, i + 1, $HIDARI);
                         }
                     }
                 }
@@ -428,10 +428,10 @@
 
             context.beginPath();
 
-            context.moveTo(kabex[fukasa], kabey[fukasa]);
-            context.lineTo(width - kabex[fukasa], kabey[fukasa]);
-            context.lineTo(width - kabex[fukasa], height - kabey[fukasa]);
-            context.lineTo(kabex[fukasa], height - kabey[fukasa]);
+            context.moveTo($kabex[fukasa], $kabey[fukasa]);
+            context.lineTo(width - $kabex[fukasa], $kabey[fukasa]);
+            context.lineTo(width - $kabex[fukasa], height - $kabey[fukasa]);
+            context.lineTo($kabex[fukasa], height - $kabey[fukasa]);
 
             context.closePath();
             context.stroke();
@@ -451,10 +451,10 @@
 
             context.beginPath();
 
-            context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa - 1]);
-            context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);
-            context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);
-            context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa - 1]);
+            context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa - 1]);
+            context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);
+            context.lineTo(startx + fugou * $kabex[fukasa], height - $kabey[fukasa]);
+            context.lineTo(startx + fugou * $kabex[fukasa - 1], height - $kabey[fukasa - 1]);
 
             context.closePath();
             context.stroke();
@@ -474,10 +474,10 @@
 
             context.beginPath();
 
-            context.moveTo(startx + fugou * kabex[fukasa - 1], kabey[fukasa]);  
-            context.lineTo(startx + fugou * kabex[fukasa], kabey[fukasa]);  
-            context.lineTo(startx + fugou * kabex[fukasa], height - kabey[fukasa]);  
-            context.lineTo(startx + fugou * kabex[fukasa - 1], height - kabey[fukasa]);  
+            context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa]);  
+            context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);  
+            context.lineTo(startx + fugou * $kabex[fukasa], height - $kabey[fukasa]);  
+            context.lineTo(startx + fugou * $kabex[fukasa - 1], height - $kabey[fukasa]);  
 
             context.closePath();
             context.stroke();
