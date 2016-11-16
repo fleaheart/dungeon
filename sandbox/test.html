@@ -241,7 +241,7 @@
                 for (y = -3; y <= 0; y++) {
                     line = '';
                     for (x = -1; x <= 1; x++) {
-                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
+                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         line += c;
                     }
                     genshidata.push(line);
@@ -251,7 +251,7 @@
                 for (x = 3; 0 <= x; x--) {
                     line = '';
                     for (y = -1; y <= 1; y++) {
-                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
+                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
@@ -278,7 +278,7 @@
                 for (y = 3; 0 <= y; y--) {
                     line = '';
                     for (x = 1; -1 <= x; x--) {
-                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
+                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
@@ -300,7 +300,7 @@
                 for (x = -3; x <= 0; x++) {
                     line = '';
                     for (y = 1; -1 <= y; y--) {
-                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
+                        c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
@@ -379,15 +379,15 @@
             }
         }
 
-        function getPosChar(x, y) {
+        function getPosChar(mapdata, x, y) {
             var c;
-            if (y < 0 || $mapdata.length <= y) {
+            if (y < 0 || mapdata.length <= y) {
                 c = '0';
             } else {
-                if (x < 0 || $mapdata[y].length <= x) {
+                if (x < 0 || mapdata[y].length <= x) {
                     c = '0';
                 } else {
-                    c = $mapdata[y].charAt(x);
+                    c = mapdata[y].charAt(x);
                 }
             }
             return c;
