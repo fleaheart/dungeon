@@ -231,16 +231,22 @@
         function submapview() {
             var div_submap, x, y, kukaku, map, br, xstart, xend, xzoubun, ystart, yend, yzoubun, genshidata, line, chukandata, submapdata,
             c, n,
-            xwidth = 3, ywidth= 2;
+            /*
+             * 切り取る範囲 左側右側は、真ん中を除いた数
+             * 0093F は、00:hidarigawa、3F:migigawa、9:真ん中
+             */
+            zenpou = 3, hidarigawa = 2, migigawa = 2;
+
+
 
             div_submap = document.getElementById('div_submap');
             div_submap.innerHTML = '';
 
             genshidata = new Array();
             if ($pc.muki == 0) {
-                for (y = -3; y <= 0; y++) {
+                for (y = zenpou * -1; y <= 0; y++) {
                     line = '';
-                    for (x = -1; x <= 1; x++) {
+                    for (x = hidarigawa * -1; x <= migigawa; x++) {
                         c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         line += c;
                     }
@@ -248,9 +254,9 @@
                 }
 
             } else if ($pc.muki == 1) {
-                for (x = 3; 0 <= x; x--) {
+                for (x = zenpou; 0 <= x; x--) {
                     line = '';
-                    for (y = -1; y <= 1; y++) {
+                    for (y = hidarigawa * -1; y <= migigawa; y++) {
                         c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
@@ -275,9 +281,9 @@
                 }
 
             } else if ($pc.muki == 2) {
-                for (y = 3; 0 <= y; y--) {
+                for (y = zenpou; 0 <= y; y--) {
                     line = '';
-                    for (x = 1; -1 <= x; x--) {
+                    for (x = hidarigawa; migigawa * -1 <= x; x--) {
                         c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
@@ -297,9 +303,9 @@
                 }
 
             } else if ($pc.muki == 3) {
-                for (x = -3; x <= 0; x++) {
+                for (x = zenpou * -1; x <= 0; x++) {
                     line = '';
-                    for (y = 1; -1 <= y; y--) {
+                    for (y = hidarigawa; migigawa * -1 <= y; y--) {
                         c = getPosChar($mapdata, $pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
@@ -331,8 +337,8 @@
 
     var kabe = -1;
 
-            for (var i = 0; i <=3; i++) {
-                c = genshidata[3 - i].charAt(1);
+            for (var i = 0; i <= zenpou; i++) {
+                c = genshidata[zenpou - i].charAt(hidarigawa);
                 n = parseInt(c, 16);
 
                 var hidarikabeflg = 0;
@@ -357,7 +363,7 @@
                     }
                 }
 
-                var c = genshidata[3 - i].charAt(0);
+                var c = genshidata[zenpou - i].charAt(hidarigawa - 1);
                 n = parseInt(c, 16);
                 if ((n & 1) == 1) {
                     if (kabe == -1 || i <= kabe) {
@@ -367,7 +373,7 @@
                     }
                 }
 
-                var c = genshidata[3 - i].charAt(2);
+                var c = genshidata[zenpou - i].charAt(hidarigawa + 1);
                 n = parseInt(c, 16);
                 if ((n & 1) == 1) {
                     if (kabe == -1 || i <= kabe) {
