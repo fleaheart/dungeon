@@ -117,7 +117,10 @@
     </style>
 
     <script type="text/javascript">
-        var _ypos, _xpos, _muki, mapdata;
+        /*
+        * 俺ルール：グローバル変数には先頭に$をつける
+        */
+        var $pc = new Object(), mapdata;
 
             mapdata = ['95555513',
             'A95553AA',
@@ -142,6 +145,9 @@
         $HIDARI = 'hidari';
         $MIGI = 'migi';
         
+        /**
+         * 最初に実行されるもの
+         */
         window.addEventListener('load', function() {
             var div_map;
 
@@ -151,11 +157,11 @@
 
             mapview(div_map, mapdata);
 
-            _xpos = 0;
-            _ypos = 7;
-            _muki = 0;
+            $pc.xpos = 0;
+            $pc.ypos = 7;
+            $pc.muki = 0;
 
-            document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '↑';
+            document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = '↑';
 
             submapview();
         });
@@ -169,54 +175,54 @@
             mukiArrayLength = mukiArray.length;
 
             if (keyCode == '87') {
-                map = document.getElementById('map[' + _xpos + '][' + _ypos + ']');
+                map = document.getElementById('map[' + $pc.xpos + '][' + $pc.ypos + ']');
                 kabeChar = map.className.replace(/box/, '');
                 kabeType = parseInt(kabeChar, 16);
 
                 xdiff = 0;
                 ydiff = 0;
-                if (_muki == 0) {
+                if ($pc.muki == 0) {
                     if ((kabeType & 1) == 0) {
                         ydiff = -1;
                     }
-                } else if (_muki == 1) {
+                } else if ($pc.muki == 1) {
                     if ((kabeType & 2) == 0) {
                         xdiff = +1;
                     }
-                } else if (_muki == 2) {
+                } else if ($pc.muki == 2) {
                     if ((kabeType & 4) == 0) {
                         ydiff = +1;
                     }
-                } else if (_muki == 3) {
+                } else if ($pc.muki == 3) {
                     if ((kabeType & 8) == 0) {
                         xdiff = -1;
                     }
                 }
 
                 if (xdiff != 0 || ydiff != 0) {
-                    document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = '';
-                    _xpos += xdiff;
-                    _ypos += ydiff;
-                    document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+                    document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = '';
+                    $pc.xpos += xdiff;
+                    $pc.ypos += ydiff;
+                    document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
 
                     submapview();
                 }
 
             } else if (keyCode == '65') {
-                _muki--;
-                if (_muki < 0) {
-                    _muki = mukiArrayLength - 1;
+                $pc.muki--;
+                if ($pc.muki < 0) {
+                    $pc.muki = mukiArrayLength - 1;
                 }
-                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+                document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
 
                 submapview();
 
             } else if (keyCode == '68') {
-                _muki++;
-                if (mukiArrayLength - 1 < _muki) {
-                    _muki = 0;
+                $pc.muki++;
+                if (mukiArrayLength - 1 < $pc.muki) {
+                    $pc.muki = 0;
                 }
-                document.getElementById('nakami[' + _xpos + '][' + _ypos + ']').innerHTML = mukiArray[_muki];
+                document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
 
                 submapview();
             }
@@ -232,21 +238,21 @@
             div_submap.innerHTML = '';
 
             genshidata = new Array();
-            if (_muki == 0) {
+            if ($pc.muki == 0) {
                 for (y = -3; y <= 0; y++) {
                     line = '';
                     for (x = -1; x <= 1; x++) {
-                        c = getPosChar(_xpos + x, _ypos + y);
+                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
                         line += c;
                     }
                     genshidata.push(line);
                 }
 
-            } else if (_muki == 1) {
+            } else if ($pc.muki == 1) {
                 for (x = 3; 0 <= x; x--) {
                     line = '';
                     for (y = -1; y <= 1; y++) {
-                        c = getPosChar(_xpos + x, _ypos + y);
+                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
@@ -269,11 +275,11 @@
                     genshidata.push(line);
                 }
 
-            } else if (_muki == 2) {
+            } else if ($pc.muki == 2) {
                 for (y = 3; 0 <= y; y--) {
                     line = '';
                     for (x = 1; -1 <= x; x--) {
-                        c = getPosChar(_xpos + x, _ypos + y);
+                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
@@ -291,11 +297,11 @@
                     genshidata.push(line);
                 }
 
-            } else if (_muki == 3) {
+            } else if ($pc.muki == 3) {
                 for (x = -3; x <= 0; x++) {
                     line = '';
                     for (y = 1; -1 <= y; y--) {
-                        c = getPosChar(_xpos + x, _ypos + y);
+                        c = getPosChar($pc.xpos + x, $pc.ypos + y);
                         n = parseInt(c, 16);
                         n = n * 2;
                         if (16 <= n) {
