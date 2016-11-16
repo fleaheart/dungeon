@@ -247,66 +247,12 @@
 
             mapview(div_submap, genshidata);
 
+            // デバッグ情報の表示
             var html = div_submap.innerHTML;
             html = html + genshidata[0] + '<br>' + genshidata[1] + '<br>' + genshidata[2] + '<br>' + genshidata[3] + '<br>';
             div_submap.innerHTML = html;
 
-            var cvs, context;
-            cvs = document.getElementById('map3d');
-
-            context = cvs.getContext('2d');
-
-            context.beginPath();
-            context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
-
-            var kabe = -1;
-
-            for (var i = 0; i <= zenpou; i++) {
-                c = genshidata[zenpou - i].charAt(hidarigawa);
-                n = parseInt(c, 16);
-
-                var hidarikabeflg = 0;
-                var migikabeflg = 0;
-
-                if ((n & 1) == 1) {
-                    if (kabe == -1 || i < kabe) {
-                        kabemaekaku(context, i + 1);
-                        kabe = i;
-                    }
-                }
-                if ((n & 8) == 8) {
-                    if (kabe == -1 || i <= kabe) {
-                        kabetatekaku(context, i + 1, $HIDARI);
-                        hidarikabeflg = 1;
-                    }
-                }
-                if ((n & 2) == 2) {
-                    if (kabe == -1 || i <= kabe) {
-                        kabetatekaku(context, i + 1, $MIGI);
-                        migikabeflg = 1;
-                    }
-                }
-
-                var c = genshidata[zenpou - i].charAt(hidarigawa - 1);
-                n = parseInt(c, 16);
-                if ((n & 1) == 1) {
-                    if (kabe == -1 || i <= kabe) {
-                        if (hidarikabeflg != 1) {
-                            kabeyokokaku(context, i + 1, $HIDARI);
-                        }
-                    }
-                }
-
-                var c = genshidata[zenpou - i].charAt(hidarigawa + 1);
-                n = parseInt(c, 16);
-                if ((n & 1) == 1) {
-                    if (kabe == -1 || i <= kabe) {
-                        if (migikabeflg != 1) {
-                            kabeyokokaku(context, i + 1, $MIGI);
-                        }
-                    }
-                }
-            }
+            draw3D(genshidata, zenpou, hidarigawa, migigawa);
         }
 
         function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
@@ -389,6 +335,66 @@
             c = n.toString(16).toUpperCase();
 
             return c;
+        }
+
+        function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
+            var cvs, context, i;
+
+            cvs = document.getElementById('map3d');
+
+            context = cvs.getContext('2d');
+
+            context.beginPath();
+            context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
+
+            var kabe = -1;
+
+            for (var i = 0; i <= zenpou; i++) {
+                c = mapdata[zenpou - i].charAt(hidarigawa);
+                n = parseInt(c, 16);
+
+                var hidarikabeflg = 0;
+                var migikabeflg = 0;
+
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i < kabe) {
+                        kabemaekaku(context, i + 1);
+                        kabe = i;
+                    }
+                }
+                if ((n & 8) == 8) {
+                    if (kabe == -1 || i <= kabe) {
+                        kabetatekaku(context, i + 1, $HIDARI);
+                        hidarikabeflg = 1;
+                    }
+                }
+                if ((n & 2) == 2) {
+                    if (kabe == -1 || i <= kabe) {
+                        kabetatekaku(context, i + 1, $MIGI);
+                        migikabeflg = 1;
+                    }
+                }
+
+                var c = mapdata[zenpou - i].charAt(hidarigawa - 1);
+                n = parseInt(c, 16);
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i <= kabe) {
+                        if (hidarikabeflg != 1) {
+                            kabeyokokaku(context, i + 1, $HIDARI);
+                        }
+                    }
+                }
+
+                var c = mapdata[zenpou - i].charAt(hidarigawa + 1);
+                n = parseInt(c, 16);
+                if ((n & 1) == 1) {
+                    if (kabe == -1 || i <= kabe) {
+                        if (migikabeflg != 1) {
+                            kabeyokokaku(context, i + 1, $MIGI);
+                        }
+                    }
+                }
+            }
         }
 
         function mapview(div_map, kakumapdata) {
