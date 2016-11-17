@@ -1,10 +1,17 @@
 /*
 * 俺ルール：グローバル変数には先頭に$をつける
 */
-var $pc = new Object(), $mapdata,
-$kabex, $kabey, $kabe2x, $kabe2y, $SCREEN_WIDTH, $SCREEN_HEIGHT, $DRAW_WIDTH, $DRAW_HEIGHT, $HIDARI, $MIGI;
+var $pc, $mapdata,
+    $kabex, $kabey, $kabe2x, $kabe2y,
+    $SCREEN_WIDTH, $SCREEN_HEIGHT, $DRAW_WIDTH, $DRAW_HEIGHT,
+    $TOP, $RIGHT, $BOTTOM, $LEFT,
+    $BIT_TOP, $BIT_RIGHT, $BIT_BOTTOM, $BIT_LEFT,
+    $MUKI,
+    $KEY;
 
-    $mapdata = ['95555513',
+$pc = new Object();
+
+$mapdata = ['95555513',
     'A95553AA',
     'AAD53AAA',
     'AC556AAA',
@@ -25,8 +32,22 @@ $SCREEN_HEIGHT = 300;
 $DRAW_WIDTH = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
 $DRAW_HEIGHT = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
 
-$HIDARI = 'hidari';
-$MIGI = 'migi';
+$TOP = 0;
+$RIGHT = 1;
+$BOTTOM = 2;
+$LEFT = 3;
+$BIT_TOP = 1;
+$BIT_RIGHT = 2;
+$BIT_BOTTOM = 4;
+$BIT_LEFT = 8;
+
+$MUKI = new Object();
+$MUKI.CHARACTER = ['↑','→','↓','←'];
+$MUKI.CHARACTER_LENGTH = $MUKI.CHARACTER.length;
+
+$KEY = {
+    W: '87', A:'65', D:'68'
+};
 
 /**
  * 最初に実行されるもの
@@ -50,34 +71,31 @@ window.addEventListener('load', function() {
 });
 
 function keyDownEvent(evt) {
-    var keyCode, mukiArray, mukiArrayLengt, map, kabeChar, kabeType, xdiff, ydiff;
+    var keyCode, map, kabeChar, kabeType, xdiff, ydiff;
 
     keyCode = evt.keyCode;
     
-    mukiArray = ['↑','→','↓','←'];
-    mukiArrayLength = mukiArray.length;
-
-    if (keyCode == '87') {
+    if (keyCode == $KEY.W) {
         map = document.getElementById('map[' + $pc.xpos + '][' + $pc.ypos + ']');
         kabeChar = map.className.replace(/box/, '');
         kabeType = parseInt(kabeChar, 16);
 
         xdiff = 0;
         ydiff = 0;
-        if ($pc.muki == 0) {
-            if ((kabeType & 1) == 0) {
+        if ($pc.muki == $TOP) {
+            if ((kabeType & $BIT_TOP) == 0) {
                 ydiff = -1;
             }
-        } else if ($pc.muki == 1) {
-            if ((kabeType & 2) == 0) {
+        } else if ($pc.muki == $RIGHT) {
+            if ((kabeType & $BIT_RIGHT) == 0) {
                 xdiff = +1;
             }
-        } else if ($pc.muki == 2) {
-            if ((kabeType & 4) == 0) {
+        } else if ($pc.muki == $BOTTOM) {
+            if ((kabeType & $BIT_BOTTOM) == 0) {
                 ydiff = +1;
             }
-        } else if ($pc.muki == 3) {
-            if ((kabeType & 8) == 0) {
+        } else if ($pc.muki == $LEFT) {
+            if ((kabeType & $BIT_LEFT) == 0) {
                 xdiff = -1;
             }
         }
@@ -86,26 +104,26 @@ function keyDownEvent(evt) {
             document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = '';
             $pc.xpos += xdiff;
             $pc.ypos += ydiff;
-            document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
+            document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
 
             submapview();
         }
 
-    } else if (keyCode == '65') {
+    } else if (keyCode == $KEY.A) {
         $pc.muki--;
         if ($pc.muki < 0) {
-            $pc.muki = mukiArrayLength - 1;
+            $pc.muki = $MUKI.CHARACTER_LENGTH - 1;
         }
-        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
+        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
 
         submapview();
 
-    } else if (keyCode == '68') {
+    } else if (keyCode == $KEY.D) {
         $pc.muki++;
-        if (mukiArrayLength - 1 < $pc.muki) {
+        if ($MUKI.CHARACTER_LENGTH - 1 < $pc.muki) {
             $pc.muki = 0;
         }
-        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = mukiArray[$pc.muki];
+        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
 
         submapview();
     }
@@ -135,7 +153,7 @@ function map_kiritori(mapdata, zenpou, hidarimigi) {
     var kiritorimapdata, x, y, line, c;
 
     kiritorimapdata = new Array();
-    if ($pc.muki == 0) {
+    if ($pc.muki == $TOP) {
         for (y = zenpou * -1; y <= 0; y++) {
             line = '';
             for (x = hidarimigi * -1; x <= hidarimigi; x++) {
@@ -146,7 +164,7 @@ function map_kiritori(mapdata, zenpou, hidarimigi) {
             kiritorimapdata.push(line);
         }
 
-    } else if ($pc.muki == 1) {
+    } else if ($pc.muki == $RIGHT) {
         for (x = zenpou; 0 <= x; x--) {
             line = '';
             for (y = hidarimigi * -1; y <= hidarimigi; y++) {
@@ -157,7 +175,7 @@ function map_kiritori(mapdata, zenpou, hidarimigi) {
             kiritorimapdata.push(line);
         }
 
-    } else if ($pc.muki == 2) {
+    } else if ($pc.muki == $BOTTOM) {
         for (y = zenpou; 0 <= y; y--) {
             line = '';
             for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
@@ -168,7 +186,7 @@ function map_kiritori(mapdata, zenpou, hidarimigi) {
             kiritorimapdata.push(line);
         }
 
-    } else if ($pc.muki == 3) {
+    } else if ($pc.muki == $LEFT) {
         for (x = zenpou * -1; x <= 0; x++) {
             line = '';
             for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
@@ -230,41 +248,41 @@ function draw3D(mapdata, zenpou, hidarimigi) {
         var hidarikabeflg = 0;
         var migikabeflg = 0;
 
-        if ((n & 1) == 1) {
+        if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i < kabe) {
                 kabemaekaku(context, i + 1);
                 kabe = i;
             }
         }
-        if ((n & 8) == 8) {
+        if ((n & $BIT_LEFT) == $BIT_LEFT) {
             if (kabe == -1 || i <= kabe) {
-                kabetatekaku(context, i + 1, $HIDARI);
+                kabetatekaku(context, i + 1, $LEFT);
                 hidarikabeflg = 1;
             }
         }
-        if ((n & 2) == 2) {
+        if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
             if (kabe == -1 || i <= kabe) {
-                kabetatekaku(context, i + 1, $MIGI);
+                kabetatekaku(context, i + 1, $RIGHT);
                 migikabeflg = 1;
             }
         }
 
         c = mapdata[zenpou - i].charAt(hidarimigi - 1);
         n = parseInt(c, 16);
-        if ((n & 1) == 1) {
+        if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i <= kabe) {
                 if (hidarikabeflg != 1) {
-                    kabeyokokaku(context, i + 1, $HIDARI);
+                    kabeyokokaku(context, i + 1, $LEFT);
                 }
             }
         }
 
         var c = mapdata[zenpou - i].charAt(hidarimigi + 1);
         n = parseInt(c, 16);
-        if ((n & 1) == 1) {
+        if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i <= kabe) {
                 if (migikabeflg != 1) {
-                    kabeyokokaku(context, i + 1, $MIGI);
+                    kabeyokokaku(context, i + 1, $RIGHT);
                 }
             }
         }
@@ -316,11 +334,11 @@ function kabemaekaku(context, fukasa) {
 function kabetatekaku(context, fukasa, side) {
     var startx, fugou;
 
-    if (side == $HIDARI) {
+    if (side == $LEFT) {
         startx = 0;
         fugou = 1;
     }
-    if (side == $MIGI) {
+    if (side == $RIGHT) {
         startx = $DRAW_WIDTH;
         fugou = -1;
     }
@@ -339,11 +357,11 @@ function kabetatekaku(context, fukasa, side) {
 function kabeyokokaku(context, fukasa, side) {
     var startx, fugou;
 
-    if (side == $HIDARI) {
+    if (side == $LEFT) {
         startx = 0;
         fugou = 1;
     }
-    if (side == $MIGI) {
+    if (side == $RIGHT) {
         startx = $DRAW_WIDTH;
         fugou = -1;
     }
