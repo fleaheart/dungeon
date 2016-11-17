@@ -113,27 +113,22 @@ function keyDownEvent(evt) {
 }
 
 function submapview() {
-    var div_submap, x, y, kukaku, map, br, xstart, xend, xzoubun, ystart, yend, yzoubun, genshidata, line, chukandata, submapdata,
-    c, n,
-    /*
-        * 切り取る範囲 左側右側は、真ん中を除いた数
-        * 0093F は、00:hidarigawa、3F:migigawa、9:真ん中
-        */
+    var div_submap, submapdata, html,
     zenpou = 3, hidarigawa = 1, migigawa = 1;
 
     div_submap = document.getElementById('div_submap');
     div_submap.innerHTML = '';
 
-    genshidata = submapview_kiritori($mapdata, zenpou, hidarigawa, migigawa);
+    submapdata = submapview_kiritori($mapdata, zenpou, hidarigawa, migigawa);
 
-    mapview(div_submap, genshidata);
+    mapview(div_submap, submapdata);
 
     // デバッグ情報の表示
-    var html = div_submap.innerHTML;
-    html = html + genshidata[0] + '<br>' + genshidata[1] + '<br>' + genshidata[2] + '<br>' + genshidata[3] + '<br>';
+    html = div_submap.innerHTML;
+    html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
     div_submap.innerHTML = html;
 
-    draw3D(genshidata, zenpou, hidarigawa, migigawa);
+    draw3D(submapdata, zenpou, hidarigawa, migigawa);
 }
 
 function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
