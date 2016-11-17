@@ -6,7 +6,7 @@ var $pc, $mapdata,
     $SCREEN_WIDTH, $SCREEN_HEIGHT, $DRAW_WIDTH, $DRAW_HEIGHT,
     $TOP, $RIGHT, $BOTTOM, $LEFT,
     $BIT_TOP, $BIT_RIGHT, $BIT_BOTTOM, $BIT_LEFT,
-    $MUKI,
+    $MUKI_CHARACTER, $MUKI_CHARACTER_LENGTH,
     $KEY;
 
 $pc = new Object();
@@ -41,9 +41,8 @@ $BIT_RIGHT = 2;
 $BIT_BOTTOM = 4;
 $BIT_LEFT = 8;
 
-$MUKI = new Object();
-$MUKI.CHARACTER = ['↑','→','↓','←'];
-$MUKI.CHARACTER_LENGTH = $MUKI.CHARACTER.length;
+$MUKI_CHARACTER = ['↑','→','↓','←'];
+$MUKI_CHARACTER_LENGTH = $MUKI_CHARACTER.length;
 
 $KEY = {
     W: '87', A:'65', D:'68'
@@ -104,7 +103,7 @@ function keyDownEvent(evt) {
             document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = '';
             $pc.xpos += xdiff;
             $pc.ypos += ydiff;
-            document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
+            document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI_CHARACTER[$pc.muki];
 
             submapview();
         }
@@ -112,18 +111,18 @@ function keyDownEvent(evt) {
     } else if (keyCode == $KEY.A) {
         $pc.muki--;
         if ($pc.muki < 0) {
-            $pc.muki = $MUKI.CHARACTER_LENGTH - 1;
+            $pc.muki = $MUKI_CHARACTER_LENGTH - 1;
         }
-        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
+        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI_CHARACTER[$pc.muki];
 
         submapview();
 
     } else if (keyCode == $KEY.D) {
         $pc.muki++;
-        if ($MUKI.CHARACTER_LENGTH - 1 < $pc.muki) {
+        if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
             $pc.muki = 0;
         }
-        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI.CHARACTER[$pc.muki];
+        document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']').innerHTML = $MUKI_CHARACTER[$pc.muki];
 
         submapview();
     }
