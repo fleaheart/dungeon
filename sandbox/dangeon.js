@@ -119,7 +119,7 @@ function submapview() {
     div_submap = document.getElementById('div_submap');
     div_submap.innerHTML = '';
 
-    submapdata = submapview_kiritori($mapdata, zenpou, hidarigawa, migigawa);
+    submapdata = map_kiritori($mapdata, zenpou, hidarigawa, migigawa);
 
     mapview(div_submap, submapdata);
 
@@ -131,11 +131,10 @@ function submapview() {
     draw3D(submapdata, zenpou, hidarigawa, migigawa);
 }
 
-function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
-    var genshidata, x, y, line, c,
-    n;
+function map_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
+    var kiritorimapdata, x, y, line, c;
 
-    genshidata = new Array();
+    kiritorimapdata = new Array();
     if ($pc.muki == 0) {
         for (y = zenpou * -1; y <= 0; y++) {
             line = '';
@@ -144,7 +143,7 @@ function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
                 c = charkaiten(c, $pc.muki);
                 line += c;
             }
-            genshidata.push(line);
+            kiritorimapdata.push(line);
         }
 
     } else if ($pc.muki == 1) {
@@ -155,7 +154,7 @@ function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
                 c = charkaiten(c, $pc.muki);
                 line += c;
             }
-            genshidata.push(line);
+            kiritorimapdata.push(line);
         }
 
     } else if ($pc.muki == 2) {
@@ -166,7 +165,7 @@ function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
                 c = charkaiten(c, $pc.muki);
                 line += c;
             }
-            genshidata.push(line);
+            kiritorimapdata.push(line);
         }
 
     } else if ($pc.muki == 3) {
@@ -177,11 +176,11 @@ function submapview_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
                 c = charkaiten(c, $pc.muki);
                 line += c;
             }
-            genshidata.push(line);
+            kiritorimapdata.push(line);
         }
     }
 
-    return genshidata;
+    return kiritorimapdata;
 }
 
 function getPosChar(mapdata, x, y) {
@@ -214,7 +213,7 @@ function charkaiten(c, muki) {
 }
 
 function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
-    var cvs, context, i;
+    var cvs, context, i, kabe, c, n;
 
     cvs = document.getElementById('map3d');
 
@@ -222,8 +221,6 @@ function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
 
     context.beginPath();
     context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
-
-    var kabe = -1;
 
     for (var i = 0; i <= zenpou; i++) {
         c = mapdata[zenpou - i].charAt(hidarigawa);
@@ -251,7 +248,7 @@ function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
             }
         }
 
-        var c = mapdata[zenpou - i].charAt(hidarigawa - 1);
+        c = mapdata[zenpou - i].charAt(hidarigawa - 1);
         n = parseInt(c, 16);
         if ((n & 1) == 1) {
             if (kabe == -1 || i <= kabe) {
@@ -274,7 +271,7 @@ function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
 }
 
 function mapview(div_map, kakumapdata) {
-    var x, xl, y, yl, c, kukaku, map, makami, br;
+    var x, xl, y, yl, c, kukaku, map, nakami, br;
 
     for (y = 0, yl = kakumapdata.length; y < yl; y++) {
         for (x = 0, xl = kakumapdata[y].length; x < xl; x++) {
@@ -294,7 +291,6 @@ function mapview(div_map, kakumapdata) {
             map.appendChild(nakami);
             kukaku.appendChild(map);
             div_map.appendChild(kukaku);
-            
         }
 
         br = document.createElement('BR');
