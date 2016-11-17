@@ -76,7 +76,7 @@ function keyDownEvent(evt) {
     
     if (keyCode == $KEY.W) {
         map = document.getElementById('map[' + $pc.xpos + '][' + $pc.ypos + ']');
-        kabeChar = map.className.replace(/box/, '');
+        kabeChar = $mapdata[$pc.ypos].charAt($pc.xpos);
         kabeType = parseInt(kabeChar, 16);
 
         xdiff = 0;
@@ -134,7 +134,6 @@ function submapview() {
     zenpou = 3, hidarimigi = 1;
 
     div_submap = document.getElementById('div_submap');
-    div_submap.innerHTML = '';
 
     submapdata = map_kiritori($mapdata, zenpou, hidarimigi);
 
@@ -289,7 +288,13 @@ function draw3D(mapdata, zenpou, hidarimigi) {
 }
 
 function mapview(div_map, kakumapdata) {
-    var x, xl, y, yl, c, kukaku, map, nakami, br;
+    var x, xl, y, yl, c, kukaku, map, nakami, br
+    ,ippen, futosa;
+
+    ippen = 24;
+    futosa = 2;
+
+    div_map.innerHTML = '';
 
     for (y = 0, yl = kakumapdata.length; y < yl; y++) {
         for (x = 0, xl = kakumapdata[y].length; x < xl; x++) {
@@ -297,14 +302,20 @@ function mapview(div_map, kakumapdata) {
 
             kukaku = document.createElement('DIV');
             kukaku.className = 'kukaku';
+            kukaku.style.width = (ippen + futosa * 2) + 'px';
+            kukaku.style.height = (ippen + futosa * 2) + 'px';
 
             map = document.createElement('DIV');
             map.id = 'map[' + x + '][' + y + ']';
-            map.className = 'box' + c;
+            setStyle(map, c, ippen, futosa);
+
+            // map.className = 'box' + c;
 
             nakami = document.createElement('DIV');
             nakami.id = 'nakami[' + x + '][' + y + ']';
             nakami.className = 'nakami';
+            nakami.style.width = ippen + 'px';
+            nakami.style.height = ippen + 'px';
 
             map.appendChild(nakami);
             kukaku.appendChild(map);
@@ -313,6 +324,44 @@ function mapview(div_map, kakumapdata) {
 
         br = document.createElement('BR');
         div_map.appendChild(br);
+    }
+}
+
+function setStyle(map, c, ippen, futosa) {
+    var n;
+
+    n = parseInt(c, 16);
+
+    map.style.display = 'inline-block';
+    map.style.margin = '0px';
+    map.style.padding = '0px';
+    map.style.width = ippen + 'px';
+    map.style.height = ippen + 'px';
+    map.style.verticalAlign = 'middle';
+    map.style.textAlign = 'center';
+    map.style.border = '0px solid black';
+    map.style.backgroundColor = 'white';
+
+    if ((n & $BIT_TOP) == $BIT_TOP) {
+        map.style.borderTopWidth = futosa + 'px';
+    } else {
+        map.style.marginTop = futosa + 'px';
+    }
+
+    if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
+        map.style.borderRightWidth = futosa + 'px';
+    } else {
+        map.style.marginRight = futosa + 'px';
+    }
+    if ((n & $BIT_BOTTOM) == $BIT_BOTTOM) {
+        map.style.borderBottomWidth = futosa + 'px';
+    } else {
+        map.style.marginBottom = futosa + 'px';
+    }
+    if ((n & $BIT_LEFT) == $BIT_LEFT) {
+        map.style.borderLeftWidth = futosa + 'px';
+    } else {
+        map.style.marginLeft = futosa + 'px';
     }
 }
 
