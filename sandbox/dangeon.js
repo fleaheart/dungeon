@@ -114,12 +114,12 @@ function keyDownEvent(evt) {
 
 function submapview() {
     var div_submap, submapdata, html,
-    zenpou = 3, hidarigawa = 1, migigawa = 1;
+    zenpou = 3, hidarimigi = 1;
 
     div_submap = document.getElementById('div_submap');
     div_submap.innerHTML = '';
 
-    submapdata = map_kiritori($mapdata, zenpou, hidarigawa, migigawa);
+    submapdata = map_kiritori($mapdata, zenpou, hidarimigi);
 
     mapview(div_submap, submapdata);
 
@@ -128,17 +128,17 @@ function submapview() {
     html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
     div_submap.innerHTML = html;
 
-    draw3D(submapdata, zenpou, hidarigawa, migigawa);
+    draw3D(submapdata, zenpou, hidarimigi);
 }
 
-function map_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
+function map_kiritori(mapdata, zenpou, hidarimigi) {
     var kiritorimapdata, x, y, line, c;
 
     kiritorimapdata = new Array();
     if ($pc.muki == 0) {
         for (y = zenpou * -1; y <= 0; y++) {
             line = '';
-            for (x = hidarigawa * -1; x <= migigawa; x++) {
+            for (x = hidarimigi * -1; x <= hidarimigi; x++) {
                 c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
                 c = charkaiten(c, $pc.muki);
                 line += c;
@@ -149,7 +149,7 @@ function map_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
     } else if ($pc.muki == 1) {
         for (x = zenpou; 0 <= x; x--) {
             line = '';
-            for (y = hidarigawa * -1; y <= migigawa; y++) {
+            for (y = hidarimigi * -1; y <= hidarimigi; y++) {
                 c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
                 c = charkaiten(c, $pc.muki);
                 line += c;
@@ -160,7 +160,7 @@ function map_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
     } else if ($pc.muki == 2) {
         for (y = zenpou; 0 <= y; y--) {
             line = '';
-            for (x = hidarigawa; migigawa * -1 <= x; x--) {
+            for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
                 c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
                 c = charkaiten(c, $pc.muki);
                 line += c;
@@ -171,7 +171,7 @@ function map_kiritori(mapdata, zenpou, hidarigawa, migigawa) {
     } else if ($pc.muki == 3) {
         for (x = zenpou * -1; x <= 0; x++) {
             line = '';
-            for (y = hidarigawa; migigawa * -1 <= y; y--) {
+            for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
                 c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
                 c = charkaiten(c, $pc.muki);
                 line += c;
@@ -212,18 +212,19 @@ function charkaiten(c, muki) {
     return c;
 }
 
-function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
+function draw3D(mapdata, zenpou, hidarimigi) {
     var cvs, context, i, kabe, c, n;
 
     cvs = document.getElementById('map3d');
-
     context = cvs.getContext('2d');
 
     context.beginPath();
     context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
 
+    kabe = -1;
+
     for (var i = 0; i <= zenpou; i++) {
-        c = mapdata[zenpou - i].charAt(hidarigawa);
+        c = mapdata[zenpou - i].charAt(hidarimigi);
         n = parseInt(c, 16);
 
         var hidarikabeflg = 0;
@@ -248,7 +249,7 @@ function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
             }
         }
 
-        c = mapdata[zenpou - i].charAt(hidarigawa - 1);
+        c = mapdata[zenpou - i].charAt(hidarimigi - 1);
         n = parseInt(c, 16);
         if ((n & 1) == 1) {
             if (kabe == -1 || i <= kabe) {
@@ -258,7 +259,7 @@ function draw3D(mapdata, zenpou, hidarigawa, migigawa) {
             }
         }
 
-        var c = mapdata[zenpou - i].charAt(hidarigawa + 1);
+        var c = mapdata[zenpou - i].charAt(hidarimigi + 1);
         n = parseInt(c, 16);
         if ((n & 1) == 1) {
             if (kabe == -1 || i <= kabe) {
