@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>戦闘</title>
+
+<script type="text/javascript">
+var $pc, $teki,$KOUDOU;
+
+$KOUDOU = {
+    TATAKU: 'tataku',
+    UKERU: 'ukeru',
+    NAGERU: 'nageru',
+    YOKERU: 'yokeru',
+    NIGERU: 'nigeru',
+}
+
+window.addEventListener('load', function() {
+
+    $pc = {
+        life: 5
+    };
+
+    $teki = {
+        life: 5
+    };
+
+    document.getElementById('btn_tataku').addEventListener('click', sentou);
+    document.getElementById('btn_ukeru').addEventListener('click', sentou);
+    document.getElementById('btn_nageru').addEventListener('click', sentou);
+    document.getElementById('btn_yokeru').addEventListener('click', sentou);
+    document.getElementById('btn_nigeru').addEventListener('click', sentou);
+});
+
+function sentou(evt) {
+    var btn, pc_koudou, teki_koudou, teki_koudou_num, hantei;
+    
+    btn = evt.srcElement;
+
+    pc_koudou = btn.id.replace(/^btn_/, '');
+
+    teki_koudou_num = Math.floor(Math.random() * 4);
+    teki_koudou = [$KOUDOU.TATAKU,$KOUDOU.UKERU,$KOUDOU.NAGERU,$KOUDOU.YOKERU,$KOUDOU.NIGERU][teki_koudou_num]
+    hantei = judge(pc_koudou, teki_koudou);
+
+    if (hantei == '成功') {
+        $teki.life--;
+    } else if (hantei == '失敗') {
+        $pc.life--;
+    } else if (hantei == '相打ち') {
+        $teki.life--;
+        $pc.life--;
+    }
+
+    message('PC:' + pc_koudou + ' × TEKI:' + teki_koudou + ' → ' + hantei);
+    
+    document.getElementById('spn_pc_life').innerHTML = lifetext($pc.life);
+    document.getElementById('spn_teki_life').innerHTML = lifetext($teki.life);
+
+    if ($pc.life <= 0) {
+        message('負け');
+    }
+    if ($teki.life <= 0) {
+        message('勝ち');
+    }
+}
+
+function judge(koudou1, koudou2) {
+    var hantei;
+
+    if (koudou1 == $KOUDOU.NIGERU) {
+        if (Math.floor(Math.random() * 5) == 0) {
+            hantei = '逃亡';
+        } else {
+            if (koudou2 == $KOUDOU.TATAKU) {
+                hantei = '失敗';
+            } else if (koudou2 == $KOUDOU.UKERU) {
+                hantei = 'お見合い';
+            } else if (koudou2 == $KOUDOU.NAGERU) {
+                hantei = '失敗';
+            } else if (koudou2 == $KOUDOU.YOKERU) {
+                hantei = 'お見合い';
+            }
+        }
+    } else if (koudou1 == $KOUDOU.TATAKU) {
+        if (koudou2 == $KOUDOU.TATAKU) {
+            hantei = '相打ち';
+        } else if (koudou2 == $KOUDOU.UKERU) {
+            hantei = '失敗';
+        } else if (koudou2 == $KOUDOU.NAGERU) {
+            hantei = '相打ち';
+        } else if (koudou2 == $KOUDOU.YOKERU) {
+            hantei = '成功';
+        }
+    } else if (koudou1 == $KOUDOU.UKERU) {
+        if (koudou2 == $KOUDOU.TATAKU) {
+            hantei = '成功';
+        } else if (koudou2 == $KOUDOU.UKERU) {
+            hantei = 'お見合い';
+        } else if (koudou2 == $KOUDOU.NAGERU) {
+            hantei = '失敗';
+        } else if (koudou2 == $KOUDOU.YOKERU) {
+            hantei = 'お見合い';
+        }
+    } else if (koudou1 == $KOUDOU.NAGERU) {
+        if (koudou2 == $KOUDOU.TATAKU) {
+            hantei = '相打ち';
+        } else if (koudou2 == $KOUDOU.UKERU) {
+            hantei = '成功';
+        } else if (koudou2 == $KOUDOU.NAGERU) {
+            hantei = '相打ち';
+        } else if (koudou2 == $KOUDOU.YOKERU) {
+            hantei = '失敗';
+        }
+    } else if (koudou1 == $KOUDOU.YOKERU) {
+        if (koudou2 == $KOUDOU.TATAKU) {
+            hantei = '失敗';
+        } else if (koudou2 == $KOUDOU.UKERU) {
+            hantei = 'お見合い';
+        } else if (koudou2 == $KOUDOU.NAGERU) {
+            hantei = '成功';
+        } else if (koudou2 == $KOUDOU.YOKERU) {
+            hantei = 'お見合い';
+        }
+    }
+    
+    return hantei;
+}
+
+function lifetext(life) {
+    var i, text;
+
+    text = '';
+    for (i = 0; i < 5; i++) {
+        if (i < life) {
+            text += '●';
+        } else {
+            text += '○';
+        }
+    }
+    return text;
+}
+
+function message(msg) {
+    var div, h;
+    div = document.getElementById('div_message');
+    h = div.innerHTML;
+    div.innerHTML = msg + '<br>' + h;
+}
+
+</script>
+
+</head>
+
+<body>
+プレイヤー：<span id="spn_pc_life">●●●●●</span>
+<br>
+テキ：<span id="spn_teki_life">●●●●●</span>
+<hr>
+<input id="btn_tataku" type="button" value="たたく">
+<input id="btn_ukeru" type="button"value="うける">
+<input id="btn_nageru" type="button" value="なげる">
+<input id="btn_yokeru" type="button" value="よける">
+<input id="btn_nigeru" type="button" value="にげる">
+
+<hr>
+<div id="div_message">
+</div>
+
+
+</body>
+</html>
