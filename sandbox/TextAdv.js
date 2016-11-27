@@ -1,15 +1,12 @@
-var MODE_MAKIMONO = 'makimono';
-var MODE_KAMISHIBAI = 'kamishibai';
 var TextAdv = (function () {
     function TextAdv(display, scene) {
         this.display = display;
         this.scene = scene;
         this.linkColor = 'blue';
         this.selectColor = 'red';
-        this.currentStep = null;
-        this.step = 1;
-        this.trace = new Array();
-        this.mode = MODE_MAKIMONO;
+        this.step = 1; // 遷移数
+        this.trace = new Array(); // 遷移順配列
+        this.mode = TextAdv.MODE_MAKIMONO;
         this.interval = 100;
         this.dy = 10;
     }
@@ -19,8 +16,9 @@ var TextAdv = (function () {
     };
     TextAdv.prototype.go = function (idx, selectedElem) {
         if (selectedElem != null) {
+            // 選択されたものを赤くする
             var parent_1 = null;
-            if (this.mode == MODE_MAKIMONO) {
+            if (this.mode == TextAdv.MODE_MAKIMONO) {
                 parent_1 = this.searchUpperElemnt(selectedElem, 'scene');
             }
             else {
@@ -33,8 +31,8 @@ var TextAdv = (function () {
             }
             selectedElem.style.color = this.selectColor;
         }
-        // 次に表示する用にすでに表示しているものを消す
         {
+            // 次に表示する用にすでに表示しているものを消す
             var i = this.step;
             while (true) {
                 var elem = document.getElementById('sc' + i);
@@ -47,6 +45,7 @@ var TextAdv = (function () {
         }
         var html = '';
         {
+            // シーンを取り出す
             var bodyParts = this.scene[idx].split('◇');
             if (2 <= bodyParts.length) {
                 document.title = bodyParts[0];
@@ -57,6 +56,7 @@ var TextAdv = (function () {
             }
         }
         while (true) {
+            // 遷移をアンカーに編集する
             var s = html.indexOf('[', 0), e = html.indexOf(']', 0);
             var before = null;
             var linkParts = null;
@@ -106,7 +106,8 @@ var TextAdv = (function () {
             html = html.replace('⇒', '→');
         }
         var id = null;
-        if (this.mode == MODE_MAKIMONO) {
+        if (this.mode == TextAdv.MODE_MAKIMONO) {
+            // HTMLとしてdivを作成し終端に取り付ける
             id = 'sc' + this.step;
             var div = '<div id="' + id + '" class="scene">' + html + '</div><p>';
             var r = document.createRange();
@@ -119,12 +120,15 @@ var TextAdv = (function () {
             })(this, this.step);
             this.step++;
         }
-        else if (this.mode == MODE_KAMISHIBAI) {
+        else if (this.mode == TextAdv.MODE_KAMISHIBAI) {
+            // 中身を取り替える
             id = this.display.id;
             this.display.innerHTML = html;
             this.step++;
         }
+        // 遷移順のシーン番号をスタックする
         this.trace.push(idx);
+        // 未選択カラーにする
         {
             var elems = new Array();
             this.pickupElements(document.getElementById(id), 'link', elems);
@@ -134,7 +138,8 @@ var TextAdv = (function () {
                 elems[i].style.cursor = 'pointer';
             }
         }
-        if (this.mode == MODE_MAKIMONO) {
+        // 画面をスクロールする
+        if (this.mode == TextAdv.MODE_MAKIMONO) {
             this.scroll();
         }
     };
@@ -178,4 +183,9 @@ var TextAdv = (function () {
     };
     return TextAdv;
 }());
+var TextAdv;
+(function (TextAdv) {
+    TextAdv.MODE_MAKIMONO = 'makimono';
+    TextAdv.MODE_KAMISHIBAI = 'kamishibai';
+})(TextAdv || (TextAdv = {}));
 //# sourceMappingURL=TextAdv.js.map

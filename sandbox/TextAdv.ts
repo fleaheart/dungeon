@@ -1,14 +1,10 @@
-
-const MODE_MAKIMONO: string = 'makimono';
-const MODE_KAMISHIBAI: string = 'kamishibai';
-
 class TextAdv {
     public linkColor: string = 'blue';
     public selectColor: string = 'red';
 
     private step: number = 1;   // 遷移数
     private trace: number[] = new Array();  // 遷移順配列
-    private mode: string = MODE_MAKIMONO;
+    private mode: string = TextAdv.MODE_MAKIMONO;
 
     constructor(public display: HTMLElement, public scene: string[]) {
 
@@ -23,7 +19,7 @@ class TextAdv {
         if (selectedElem != null) {
             // 選択されたものを赤くする
             let parent: HTMLElement = null;
-            if (this.mode == MODE_MAKIMONO) {
+            if (this.mode == TextAdv.MODE_MAKIMONO) {
                 parent = this.searchUpperElemnt(selectedElem, 'scene');
             } else {
                 parent = this.display;
@@ -122,7 +118,7 @@ class TextAdv {
 
         let id: string = null;
 
-        if (this.mode == MODE_MAKIMONO) {
+        if (this.mode == TextAdv.MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
             id = 'sc' + this.step;
             let div: string = '<div id="' + id + '" class="scene">' + html + '</div><p>';
@@ -138,7 +134,7 @@ class TextAdv {
 
             this.step++;
 
-        } else if (this.mode == MODE_KAMISHIBAI) {
+        } else if (this.mode == TextAdv.MODE_KAMISHIBAI) {
             // 中身を取り替える
             id = this.display.id;
             this.display.innerHTML = html;
@@ -160,7 +156,7 @@ class TextAdv {
         }
 
         // 画面をスクロールする
-        if (this.mode == MODE_MAKIMONO) {
+        if (this.mode == TextAdv.MODE_MAKIMONO) {
             this.scroll();
         }
     }
@@ -216,4 +212,9 @@ class TextAdv {
         }
     }
 
+}
+
+namespace TextAdv {
+    export const MODE_MAKIMONO: string = 'makimono';
+    export const MODE_KAMISHIBAI: string = 'kamishibai';
 }
