@@ -6,9 +6,8 @@ class TextAdv {
     public linkColor: string = 'blue';
     public selectColor: string = 'red';
 
-    private currentStep: number = null;
-    private step: number = 1;
-    private trace: number[] = new Array();
+    private step: number = 1;   // 遷移数
+    private trace: number[] = new Array();  // 遷移順配列
     private mode: string = MODE_MAKIMONO;
 
     constructor(public display: HTMLElement, public scene: string[]) {
@@ -22,6 +21,7 @@ class TextAdv {
 
     public go(idx: number, selectedElem?: HTMLElement) {
         if (selectedElem != null) {
+            // 選択されたものを赤くする
             let parent: HTMLElement = null;
             if (this.mode == MODE_MAKIMONO) {
                 parent = this.searchUpperElemnt(selectedElem, 'scene');
@@ -38,8 +38,8 @@ class TextAdv {
             selectedElem.style.color = this.selectColor;
         }
 
-        // 次に表示する用にすでに表示しているものを消す
         {
+            // 次に表示する用にすでに表示しているものを消す
             let i: number = this.step;
             while (true) {
                 let elem: HTMLElement = document.getElementById('sc' + i);
@@ -54,6 +54,7 @@ class TextAdv {
 
         let html: string = '';
         {
+            // シーンを取り出す
             let bodyParts: string[] = this.scene[idx].split('◇');
             if (2 <= bodyParts.length) {
                 document.title = bodyParts[0];
@@ -64,6 +65,7 @@ class TextAdv {
         }
 
         while (true) {
+            // 遷移をアンカーに編集する
             let s: number = html.indexOf('[', 0),
                 e: number = html.indexOf(']', 0);
 
@@ -121,6 +123,7 @@ class TextAdv {
         let id: string = null;
 
         if (this.mode == MODE_MAKIMONO) {
+            // HTMLとしてdivを作成し終端に取り付ける
             id = 'sc' + this.step;
             let div: string = '<div id="' + id + '" class="scene">' + html + '</div><p>';
             let r = document.createRange();
@@ -136,13 +139,16 @@ class TextAdv {
             this.step++;
 
         } else if (this.mode == MODE_KAMISHIBAI) {
+            // 中身を取り替える
             id = this.display.id;
             this.display.innerHTML = html;
             this.step++;
         }
 
+        // 遷移順のシーン番号をスタックする
         this.trace.push(idx);
 
+        // 未選択カラーにする
         {
             let elems: HTMLElement[] = new Array();
             this.pickupElements(document.getElementById(id), 'link', elems);
@@ -153,6 +159,7 @@ class TextAdv {
             }
         }
 
+        // 画面をスクロールする
         if (this.mode == MODE_MAKIMONO) {
             this.scroll();
         }
