@@ -154,7 +154,7 @@ class TextAdv {
         }
 
         if (this.mode == MODE_MAKIMONO) {
-            //    this.scroll();
+            this.scroll();
         }
     }
 

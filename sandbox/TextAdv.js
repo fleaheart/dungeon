@@ -76,7 +76,6 @@ var TextAdv = (function () {
                 }
             }
             else {
-                var cc = 2;
                 s = html.indexOf('→', 0);
                 if (0 <= s) {
                     e = s + 1;
@@ -136,6 +135,7 @@ var TextAdv = (function () {
             }
         }
         if (this.mode == MODE_MAKIMONO) {
+            this.scroll();
         }
     };
     TextAdv.prototype.back = function () {
