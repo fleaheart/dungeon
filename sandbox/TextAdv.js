@@ -1,39 +1,44 @@
-var TextAdv = (function () {
-    function TextAdv(display, scene) {
-        this.display = display;
-        this.scene = scene;
-        this.linkColor = 'blue';
-        this.selectColor = 'red';
-        this.step = 1; // 遷移数
-        this.trace = new Array(); // 遷移順配列
-        this.mode = TextAdv.MODE_MAKIMONO;
-        this.interval = 100;
-        this.dy = 10;
+var TextAdv;
+(function (TextAdv) {
+    TextAdv.MODE_MAKIMONO = 'makimono';
+    TextAdv.MODE_KAMISHIBAI = 'kamishibai';
+    var $linkColor = 'blue';
+    var $selectColor = 'red';
+    var $step = 1; // 遷移数
+    var $trace = new Array(); // 遷移順配列
+    var $mode = TextAdv.MODE_MAKIMONO;
+    var $display;
+    var $scene;
+    function initialize(display, scene) {
+        $display = display;
+        $scene = scene;
     }
-    TextAdv.prototype.start = function () {
-        this.step = 1;
-        this.go(0);
-    };
-    TextAdv.prototype.go = function (idx, selectedElem) {
+    TextAdv.initialize = initialize;
+    function start() {
+        $step = 1;
+        go(0);
+    }
+    TextAdv.start = start;
+    function go(idx, selectedElem) {
         if (selectedElem != null) {
             // 選択されたものを赤くする
             var parent_1 = null;
-            if (this.mode == TextAdv.MODE_MAKIMONO) {
-                parent_1 = this.searchUpperElemnt(selectedElem, 'scene');
+            if ($mode == TextAdv.MODE_MAKIMONO) {
+                parent_1 = searchUpperElemnt(selectedElem, 'scene');
             }
             else {
-                parent_1 = this.display;
+                parent_1 = $display;
             }
             var elems = new Array();
-            this.pickupElements(parent_1, 'link', elems);
+            pickupElements(parent_1, 'link', elems);
             for (var i = 0; i < elems.length; i++) {
-                elems[i].style.color = this.linkColor;
+                elems[i].style.color = $linkColor;
             }
-            selectedElem.style.color = this.selectColor;
+            selectedElem.style.color = $selectColor;
         }
         {
             // 次に表示する用にすでに表示しているものを消す
-            var i = this.step;
+            var i = $step;
             while (true) {
                 var elem = document.getElementById('sc' + i);
                 if (elem == null) {
@@ -46,13 +51,13 @@ var TextAdv = (function () {
         var html = '';
         {
             // シーンを取り出す
-            var bodyParts = this.scene[idx].split('◇');
+            var bodyParts = $scene[idx].split('◇');
             if (2 <= bodyParts.length) {
                 document.title = bodyParts[0];
                 html = bodyParts[1];
             }
             else {
-                html = this.scene[idx];
+                html = $scene[idx];
             }
         }
         while (true) {
@@ -106,51 +111,53 @@ var TextAdv = (function () {
             html = html.replace('⇒', '→');
         }
         var id = null;
-        if (this.mode == TextAdv.MODE_MAKIMONO) {
+        if ($mode == TextAdv.MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
-            id = 'sc' + this.step;
+            id = 'sc' + $step;
             var div = '<div id="' + id + '" class="scene">' + html + '</div><p>';
             var r = document.createRange();
-            r.selectNode(this.display);
-            this.display.appendChild(r.createContextualFragment(div));
-            (function (xthis, step) {
+            r.selectNode($display);
+            $display.appendChild(r.createContextualFragment(div));
+            (function (step) {
                 document.getElementById(id).addEventListener('mouseover', function () {
-                    xthis.step = step + 1;
+                    $step = step + 1;
                 });
-            })(this, this.step);
-            this.step++;
+            })($step);
+            $step++;
         }
-        else if (this.mode == TextAdv.MODE_KAMISHIBAI) {
+        else if ($mode == TextAdv.MODE_KAMISHIBAI) {
             // 中身を取り替える
-            id = this.display.id;
-            this.display.innerHTML = html;
-            this.step++;
+            id = $display.id;
+            $display.innerHTML = html;
+            $step++;
         }
         // 遷移順のシーン番号をスタックする
-        this.trace.push(idx);
+        $trace.push(idx);
         // 未選択カラーにする
         {
             var elems = new Array();
-            this.pickupElements(document.getElementById(id), 'link', elems);
+            pickupElements(document.getElementById(id), 'link', elems);
             for (var i = 0; i < elems.length; i++) {
-                elems[i].style.color = this.linkColor;
+                elems[i].style.color = $linkColor;
                 elems[i].style.textDecoration = 'underline';
                 elems[i].style.cursor = 'pointer';
             }
         }
         // 画面をスクロールする
-        if (this.mode == TextAdv.MODE_MAKIMONO) {
-            this.scroll();
+        if ($mode == TextAdv.MODE_MAKIMONO) {
+            scroll();
         }
-    };
-    TextAdv.prototype.back = function () {
-        this.trace.pop();
-        var idx = this.trace.pop();
+    }
+    TextAdv.go = go;
+    function back() {
+        $trace.pop();
+        var idx = $trace.pop();
         if (idx != null) {
-            this.go(idx);
+            go(idx);
         }
-    };
-    TextAdv.prototype.searchUpperElemnt = function (elem, className) {
+    }
+    TextAdv.back = back;
+    function searchUpperElemnt(elem, className) {
         var parent = elem.parentNode;
         if (parent == null) {
             return null;
@@ -158,9 +165,9 @@ var TextAdv = (function () {
         if (parent.className == className) {
             return parent;
         }
-        return this.searchUpperElemnt(parent, className);
-    };
-    TextAdv.prototype.pickupElements = function (parentElem, className, pickupElems) {
+        return searchUpperElemnt(parent, className);
+    }
+    function pickupElements(parentElem, className, pickupElems) {
         if (pickupElems == null) {
             return;
         }
@@ -168,24 +175,21 @@ var TextAdv = (function () {
         for (var i = 0; i < childElems.length; i++) {
             var elem = childElems.item(i);
             if (0 < elem.childNodes.length) {
-                this.pickupElements(elem, className, pickupElems);
+                pickupElements(elem, className, pickupElems);
             }
             if (elem.className == className) {
                 pickupElems.push(elem);
             }
         }
-    };
-    TextAdv.prototype.scroll = function () {
+    }
+    var $interval = 5;
+    var $dy = 10;
+    function scroll() {
         if (document.body.clientHeight + window.pageYOffset < document.body.scrollHeight) {
-            window.scrollBy(0, 10);
-            setTimeout(arguments.callee, 1);
+            window.scrollBy(0, $dy);
+            setTimeout(arguments.callee, $interval);
         }
-    };
-    return TextAdv;
-}());
-var TextAdv;
-(function (TextAdv) {
-    TextAdv.MODE_MAKIMONO = 'makimono';
-    TextAdv.MODE_KAMISHIBAI = 'kamishibai';
+    }
+    TextAdv.scroll = scroll;
 })(TextAdv || (TextAdv = {}));
 //# sourceMappingURL=TextAdv.js.map

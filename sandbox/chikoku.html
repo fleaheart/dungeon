@@ -68,12 +68,12 @@ window.onload = function() {
 ,'おめでとう◇俺はにぎやかな昇降口で上履きにはきかえる。<BR>そして教室入る。<BR>みんなが驚きの表情で俺を見る。<BR>まあしょうがないか。<BR>俺だってやるときはやるんだ。<BR><P>キーンコーン<BR>始業のチャイムだ。<BR> なつかしい響きだ。<BR><P>俺は「遅刻」しなかった。<BR>俺は勝ったのだ。<BR>だがしかし、今日だけ「遅刻」しなければいいわけではない。<BR>むしろ、初戦を勝っただけなのだ。<BR>俺の戦いは始まったばっかりだが、<BR>今日はこれでいいとするか。<BR><P>コングラチュレーション！！<BR><P><A HREF="../chikoku2/index←そして、]'
 	];
 
-	tadv = new TextAdv(document.getElementById('display'), scene);
-	tadv.start();
+	TextAdv.initialize(document.getElementById('display'), scene);
+	TextAdv.start();
 };
 
 function go(idx, element) {
-	tadv.go(idx, element);
+	TextAdv.go(idx, element);
 }
 
 </script>
