@@ -286,3 +286,12 @@ namespace TextAdv {
         }
     }
 }
+
+window.addEventListener('load', () => {
+    let displayElement: HTMLDivElement = <HTMLDivElement>document.getElementById('display');
+    let sourceElement: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById('source');
+    if (sourceElement != null && displayElement != null) {
+        TextAdv.initialize(displayElement, sourceElement.value);
+        TextAdv.start();
+    }
+});

@@ -237,4 +237,12 @@ var TextAdv;
     }
     TextAdv.scroll = scroll;
 })(TextAdv || (TextAdv = {}));
+window.addEventListener('load', function () {
+    var displayElement = document.getElementById('display');
+    var sourceElement = document.getElementById('source');
+    if (sourceElement != null && displayElement != null) {
+        TextAdv.initialize(displayElement, sourceElement.value);
+        TextAdv.start();
+    }
+});
 //# sourceMappingURL=TextAdv.js.map
