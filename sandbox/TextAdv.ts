@@ -280,14 +280,14 @@ namespace TextAdv {
     let $dy: number = 10;
 
     export function scroll(): void {
-        if (document.body.clientHeight + window.pageYOffset < document.body.scrollHeight) {
+        if (window.innerHeight + window.pageYOffset - $dy < document.body.scrollHeight) {
             window.scrollBy(0, $dy);
             setTimeout(arguments.callee, $interval);
         }
     }
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', (): void => {
     let displayElement: HTMLDivElement = <HTMLDivElement>document.getElementById('display');
     let sourceElement: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById('source');
     if (sourceElement != null && displayElement != null) {

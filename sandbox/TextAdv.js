@@ -230,7 +230,9 @@ var TextAdv;
     var $interval = 5;
     var $dy = 10;
     function scroll() {
-        if (document.body.clientHeight + window.pageYOffset < document.body.scrollHeight) {
+        //        alert([document.body.clientHeight, window.innerHeight, window.pageYOffset, document.body.scrollHeight]);
+        //        return;
+        if (window.innerHeight + window.pageYOffset - $dy < document.body.scrollHeight) {
             window.scrollBy(0, $dy);
             setTimeout(arguments.callee, $interval);
         }
