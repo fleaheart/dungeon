@@ -10,6 +10,7 @@ namespace TextAdv {
     class Scene {
         idx: number;
         text: string;
+        title: string;
         html: string;
         links: Link[];
     }
@@ -23,6 +24,32 @@ namespace TextAdv {
 
     let $display: HTMLElement;
     let $scenes: Scene[];
+
+    function analize(source: string): Scene[] {
+        let scenes: Scene[] = new Array();
+
+        let result: string = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        let lines: string[] = result.split('\n');
+
+        for (let i: number = 0, len: number = lines.length; i < len; i++) {
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (s: string, g1: string) => {
+                g1 = '<>' + toHankaku(g1);
+                return g1 + ':';
+            });
+        }
+
+        let sceneWorks: string[] = lines.join('\n').split(/<>/);
+        for (let i: number = 0, len: number = sceneWorks.length; i < len; i++) {
+            sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
+            let idx: number = +RegExp.$1;
+            let body: string = RegExp.$2;
+            let scene: Scene = analizeScene(idx, body);
+
+            scenes[idx] = scene;
+        }
+
+        return scenes;
+    }
 
     export function analizeScene(idx: number, text: string): Scene {
 
@@ -89,7 +116,16 @@ namespace TextAdv {
             }
         }
 
-        scene.html = blockHTMLs.join('');
+        let title: string = null;
+        let html: string = blockHTMLs.join('');
+        let titlehtml: string[] = html.split('◇');
+        if (2 <= titlehtml.length) {
+            title = titlehtml[0];
+            html = titlehtml[1];
+        }
+
+        scene.title = title;
+        scene.html = html;
         scene.links = links;
 
         return scene;
@@ -99,12 +135,9 @@ namespace TextAdv {
         return +(s.replace(/[０-９]/g, (s: string) => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
     }
 
-    export function initialize(display: HTMLElement, scene: string[]): void {
+    export function initialize(display: HTMLElement, source: string): void {
         $display = display;
-        $scenes = new Array();
-        for (let i: number = 0, len = scene.length; i < len; i++) {
-            $scenes.push(analizeScene(i, scene[i]));
-        }
+        $scenes = analize(source);
     }
 
     export function start(): void {
@@ -182,6 +215,10 @@ namespace TextAdv {
             })(linkElement, scene.links[i].toIdx);
         }
 
+        if (scene.title != null) {
+            document.title = scene.title;
+        }
+
         // 遷移順のシーン番号をスタックする
         $trace.push(idx);
 
@@ -248,5 +285,4 @@ namespace TextAdv {
             setTimeout(arguments.callee, $interval);
         }
     }
-
 }

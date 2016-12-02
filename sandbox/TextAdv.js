@@ -19,6 +19,26 @@ var TextAdv;
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display;
     var $scenes;
+    function analize(source) {
+        var scenes = new Array();
+        var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        var lines = result.split('\n');
+        for (var i = 0, len = lines.length; i < len; i++) {
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (s, g1) {
+                g1 = '<>' + toHankaku(g1);
+                return g1 + ':';
+            });
+        }
+        var sceneWorks = lines.join('\n').split(/<>/);
+        for (var i = 0, len = sceneWorks.length; i < len; i++) {
+            sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
+            var idx = +RegExp.$1;
+            var body = RegExp.$2;
+            var scene = analizeScene(idx, body);
+            scenes[idx] = scene;
+        }
+        return scenes;
+    }
     function analizeScene(idx, text) {
         var scene = new Scene();
         scene.idx = idx;
@@ -72,7 +92,15 @@ var TextAdv;
                 blockHTMLs.push(block);
             }
         }
-        scene.html = blockHTMLs.join('');
+        var title = null;
+        var html = blockHTMLs.join('');
+        var titlehtml = html.split('◇');
+        if (2 <= titlehtml.length) {
+            title = titlehtml[0];
+            html = titlehtml[1];
+        }
+        scene.title = title;
+        scene.html = html;
         scene.links = links;
         return scene;
     }
@@ -80,12 +108,9 @@ var TextAdv;
     function toHankaku(s) {
         return +(s.replace(/[０-９]/g, function (s) { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
     }
-    function initialize(display, scene) {
+    function initialize(display, source) {
         $display = display;
-        $scenes = new Array();
-        for (var i = 0, len = scene.length; i < len; i++) {
-            $scenes.push(analizeScene(i, scene[i]));
-        }
+        $scenes = analize(source);
     }
     TextAdv.initialize = initialize;
     function start() {
@@ -152,6 +177,9 @@ var TextAdv;
             (function (linkElement, toIdx) {
                 linkElement.addEventListener('click', function (evt) { clickLink(evt, toIdx); });
             })(linkElement, scene.links[i].toIdx);
+        }
+        if (scene.title != null) {
+            document.title = scene.title;
         }
         // 遷移順のシーン番号をスタックする
         $trace.push(idx);
