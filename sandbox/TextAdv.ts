@@ -2,6 +2,18 @@ namespace TextAdv {
     export const MODE_MAKIMONO: string = 'makimono';
     export const MODE_KAMISHIBAI: string = 'kamishibai';
 
+    class Link {
+        elementId: string;
+        toIdx: number;
+    }
+
+    class Scene {
+        idx: number;
+        text: string;
+        html: string;
+        links: Link[];
+    }
+
     let $linkColor: string = 'blue';
     let $selectColor: string = 'red';
 
@@ -10,11 +22,89 @@ namespace TextAdv {
     let $mode: string = MODE_MAKIMONO;
 
     let $display: HTMLElement;
-    let $scene: string[];
+    let $scenes: Scene[];
+
+    export function analizeScene(idx: number, text: string): Scene {
+
+        let scene: Scene = new Scene();
+
+        scene.idx = idx;
+        scene.text = text;
+
+        let regDaikakkoAnchor: RegExp = /^\[([^←→]*)([←→]*)(.*)\]$/;
+        let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;
+
+        /*
+         * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
+         */
+        let blocks: string[] = null;
+        text = text.replace(/(\[[^\]]+\])/g, (s: string) => { return '##BLOCK##' + s + '##BLOCK##'; });
+        blocks = text.split('##BLOCK##');
+
+        /*
+         * BLOCKごとにcreateContextualFragmentしようとしたが、アンカーをまたぐタグに対応できなかったので、アンカーも文字列で対応
+         */
+        let blockHTMLs: string[] = new Array();
+
+        let links: Link[] = new Array();
+        let linkCount: number = 0;
+
+        for (let i = 0; i < blocks.length; i++) {
+            let block: string = blocks[i];
+
+            if (block.charAt(0) == '[') {
+                // [msg → 000]
+                linkCount++;
+                let res: RegExpMatchArray = block.match(regDaikakkoAnchor);
+                if (res != null) {
+                    let muki: string = RegExp.$2;
+                    let toIdx: number = +(muki == '→' ? RegExp.$3 : RegExp.$1);
+                    let msg: string = muki == '→' ? RegExp.$1 : RegExp.$3;
+                    let elementId: string = 'link_' + idx + '_' + linkCount;
+                    let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+
+                    blockHTMLs.push(link);
+                    links.push({ elementId, toIdx });
+                }
+            } else {
+                // 「それ以外」
+                while (true) {
+                    let res: RegExpMatchArray = block.match(regYajirushiOnly);
+                    if (res == null) {
+                        break;
+                    }
+
+                    linkCount++;
+                    let toIdx: number = toHankaku(RegExp.$1);
+                    let msg: string = '⇒ ' + toIdx + ' ';
+                    let elementId: string = 'link_' + idx + '_' + linkCount;
+                    let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+
+                    block = block.replace(regYajirushiOnly, link);
+                    links.push({ elementId, toIdx });
+                }
+
+                block = block.replace(/⇒ /g, '→ ');
+                blockHTMLs.push(block);
+            }
+        }
+
+        scene.html = blockHTMLs.join('');
+        scene.links = links;
+
+        return scene;
+    }
+
+    function toHankaku(s: string): number {
+        return +(s.replace(/[０-９]/g, (s: string) => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
+    }
 
     export function initialize(display: HTMLElement, scene: string[]): void {
         $display = display;
-        $scene = scene;
+        $scenes = new Array();
+        for (let i: number = 0, len = scene.length; i < len; i++) {
+            $scenes.push(analizeScene(i, scene[i]));
+        }
     }
 
     export function start(): void {
@@ -22,7 +112,7 @@ namespace TextAdv {
         go(0);
     }
 
-    export function go(idx: number, selectedElem?: HTMLElement) {
+    export function go(idx: number, selectedElem?: HTMLElement): void {
         if (selectedElem != null) {
             // 選択されたものを赤くする
             let parent: HTMLElement = null;
@@ -55,80 +145,13 @@ namespace TextAdv {
             }
         }
 
-        let html: string = '';
-        {
-            // シーンを取り出す
-            let bodyParts: string[] = $scene[idx].split('◇');
-            if (2 <= bodyParts.length) {
-                document.title = bodyParts[0];
-                html = bodyParts[1];
-            } else {
-                html = $scene[idx];
-            }
-        }
+        let scene: Scene = $scenes[idx];
 
-        while (true) {
-            // 遷移をアンカーに編集する
-            let s: number = html.indexOf('[', 0),
-                e: number = html.indexOf(']', 0);
-
-            let before: string = null;
-            let linkParts: string[] = null;
-
-            if (0 <= s && 0 <= e) {
-                before = html.substring(s, e + 1);
-                linkParts = html.substring(s + 1, e).split('→');
-
-                if (linkParts.length != 2) {
-                    linkParts = html.substring(s + 1, e).split('←');
-                    if (linkParts.length == 2) {
-                        let swap = linkParts[0];
-                        linkParts[0] = linkParts[1];
-                        linkParts[1] = swap;
-                    } else {
-                        break;
-                    }
-                }
-            } else {
-                s = html.indexOf('→', 0);
-                if (0 <= s) {
-                    e = s + 1;
-                    while (e < html.length) {
-                        let c = html.charAt(e);
-                        if (isNaN(Number(c)) || c == ' ') {
-                            break;
-                        }
-                        e++;
-                    }
-                    before = html.substring(s, e);
-                    let linkNum: string = html.substring(s + 1, e);
-                    linkParts = new Array();
-                    linkParts[0] = '⇒' + linkNum;
-                    linkParts[1] = linkNum;
-                } else {
-                    break;
-                }
-            }
-
-            if (linkParts == null) {
-                break;
-            }
-
-            let after: string = '<span class="link" onclick="go(' + linkParts[1] + ', this);">' + linkParts[0] + '</span>';
-
-            html = html.replace(before, after);
-        }
-
-        while (0 <= html.indexOf('⇒', 0)) {
-            html = html.replace('⇒', '→');
-        }
-
-        let id: string = null;
-
+        // HTML化
         if ($mode == MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
-            id = 'sc' + $step;
-            let div: string = '<div id="' + id + '" class="scene">' + html + '</div><p>';
+            let id = 'sc' + $step;
+            let div: string = '<div id="' + id + '" class="scene">' + scene.html + '</div><p>';
             let r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
@@ -143,32 +166,39 @@ namespace TextAdv {
 
         } else if ($mode == MODE_KAMISHIBAI) {
             // 中身を取り替える
-            id = $display.id;
-            $display.innerHTML = html;
+            let id = $display.id;
+            $display.innerHTML = scene.html;
             $step++;
+        }
+
+        for (let i: number = 0; i < scene.links.length; i++) {
+            let linkElement: HTMLElement = document.getElementById(scene.links[i].elementId);
+            linkElement.style.color = 'blue';
+            linkElement.style.textDecoration = 'underline';
+            linkElement.style.cursor = 'pointer';
+
+            ((linkElement: HTMLElement, toIdx: number): void => {
+                linkElement.addEventListener('click', (evt: Event): void => { clickLink(evt, toIdx); });
+            })(linkElement, scene.links[i].toIdx);
         }
 
         // 遷移順のシーン番号をスタックする
         $trace.push(idx);
 
-        // 未選択カラーにする
-        {
-            let elems: HTMLElement[] = new Array();
-            pickupElements(document.getElementById(id), 'link', elems);
-            for (let i: number = 0; i < elems.length; i++) {
-                elems[i].style.color = $linkColor;
-                elems[i].style.textDecoration = 'underline';
-                elems[i].style.cursor = 'pointer';
-            }
-        }
-
         // 画面をスクロールする
         if ($mode == MODE_MAKIMONO) {
             scroll();
         }
+
     }
 
-    export function back() {
+    function clickLink(evt: Event, toIdx: number): void {
+        let idx: number = toIdx;
+        let selectedElem: HTMLElement = <HTMLElement>evt.srcElement;
+        go(idx, selectedElem);
+    }
+
+    export function back(): void {
         $trace.pop();
         let idx: number = $trace.pop();
 
