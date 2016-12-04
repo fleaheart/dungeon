@@ -117,32 +117,32 @@ var TextAdv;
         go(0);
     }
     TextAdv.start = start;
-    function go(idx, selectedElem) {
-        if (selectedElem != null) {
+    function go(idx, selectedElm) {
+        if (selectedElm != null) {
             // 選択されたものを赤くする
             var parent_1 = null;
             if ($mode == TextAdv.MODE_MAKIMONO) {
-                parent_1 = searchUpperElemnt(selectedElem, 'scene');
+                parent_1 = searchUpperElement(selectedElm, 'scene');
             }
             else {
                 parent_1 = $display;
             }
-            var elems = new Array();
-            pickupElements(parent_1, 'link', elems);
-            for (var i = 0; i < elems.length; i++) {
-                elems[i].style.color = $linkColor;
+            var elms = new Array();
+            pickupElements(parent_1, 'link', elms);
+            for (var i = 0; i < elms.length; i++) {
+                elms[i].style.color = $linkColor;
             }
-            selectedElem.style.color = $selectColor;
+            selectedElm.style.color = $selectColor;
         }
         {
             // 次に表示する用にすでに表示しているものを消す
             var i = $step;
             while (true) {
-                var elem = document.getElementById('sc' + i);
-                if (elem == null) {
+                var elm = document.getElementById('sc' + i);
+                if (elm == null) {
                     break;
                 }
-                elem.parentNode.removeChild(elem);
+                elm.parentNode.removeChild(elm);
                 i++;
             }
         }
@@ -169,15 +169,15 @@ var TextAdv;
             $step++;
         }
         for (var i = 0, len = scene.links.length; i < len; i++) {
-            var linkElement = document.getElementById(scene.links[i].elementId);
-            linkElement.style.color = 'blue';
-            linkElement.style.textDecoration = 'underline';
-            linkElement.style.cursor = 'pointer';
-            (function (linkElement, toIdx) {
-                linkElement.addEventListener('click', function () {
-                    go(toIdx, linkElement);
+            var linkElm = document.getElementById(scene.links[i].elementId);
+            linkElm.style.color = 'blue';
+            linkElm.style.textDecoration = 'underline';
+            linkElm.style.cursor = 'pointer';
+            (function (linkElm, toIdx) {
+                linkElm.addEventListener('click', function () {
+                    go(toIdx, linkElm);
                 });
-            })(linkElement, scene.links[i].toIdx);
+            })(linkElm, scene.links[i].toIdx);
         }
         if (scene.title != null) {
             document.title = scene.title;
@@ -198,28 +198,28 @@ var TextAdv;
         }
     }
     TextAdv.back = back;
-    function searchUpperElemnt(elem, className) {
-        var parent = elem.parentNode;
+    function searchUpperElement(elm, className) {
+        var parent = elm.parentNode;
         if (parent == null) {
             return null;
         }
         if (parent.className == className) {
             return parent;
         }
-        return searchUpperElemnt(parent, className);
+        return searchUpperElement(parent, className);
     }
-    function pickupElements(parentElem, className, pickupElems) {
-        if (pickupElems == null) {
+    function pickupElements(parentElm, className, pickupElms) {
+        if (pickupElms == null) {
             return;
         }
-        var childElems = parentElem.childNodes;
-        for (var i = 0; i < childElems.length; i++) {
-            var elem = childElems.item(i);
-            if (0 < elem.childNodes.length) {
-                pickupElements(elem, className, pickupElems);
+        var childElms = parentElm.childNodes;
+        for (var i = 0; i < childElms.length; i++) {
+            var elm = childElms.item(i);
+            if (0 < elm.childNodes.length) {
+                pickupElements(elm, className, pickupElms);
             }
-            if (elem.className == className) {
-                pickupElems.push(elem);
+            if (elm.className == className) {
+                pickupElms.push(elm);
             }
         }
     }
@@ -234,10 +234,10 @@ var TextAdv;
     TextAdv.scroll = scroll;
 })(TextAdv || (TextAdv = {}));
 window.addEventListener('load', function () {
-    var displayElement = document.getElementById('display');
-    var sourceElement = document.getElementById('source');
-    if (sourceElement != null && displayElement != null) {
-        TextAdv.initialize(displayElement, sourceElement.value);
+    var displayElm = document.getElementById('display');
+    var sourceElm = document.getElementById('source');
+    if (sourceElm != null && displayElm != null) {
+        TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
     }
 });

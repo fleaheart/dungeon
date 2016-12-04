@@ -144,34 +144,34 @@ namespace TextAdv {
         go(0);
     }
 
-    export function go(idx: number, selectedElem?: HTMLElement): void {
-        if (selectedElem != null) {
+    export function go(idx: number, selectedElm?: HTMLElement): void {
+        if (selectedElm != null) {
             // 選択されたものを赤くする
             let parent: HTMLElement = null;
             if ($mode == MODE_MAKIMONO) {
-                parent = searchUpperElement(selectedElem, 'scene');
+                parent = searchUpperElement(selectedElm, 'scene');
             } else {
                 parent = $display;
             }
 
-            let elems: HTMLElement[] = new Array();
-            pickupElements(parent, 'link', elems);
+            let elms: HTMLElement[] = new Array();
+            pickupElements(parent, 'link', elms);
 
-            for (let i: number = 0; i < elems.length; i++) {
-                elems[i].style.color = $linkColor;
+            for (let i: number = 0; i < elms.length; i++) {
+                elms[i].style.color = $linkColor;
             }
-            selectedElem.style.color = $selectColor;
+            selectedElm.style.color = $selectColor;
         }
 
         {
             // 次に表示する用にすでに表示しているものを消す
             let i: number = $step;
             while (true) {
-                let elem: HTMLElement = document.getElementById('sc' + i);
-                if (elem == null) {
+                let elm: HTMLElement = document.getElementById('sc' + i);
+                if (elm == null) {
                     break;
                 }
-                elem.parentNode.removeChild(elem);
+                elm.parentNode.removeChild(elm);
 
                 i++;
             }
@@ -204,16 +204,16 @@ namespace TextAdv {
         }
 
         for (let i: number = 0, len: number = scene.links.length; i < len; i++) {
-            let linkElement: HTMLElement = document.getElementById(scene.links[i].elementId);
-            linkElement.style.color = 'blue';
-            linkElement.style.textDecoration = 'underline';
-            linkElement.style.cursor = 'pointer';
+            let linkElm: HTMLElement = document.getElementById(scene.links[i].elementId);
+            linkElm.style.color = 'blue';
+            linkElm.style.textDecoration = 'underline';
+            linkElm.style.cursor = 'pointer';
 
-            ((linkElement: HTMLElement, toIdx: number): void => {
-                linkElement.addEventListener('click', (): void => {
-                    go(toIdx, linkElement);
+            ((linkElm: HTMLElement, toIdx: number): void => {
+                linkElm.addEventListener('click', (): void => {
+                    go(toIdx, linkElm);
                 });
-            })(linkElement, scene.links[i].toIdx);
+            })(linkElm, scene.links[i].toIdx);
         }
 
         if (scene.title != null) {
@@ -239,8 +239,8 @@ namespace TextAdv {
         }
     }
 
-    function searchUpperElement(elem: HTMLElement, className: string): HTMLElement {
-        let parent: HTMLElement = <HTMLElement>elem.parentNode;
+    function searchUpperElement(elm: HTMLElement, className: string): HTMLElement {
+        let parent: HTMLElement = <HTMLElement>elm.parentNode;
         if (parent == null) {
             return null;
         }
@@ -252,21 +252,21 @@ namespace TextAdv {
         return searchUpperElement(parent, className);
     }
 
-    function pickupElements(parentElem: HTMLElement, className: string, pickupElems: HTMLElement[]): void {
-        if (pickupElems == null) {
+    function pickupElements(parentElm: HTMLElement, className: string, pickupElms: HTMLElement[]): void {
+        if (pickupElms == null) {
             return;
         }
 
-        let childElems: NodeList = parentElem.childNodes;
-        for (let i: number = 0; i < childElems.length; i++) {
-            let elem: HTMLElement = <HTMLElement>childElems.item(i);
+        let childElms: NodeList = parentElm.childNodes;
+        for (let i: number = 0; i < childElms.length; i++) {
+            let elm: HTMLElement = <HTMLElement>childElms.item(i);
 
-            if (0 < elem.childNodes.length) {
-                pickupElements(elem, className, pickupElems);
+            if (0 < elm.childNodes.length) {
+                pickupElements(elm, className, pickupElms);
             }
 
-            if (elem.className == className) {
-                pickupElems.push(elem);
+            if (elm.className == className) {
+                pickupElms.push(elm);
             }
         }
     }
@@ -283,10 +283,10 @@ namespace TextAdv {
 }
 
 window.addEventListener('load', (): void => {
-    let displayElement: HTMLDivElement = <HTMLDivElement>document.getElementById('display');
-    let sourceElement: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById('source');
-    if (sourceElement != null && displayElement != null) {
-        TextAdv.initialize(displayElement, sourceElement.value);
+    let displayElm: HTMLDivElement = <HTMLDivElement>document.getElementById('display');
+    let sourceElm: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById('source');
+    if (sourceElm != null && displayElm != null) {
+        TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
     }
 });
