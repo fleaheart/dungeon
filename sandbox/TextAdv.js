@@ -33,8 +33,8 @@ var TextAdv;
         for (var i = 0, len = sceneWorks.length; i < len; i++) {
             sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             var idx = +RegExp.$1;
-            var body = RegExp.$2;
-            var scene = analizeScene(idx, body);
+            var text = RegExp.$2;
+            var scene = analizeScene(idx, text);
             scenes[idx] = scene;
         }
         return scenes;
@@ -43,11 +43,11 @@ var TextAdv;
         var scene = new Scene();
         scene.idx = idx;
         scene.text = text;
-        var regDaikakkoAnchor = /^\[([^←→]*)([←→]*)(.*)\]$/;
-        var regYajirushiOnly = /→\s*([0-9０-９]+)/;
         /*
          * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
          */
+        var regDaikakkoAnchor = /([^→\[\]]*)→\s*([0-9０-９]+)/; // msg → 000
+        var regYajirushiOnly = /→\s*([0-9０-９]+)/; // → 000
         var blocks = null;
         text = text.replace(/(\[[^\]]+\])/g, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
         blocks = text.split('##BLOCK##');
@@ -57,16 +57,15 @@ var TextAdv;
         var blockHTMLs = new Array();
         var links = new Array();
         var linkCount = 0;
-        for (var i = 0; i < blocks.length; i++) {
+        for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
             if (block.charAt(0) == '[') {
                 // [msg → 000]
                 linkCount++;
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
-                    var muki = RegExp.$2;
-                    var toIdx = +(muki == '→' ? RegExp.$3 : RegExp.$1);
-                    var msg = muki == '→' ? RegExp.$1 : RegExp.$3;
+                    var toIdx = +RegExp.$2;
+                    var msg = RegExp.$1;
                     var elementId = 'link_' + idx + '_' + linkCount;
                     var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
                     blockHTMLs.push(link);
@@ -169,13 +168,15 @@ var TextAdv;
             $display.innerHTML = scene.html;
             $step++;
         }
-        for (var i = 0; i < scene.links.length; i++) {
+        for (var i = 0, len = scene.links.length; i < len; i++) {
             var linkElement = document.getElementById(scene.links[i].elementId);
             linkElement.style.color = 'blue';
             linkElement.style.textDecoration = 'underline';
             linkElement.style.cursor = 'pointer';
             (function (linkElement, toIdx) {
-                linkElement.addEventListener('click', function (evt) { clickLink(evt, toIdx); });
+                linkElement.addEventListener('click', function () {
+                    go(toIdx, linkElement);
+                });
             })(linkElement, scene.links[i].toIdx);
         }
         if (scene.title != null) {
@@ -189,11 +190,6 @@ var TextAdv;
         }
     }
     TextAdv.go = go;
-    function clickLink(evt, toIdx) {
-        var idx = toIdx;
-        var selectedElem = evt.srcElement;
-        go(idx, selectedElem);
-    }
     function back() {
         $trace.pop();
         var idx = $trace.pop();
@@ -230,8 +226,6 @@ var TextAdv;
     var $interval = 5;
     var $dy = 10;
     function scroll() {
-        //        alert([document.body.clientHeight, window.innerHeight, window.pageYOffset, document.body.scrollHeight]);
-        //        return;
         if (window.innerHeight + window.pageYOffset - $dy < document.body.scrollHeight) {
             window.scrollBy(0, $dy);
             setTimeout(arguments.callee, $interval);

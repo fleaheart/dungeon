@@ -42,8 +42,8 @@ namespace TextAdv {
         for (let i: number = 0, len: number = sceneWorks.length; i < len; i++) {
             sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             let idx: number = +RegExp.$1;
-            let body: string = RegExp.$2;
-            let scene: Scene = analizeScene(idx, body);
+            let text: string = RegExp.$2;
+            let scene: Scene = analizeScene(idx, text);
 
             scenes[idx] = scene;
         }
@@ -58,12 +58,12 @@ namespace TextAdv {
         scene.idx = idx;
         scene.text = text;
 
-        let regDaikakkoAnchor: RegExp = /^\[([^←→]*)([←→]*)(.*)\]$/;
-        let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;
-
         /*
          * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
          */
+        let regDaikakkoAnchor: RegExp = /([^→\[\]]*)→\s*([0-9０-９]+)/; // msg → 000
+        let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
+
         let blocks: string[] = null;
         text = text.replace(/(\[[^\]]+\])/g, (s: string) => { return '##BLOCK##' + s + '##BLOCK##'; });
         blocks = text.split('##BLOCK##');
@@ -76,7 +76,7 @@ namespace TextAdv {
         let links: Link[] = new Array();
         let linkCount: number = 0;
 
-        for (let i = 0; i < blocks.length; i++) {
+        for (let i: number = 0, len: number = blocks.length; i < len; i++) {
             let block: string = blocks[i];
 
             if (block.charAt(0) == '[') {
@@ -84,9 +84,8 @@ namespace TextAdv {
                 linkCount++;
                 let res: RegExpMatchArray = block.match(regDaikakkoAnchor);
                 if (res != null) {
-                    let muki: string = RegExp.$2;
-                    let toIdx: number = +(muki == '→' ? RegExp.$3 : RegExp.$1);
-                    let msg: string = muki == '→' ? RegExp.$1 : RegExp.$3;
+                    let toIdx: number = +RegExp.$2;
+                    let msg: string = RegExp.$1;
                     let elementId: string = 'link_' + idx + '_' + linkCount;
                     let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
 
@@ -150,7 +149,7 @@ namespace TextAdv {
             // 選択されたものを赤くする
             let parent: HTMLElement = null;
             if ($mode == MODE_MAKIMONO) {
-                parent = searchUpperElemnt(selectedElem, 'scene');
+                parent = searchUpperElement(selectedElem, 'scene');
             } else {
                 parent = $display;
             }
@@ -190,7 +189,7 @@ namespace TextAdv {
             $display.appendChild(r.createContextualFragment(div));
 
             (function (step) {
-                document.getElementById(id).addEventListener('mouseover', function () {
+                document.getElementById(id).addEventListener('mouseover', () => {
                     $step = step + 1;
                 });
             })($step);
@@ -204,14 +203,16 @@ namespace TextAdv {
             $step++;
         }
 
-        for (let i: number = 0; i < scene.links.length; i++) {
+        for (let i: number = 0, len: number = scene.links.length; i < len; i++) {
             let linkElement: HTMLElement = document.getElementById(scene.links[i].elementId);
             linkElement.style.color = 'blue';
             linkElement.style.textDecoration = 'underline';
             linkElement.style.cursor = 'pointer';
 
             ((linkElement: HTMLElement, toIdx: number): void => {
-                linkElement.addEventListener('click', (evt: Event): void => { clickLink(evt, toIdx); });
+                linkElement.addEventListener('click', (): void => {
+                    go(toIdx, linkElement);
+                });
             })(linkElement, scene.links[i].toIdx);
         }
 
@@ -229,12 +230,6 @@ namespace TextAdv {
 
     }
 
-    function clickLink(evt: Event, toIdx: number): void {
-        let idx: number = toIdx;
-        let selectedElem: HTMLElement = <HTMLElement>evt.srcElement;
-        go(idx, selectedElem);
-    }
-
     export function back(): void {
         $trace.pop();
         let idx: number = $trace.pop();
@@ -244,7 +239,7 @@ namespace TextAdv {
         }
     }
 
-    function searchUpperElemnt(elem: HTMLElement, className: string): HTMLElement {
+    function searchUpperElement(elem: HTMLElement, className: string): HTMLElement {
         let parent: HTMLElement = <HTMLElement>elem.parentNode;
         if (parent == null) {
             return null;
@@ -254,7 +249,7 @@ namespace TextAdv {
             return parent;
         }
 
-        return searchUpperElemnt(parent, className);
+        return searchUpperElement(parent, className);
     }
 
     function pickupElements(parentElem: HTMLElement, className: string, pickupElems: HTMLElement[]): void {
