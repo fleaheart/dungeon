@@ -14,8 +14,8 @@ var TextAdv;
     }());
     var $linkColor = 'blue';
     var $selectColor = 'red';
-    var $step = 1; // 遷移数
-    var $trace = new Array(); // 遷移順配列
+    var $step = 1;
+    var $trace = new Array();
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display;
     var $scenes;
@@ -24,7 +24,7 @@ var TextAdv;
         var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         var lines = result.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
-            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (s, g1) {
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (g1) {
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
@@ -43,24 +43,16 @@ var TextAdv;
         var scene = new Scene();
         scene.idx = idx;
         scene.text = text;
-        /*
-         * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
-         */
-        var regDaikakkoAnchor = /([^→\[\]]*)→\s*([0-9０-９]+)/; // msg → 000
-        var regYajirushiOnly = /→\s*([0-9０-９]+)/; // → 000
-        var blocks = null;
+        var regDaikakkoAnchor = /([^→\[\]]*)→\s*([0-9０-９]+)/;
+        var regYajirushiOnly = /→\s*([0-9０-９]+)/;
         text = text.replace(/(\[[^\]]+\])/g, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
-        blocks = text.split('##BLOCK##');
-        /*
-         * BLOCKごとにcreateContextualFragmentしようとしたが、アンカーをまたぐタグに対応できなかったので、アンカーも文字列で対応
-         */
+        var blocks = text.split('##BLOCK##');
         var blockHTMLs = new Array();
         var links = new Array();
         var linkCount = 0;
         for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
             if (block.charAt(0) == '[') {
-                // [msg → 000]
                 linkCount++;
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
@@ -73,7 +65,6 @@ var TextAdv;
                 }
             }
             else {
-                // 「それ以外」
                 while (true) {
                     var res = block.match(regYajirushiOnly);
                     if (res == null) {
@@ -91,15 +82,15 @@ var TextAdv;
                 blockHTMLs.push(block);
             }
         }
-        var title = null;
         var html = blockHTMLs.join('');
         var titlehtml = html.split('◇');
         if (2 <= titlehtml.length) {
-            title = titlehtml[0];
-            html = titlehtml[1];
+            scene.title = titlehtml[0];
+            scene.html = titlehtml[1];
         }
-        scene.title = title;
-        scene.html = html;
+        else {
+            scene.html = html;
+        }
         scene.links = links;
         return scene;
     }
@@ -119,23 +110,23 @@ var TextAdv;
     TextAdv.start = start;
     function go(idx, selectedElm) {
         if (selectedElm != null) {
-            // 選択されたものを赤くする
-            var parent_1 = null;
+            var parentElm = void 0;
             if ($mode == TextAdv.MODE_MAKIMONO) {
-                parent_1 = searchUpperElement(selectedElm, 'scene');
+                parentElm = searchUpperElement(selectedElm, 'scene');
             }
             else {
-                parent_1 = $display;
+                parentElm = $display;
             }
-            var elms = new Array();
-            pickupElements(parent_1, 'link', elms);
-            for (var i = 0; i < elms.length; i++) {
-                elms[i].style.color = $linkColor;
+            if (parentElm != null) {
+                var elms = new Array();
+                pickupElements(parentElm, 'link', elms);
+                for (var i = 0; i < elms.length; i++) {
+                    elms[i].style.color = $linkColor;
+                }
+                selectedElm.style.color = $selectColor;
             }
-            selectedElm.style.color = $selectColor;
         }
         {
-            // 次に表示する用にすでに表示しているものを消す
             var i = $step;
             while (true) {
                 var elm = document.getElementById('sc' + i);
@@ -147,44 +138,43 @@ var TextAdv;
             }
         }
         var scene = $scenes[idx];
-        // HTML化
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            // HTMLとしてdivを作成し終端に取り付ける
-            var id_1 = 'sc' + $step;
-            var div = '<div id="' + id_1 + '" class="scene">' + scene.html + '</div><p>';
+            var elementId_1 = 'sc' + $step;
+            var div = '<div id="' + elementId_1 + '" class="scene">' + scene.html + '</div><p>';
             var r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
             (function (step) {
-                document.getElementById(id_1).addEventListener('mouseover', function () {
-                    $step = step + 1;
-                });
+                var elm = document.getElementById(elementId_1);
+                if (elm != null) {
+                    elm.addEventListener('mouseover', function () {
+                        $step = step + 1;
+                    });
+                }
             })($step);
             $step++;
         }
         else if ($mode == TextAdv.MODE_KAMISHIBAI) {
-            // 中身を取り替える
-            var id = $display.id;
             $display.innerHTML = scene.html;
             $step++;
         }
         for (var i = 0, len = scene.links.length; i < len; i++) {
             var linkElm = document.getElementById(scene.links[i].elementId);
-            linkElm.style.color = 'blue';
-            linkElm.style.textDecoration = 'underline';
-            linkElm.style.cursor = 'pointer';
-            (function (linkElm, toIdx) {
-                linkElm.addEventListener('click', function () {
-                    go(toIdx, linkElm);
-                });
-            })(linkElm, scene.links[i].toIdx);
+            if (linkElm != null) {
+                linkElm.style.color = 'blue';
+                linkElm.style.textDecoration = 'underline';
+                linkElm.style.cursor = 'pointer';
+                (function (linkElm, toIdx) {
+                    linkElm.addEventListener('click', function () {
+                        go(toIdx, linkElm);
+                    });
+                })(linkElm, scene.links[i].toIdx);
+            }
         }
         if (scene.title != null) {
             document.title = scene.title;
         }
-        // 遷移順のシーン番号をスタックする
         $trace.push(idx);
-        // 画面をスクロールする
         if ($mode == TextAdv.MODE_MAKIMONO) {
             scroll();
         }
@@ -193,7 +183,7 @@ var TextAdv;
     function back() {
         $trace.pop();
         var idx = $trace.pop();
-        if (idx != null) {
+        if (idx != undefined) {
             go(idx);
         }
     }

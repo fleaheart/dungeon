@@ -32,7 +32,7 @@ namespace TextAdv {
         let lines: string[] = result.split('\n');
 
         for (let i: number = 0, len: number = lines.length; i < len; i++) {
-            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (s: string, g1: string) => {
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (g1: string): string => {
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
@@ -52,7 +52,6 @@ namespace TextAdv {
     }
 
     export function analizeScene(idx: number, text: string): Scene {
-
         let scene: Scene = new Scene();
 
         scene.idx = idx;
@@ -64,9 +63,8 @@ namespace TextAdv {
         let regDaikakkoAnchor: RegExp = /([^→\[\]]*)→\s*([0-9０-９]+)/; // msg → 000
         let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
 
-        let blocks: string[] = null;
-        text = text.replace(/(\[[^\]]+\])/g, (s: string) => { return '##BLOCK##' + s + '##BLOCK##'; });
-        blocks = text.split('##BLOCK##');
+        text = text.replace(/(\[[^\]]+\])/g, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
+        let blocks: string[] = text.split('##BLOCK##');
 
         /*
          * BLOCKごとにcreateContextualFragmentしようとしたが、アンカーをまたぐタグに対応できなかったので、アンカーも文字列で対応
@@ -82,7 +80,7 @@ namespace TextAdv {
             if (block.charAt(0) == '[') {
                 // [msg → 000]
                 linkCount++;
-                let res: RegExpMatchArray = block.match(regDaikakkoAnchor);
+                let res: RegExpMatchArray | null = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     let toIdx: number = +RegExp.$2;
                     let msg: string = RegExp.$1;
@@ -95,7 +93,7 @@ namespace TextAdv {
             } else {
                 // 「それ以外」
                 while (true) {
-                    let res: RegExpMatchArray = block.match(regYajirushiOnly);
+                    let res: RegExpMatchArray | null = block.match(regYajirushiOnly);
                     if (res == null) {
                         break;
                     }
@@ -115,23 +113,22 @@ namespace TextAdv {
             }
         }
 
-        let title: string = null;
         let html: string = blockHTMLs.join('');
         let titlehtml: string[] = html.split('◇');
         if (2 <= titlehtml.length) {
-            title = titlehtml[0];
-            html = titlehtml[1];
+            scene.title = titlehtml[0];
+            scene.html = titlehtml[1];
+        } else {
+            scene.html = html;
         }
 
-        scene.title = title;
-        scene.html = html;
         scene.links = links;
 
         return scene;
     }
 
     function toHankaku(s: string): number {
-        return +(s.replace(/[０-９]/g, (s: string) => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
+        return +(s.replace(/[０-９]/g, (s: string): string => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
     }
 
     export function initialize(display: HTMLElement, source: string): void {
@@ -147,27 +144,28 @@ namespace TextAdv {
     export function go(idx: number, selectedElm?: HTMLElement): void {
         if (selectedElm != null) {
             // 選択されたものを赤くする
-            let parent: HTMLElement = null;
+            let parentElm: HTMLElement | null;
             if ($mode == MODE_MAKIMONO) {
-                parent = searchUpperElement(selectedElm, 'scene');
+                parentElm = searchUpperElement(selectedElm, 'scene');
             } else {
-                parent = $display;
+                parentElm = $display;
             }
 
-            let elms: HTMLElement[] = new Array();
-            pickupElements(parent, 'link', elms);
-
-            for (let i: number = 0; i < elms.length; i++) {
-                elms[i].style.color = $linkColor;
+            if (parentElm != null) {
+                let elms: HTMLElement[] = new Array();
+                pickupElements(parentElm, 'link', elms);
+                for (let i: number = 0; i < elms.length; i++) {
+                    elms[i].style.color = $linkColor;
+                }
+                selectedElm.style.color = $selectColor;
             }
-            selectedElm.style.color = $selectColor;
         }
 
         {
             // 次に表示する用にすでに表示しているものを消す
             let i: number = $step;
             while (true) {
-                let elm: HTMLElement = document.getElementById('sc' + i);
+                let elm: HTMLElement | null = document.getElementById('sc' + i);
                 if (elm == null) {
                     break;
                 }
@@ -182,38 +180,42 @@ namespace TextAdv {
         // HTML化
         if ($mode == MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
-            let id = 'sc' + $step;
-            let div: string = '<div id="' + id + '" class="scene">' + scene.html + '</div><p>';
+            let elementId = 'sc' + $step;
+            let div: string = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
             let r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
 
-            (function (step) {
-                document.getElementById(id).addEventListener('mouseover', () => {
-                    $step = step + 1;
-                });
+            ((step): void => {
+                let elm: HTMLElement | null = document.getElementById(elementId);
+                if (elm != null) {
+                    elm.addEventListener('mouseover', (): void => {
+                        $step = step + 1;
+                    });
+                }
             })($step);
 
             $step++;
 
         } else if ($mode == MODE_KAMISHIBAI) {
             // 中身を取り替える
-            let id = $display.id;
             $display.innerHTML = scene.html;
             $step++;
         }
 
         for (let i: number = 0, len: number = scene.links.length; i < len; i++) {
-            let linkElm: HTMLElement = document.getElementById(scene.links[i].elementId);
-            linkElm.style.color = 'blue';
-            linkElm.style.textDecoration = 'underline';
-            linkElm.style.cursor = 'pointer';
+            let linkElm: HTMLElement | null = document.getElementById(scene.links[i].elementId);
+            if (linkElm != null) {
+                linkElm.style.color = 'blue';
+                linkElm.style.textDecoration = 'underline';
+                linkElm.style.cursor = 'pointer';
 
-            ((linkElm: HTMLElement, toIdx: number): void => {
-                linkElm.addEventListener('click', (): void => {
-                    go(toIdx, linkElm);
-                });
-            })(linkElm, scene.links[i].toIdx);
+                ((linkElm: HTMLElement, toIdx: number): void => {
+                    linkElm.addEventListener('click', (): void => {
+                        go(toIdx, linkElm);
+                    });
+                })(linkElm, scene.links[i].toIdx);
+            }
         }
 
         if (scene.title != null) {
@@ -232,14 +234,13 @@ namespace TextAdv {
 
     export function back(): void {
         $trace.pop();
-        let idx: number = $trace.pop();
-
-        if (idx != null) {
+        let idx: number | undefined = $trace.pop();
+        if (idx != undefined) {
             go(idx);
         }
     }
 
-    function searchUpperElement(elm: HTMLElement, className: string): HTMLElement {
+    function searchUpperElement(elm: HTMLElement, className: string): HTMLElement | null {
         let parent: HTMLElement = <HTMLElement>elm.parentNode;
         if (parent == null) {
             return null;
