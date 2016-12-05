@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "tsc",
     "isShellCommand": true,
-    "args": ["--sourcemap", "--target", "ES5", "./sandbox/TextAdv.ts"],
+    "args": ["--sourcemap", "--removeComments", "--target", "ES5", "./sandbox/TextAdv.ts"],
     "problemMatcher": "$tsc"
 }

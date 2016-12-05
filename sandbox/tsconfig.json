@@ -3,8 +3,11 @@
         "target": "ES6",
         "module": "commonjs",
         "noImplicitAny": true,
-        "noImplicitReturns":true,
-        "noImplicitNull":true,
+        "noImplicitReturns": true,
+        "noImplicitNull": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strictNullChecks": true,
         "sourceMap": true
     }
 }
