@@ -32,11 +32,13 @@ var TextAdv;
         }
         var sceneWorks = lines.join('\n').split(/<>/);
         for (var i = 0, len = sceneWorks.length; i < len; i++) {
-            sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
-            var idx = +RegExp.$1;
-            var text = RegExp.$2;
-            var scene = analizeScene(idx, text);
-            scenes[idx] = scene;
+            var res = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
+            if (res != null) {
+                var idx = +res[1];
+                var text = res[2];
+                var scene = analizeScene(idx, text);
+                scenes[idx] = scene;
+            }
         }
         return scenes;
     }
@@ -44,23 +46,24 @@ var TextAdv;
         var scene = new Scene();
         scene.idx = idx;
         scene.text = text;
-        var regDaikakkoAnchor = /([^→\[\]]*)→\s*([0-9０-９]+)/;
+        var regDaikakkoChekc = /((\[[^\]]+\])|(［[^］]+］))/g;
+        var regDaikakkoAnchor = /([^→\[\]［］]*)→\s*([0-9０-９]+)/;
         var regYajirushiOnly = /→\s*([0-9０-９]+)/;
-        text = text.replace(/(\[[^\]]+\])/g, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
+        text = text.replace(regDaikakkoChekc, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
         var blocks = text.split('##BLOCK##');
         var blockHTMLs = new Array();
         var links = new Array();
         var linkCount = 0;
         for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
-            if (block.charAt(0) == '[') {
+            if (block.match(regDaikakkoChekc)) {
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     linkCount++;
                     var toIdx = +toHankaku(res[2]);
                     var msg = res[1];
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span> ';
+                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
                     blockHTMLs.push(link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }
@@ -75,7 +78,7 @@ var TextAdv;
                     var toIdx = toHankaku(res[1]);
                     var msg = '⇒ ' + toIdx + ' ';
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span> ';
+                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
                     block = block.replace(regYajirushiOnly, link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }

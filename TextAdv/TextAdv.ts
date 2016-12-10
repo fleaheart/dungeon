@@ -62,10 +62,11 @@ namespace TextAdv {
         /*
          * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
          */
-        let regDaikakkoAnchor: RegExp = /([^→\[\]]*)→\s*([0-9０-９]+)/; // msg → 000
+        let regDaikakkoChekc: RegExp = /((\[[^\]]+\])|(［[^］]+］))/g;
+        let regDaikakkoAnchor: RegExp = /([^→\[\]［］]*)→\s*([0-9０-９]+)/; // msg → 000
         let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
 
-        text = text.replace(/(\[[^\]]+\])/g, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
+        text = text.replace(regDaikakkoChekc, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
         let blocks: string[] = text.split('##BLOCK##');
 
         /*
@@ -78,8 +79,7 @@ namespace TextAdv {
 
         for (let i: number = 0, len: number = blocks.length; i < len; i++) {
             let block: string = blocks[i];
-
-            if (block.charAt(0) == '[') {
+            if (block.match(regDaikakkoChekc)) {
                 // [msg → 000]
                 let res: RegExpMatchArray | null = block.match(regDaikakkoAnchor);
                 if (res != null) {
@@ -99,7 +99,6 @@ namespace TextAdv {
                     if (res == null) {
                         break;
                     }
-
                     linkCount++;
                     let toIdx: number = toHankaku(res[1]);
                     let msg: string = '⇒ ' + toIdx + ' ';
