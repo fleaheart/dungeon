@@ -46,24 +46,24 @@ var TextAdv;
         var scene = new Scene();
         scene.idx = idx;
         scene.text = text;
-        var regDaikakkoChekc = /((\[[^\]]+\])|(［[^］]+］))/g;
+        var regDaikakkoCheck = /((\[[^\]]+\])|(［[^］]+］))/g;
         var regDaikakkoAnchor = /([^→\[\]［］]*)→\s*([0-9０-９]+)/;
         var regYajirushiOnly = /→\s*([0-9０-９]+)/;
-        text = text.replace(regDaikakkoChekc, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
+        text = text.replace(regDaikakkoCheck, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
         var blocks = text.split('##BLOCK##');
         var blockHTMLs = new Array();
         var links = new Array();
         var linkCount = 0;
         for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
-            if (block.match(regDaikakkoChekc)) {
+            if (block.match(regDaikakkoCheck)) {
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     linkCount++;
                     var toIdx = +toHankaku(res[2]);
-                    var msg = res[1];
+                    var msg = res[1].replace(/\s*$/, '');
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
                     blockHTMLs.push(link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }
@@ -76,9 +76,9 @@ var TextAdv;
                     }
                     linkCount++;
                     var toIdx = toHankaku(res[1]);
-                    var msg = '⇒ ' + toIdx + ' ';
+                    var msg = '⇒ ' + toIdx;
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
                     block = block.replace(regYajirushiOnly, link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }

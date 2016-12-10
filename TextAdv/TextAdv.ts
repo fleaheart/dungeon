@@ -62,11 +62,11 @@ namespace TextAdv {
         /*
          * 大括弧で囲まれたアンカー[msg → 000]と「それ以外」をわける。
          */
-        let regDaikakkoChekc: RegExp = /((\[[^\]]+\])|(［[^］]+］))/g;
+        let regDaikakkoCheck: RegExp = /((\[[^\]]+\])|(［[^］]+］))/g;
         let regDaikakkoAnchor: RegExp = /([^→\[\]［］]*)→\s*([0-9０-９]+)/; // msg → 000
         let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
 
-        text = text.replace(regDaikakkoChekc, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
+        text = text.replace(regDaikakkoCheck, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
         let blocks: string[] = text.split('##BLOCK##');
 
         /*
@@ -79,15 +79,15 @@ namespace TextAdv {
 
         for (let i: number = 0, len: number = blocks.length; i < len; i++) {
             let block: string = blocks[i];
-            if (block.match(regDaikakkoChekc)) {
+            if (block.match(regDaikakkoCheck)) {
                 // [msg → 000]
                 let res: RegExpMatchArray | null = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     linkCount++;
                     let toIdx: number = +toHankaku(res[2]);
-                    let msg: string = res[1];
+                    let msg: string = res[1].replace(/\s*$/, '');
                     let elementId: string = 'link_' + idx + '_' + linkCount;
-                    let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    let link: string = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
 
                     blockHTMLs.push(link);
                     links.push({ elementId, toIdx });
@@ -101,9 +101,9 @@ namespace TextAdv {
                     }
                     linkCount++;
                     let toIdx: number = toHankaku(res[1]);
-                    let msg: string = '⇒ ' + toIdx + ' ';
+                    let msg: string = '⇒ ' + toIdx;
                     let elementId: string = 'link_' + idx + '_' + linkCount;
-                    let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    let link: string = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
 
                     block = block.replace(regYajirushiOnly, link);
                     links.push({ elementId, toIdx });
