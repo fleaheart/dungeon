@@ -24,8 +24,8 @@ var TextAdv;
         var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         var lines = result.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
-            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (s, g1) {
-                s = null;
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (m, g1) {
+                m = null;
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
@@ -54,13 +54,13 @@ var TextAdv;
         for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
             if (block.charAt(0) == '[') {
-                linkCount++;
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
-                    var toIdx = +RegExp.$2;
-                    var msg = RegExp.$1;
+                    linkCount++;
+                    var toIdx = +toHankaku(res[2]);
+                    var msg = res[1];
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span> ';
                     blockHTMLs.push(link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }
@@ -72,10 +72,10 @@ var TextAdv;
                         break;
                     }
                     linkCount++;
-                    var toIdx = toHankaku(RegExp.$1);
+                    var toIdx = toHankaku(res[1]);
                     var msg = '⇒ ' + toIdx + ' ';
                     var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = '<span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span> ';
                     block = block.replace(regYajirushiOnly, link);
                     links.push({ elementId: elementId, toIdx: toIdx });
                 }

@@ -41,12 +41,13 @@ namespace TextAdv {
 
         let sceneWorks: string[] = lines.join('\n').split(/<>/);
         for (let i: number = 0, len: number = sceneWorks.length; i < len; i++) {
-            sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
-            let idx: number = +RegExp.$1;
-            let text: string = RegExp.$2;
-            let scene: Scene = analizeScene(idx, text);
-
-            scenes[idx] = scene;
+            let res: RegExpMatchArray | null = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
+            if (res != null) {
+                let idx: number = +res[1];
+                let text: string = res[2];
+                let scene: Scene = analizeScene(idx, text);
+                scenes[idx] = scene;
+            }
         }
 
         return scenes;
@@ -80,11 +81,11 @@ namespace TextAdv {
 
             if (block.charAt(0) == '[') {
                 // [msg → 000]
-                linkCount++;
                 let res: RegExpMatchArray | null = block.match(regDaikakkoAnchor);
                 if (res != null) {
-                    let toIdx: number = +RegExp.$2;
-                    let msg: string = RegExp.$1;
+                    linkCount++;
+                    let toIdx: number = +toHankaku(res[2]);
+                    let msg: string = res[1];
                     let elementId: string = 'link_' + idx + '_' + linkCount;
                     let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
 
@@ -100,7 +101,7 @@ namespace TextAdv {
                     }
 
                     linkCount++;
-                    let toIdx: number = toHankaku(RegExp.$1);
+                    let toIdx: number = toHankaku(res[1]);
                     let msg: string = '⇒ ' + toIdx + ' ';
                     let elementId: string = 'link_' + idx + '_' + linkCount;
                     let link: string = '<span id="' + elementId + '" class="link">' + msg + '</span>';
