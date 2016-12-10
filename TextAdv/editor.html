@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>TextAdv editor</title>
+
+<style type="text/css">
+* {
+	font-family: 'メイリオ';
+}
+</style>
+
+<script type="text/javascript" src="TextAdv.js"></script>
+<script type="text/javascript">
+window.addEventListener('load', function () {
+    document.getElementById('testBtn').addEventListener('click', function() {
+        var displayElm = document.getElementById('display');
+        var sourceElm = document.getElementById('source');
+        TextAdv.initialize(displayElm, sourceElm.value);
+        TextAdv.start();
+    });
+});
+</script>
+<body>
+
+<textarea id="source" rows="8" cols="60"></textarea>
+<hr>
+<button id="testBtn">テスト</button><br>
+<hr>
+<div id="display" style="width:800px;border: solid 1px black;">
+</div>
+
+</body>
+</html>
