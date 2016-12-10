@@ -62,10 +62,10 @@ var TextAdv;
                     linkCount++;
                     var toIdx = +toHankaku(res[2]);
                     var msg = res[1].replace(/\s*$/, '');
-                    var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var linkNo = linkCount;
+                    var link = ' <span class="link">' + msg + '</span>';
                     blockHTMLs.push(link);
-                    links.push({ elementId: elementId, toIdx: toIdx });
+                    links.push({ linkNo: linkNo, toIdx: toIdx });
                 }
             }
             else {
@@ -77,10 +77,10 @@ var TextAdv;
                     linkCount++;
                     var toIdx = toHankaku(res[1]);
                     var msg = '⇒ ' + toIdx;
-                    var elementId = 'link_' + idx + '_' + linkCount;
-                    var link = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
+                    var linkNo = linkCount;
+                    var link = ' <span class="link">' + msg + '</span>';
                     block = block.replace(regYajirushiOnly, link);
-                    links.push({ elementId: elementId, toIdx: toIdx });
+                    links.push({ linkNo: linkNo, toIdx: toIdx });
                 }
                 block = block.replace(/⇒ /g, '→ ');
                 blockHTMLs.push(block);
@@ -143,37 +143,43 @@ var TextAdv;
             }
         }
         var scene = $scenes[idx];
+        var sceneDiv = null;
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            var elementId_1 = 'sc' + $step;
-            var div = '<div id="' + elementId_1 + '" class="scene">' + scene.html + '</div><p>';
+            var elementId = 'sc' + $step;
+            var div = '<div id="' + elementId + '" class="scene">' + '(' + $step + ')<>' + scene.html + '</div><p>';
             var r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
-            (function (step) {
-                var elm = document.getElementById(elementId_1);
-                if (elm != null) {
-                    elm.addEventListener('mouseover', function () {
+            sceneDiv = document.getElementById(elementId);
+            (function (sceneDiv, step) {
+                if (sceneDiv != null) {
+                    sceneDiv.addEventListener('mouseover', function () {
                         $step = step + 1;
                     });
                 }
-            })($step);
+            })(sceneDiv, $step);
             $step++;
         }
         else if ($mode == TextAdv.MODE_KAMISHIBAI) {
             $display.innerHTML = scene.html;
+            sceneDiv = $display;
             $step++;
         }
-        for (var i = 0, len = scene.links.length; i < len; i++) {
-            var linkElm = document.getElementById(scene.links[i].elementId);
-            if (linkElm != null) {
-                linkElm.style.color = 'blue';
-                linkElm.style.textDecoration = 'underline';
-                linkElm.style.cursor = 'pointer';
-                (function (linkElm, toIdx) {
-                    linkElm.addEventListener('click', function () {
-                        go(toIdx, linkElm);
-                    });
-                })(linkElm, scene.links[i].toIdx);
+        if (sceneDiv != null) {
+            var linkCount = 0;
+            for (var i = 0, len = sceneDiv.childNodes.length; i < len; i++) {
+                var linkElm = sceneDiv.childNodes[i];
+                if (linkElm.className == 'link') {
+                    linkElm.style.color = 'blue';
+                    linkElm.style.textDecoration = 'underline';
+                    linkElm.style.cursor = 'pointer';
+                    (function (linkElm, toIdx) {
+                        linkElm.addEventListener('click', function () {
+                            go(toIdx, linkElm);
+                        });
+                    })(linkElm, scene.links[linkCount].toIdx);
+                    linkCount++;
+                }
             }
         }
         if (scene.title != null) {

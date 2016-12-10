@@ -3,7 +3,7 @@ namespace TextAdv {
     export const MODE_KAMISHIBAI: string = 'kamishibai';
 
     class Link {
-        elementId: string;
+        linkNo: number;
         toIdx: number;
     }
 
@@ -86,11 +86,11 @@ namespace TextAdv {
                     linkCount++;
                     let toIdx: number = +toHankaku(res[2]);
                     let msg: string = res[1].replace(/\s*$/, '');
-                    let elementId: string = 'link_' + idx + '_' + linkCount;
-                    let link: string = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
+                    let linkNo: number = linkCount;
+                    let link: string = ' <span class="link">' + msg + '</span>';
 
                     blockHTMLs.push(link);
-                    links.push({ elementId, toIdx });
+                    links.push({ linkNo, toIdx });
                 }
             } else {
                 // 「それ以外」
@@ -102,11 +102,11 @@ namespace TextAdv {
                     linkCount++;
                     let toIdx: number = toHankaku(res[1]);
                     let msg: string = '⇒ ' + toIdx;
-                    let elementId: string = 'link_' + idx + '_' + linkCount;
-                    let link: string = ' <span id="' + elementId + '" class="link">' + msg + '</span>';
+                    let linkNo: number = linkCount;
+                    let link: string = ' <span class="link">' + msg + '</span>';
 
                     block = block.replace(regYajirushiOnly, link);
-                    links.push({ elementId, toIdx });
+                    links.push({ linkNo, toIdx });
                 }
 
                 block = block.replace(/⇒ /g, '→ ');
@@ -180,43 +180,49 @@ namespace TextAdv {
         let scene: Scene = $scenes[idx];
 
         // HTML化
+        let sceneDiv: HTMLElement | null = null;
         if ($mode == MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
             let elementId = 'sc' + $step;
-            let div: string = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
+            let div: string = '<div id="' + elementId + '" class="scene">' + '(' + $step + ')<>' + scene.html + '</div><p>';
             let r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
-
-            ((step): void => {
-                let elm: HTMLElement | null = document.getElementById(elementId);
-                if (elm != null) {
-                    elm.addEventListener('mouseover', (): void => {
+            sceneDiv = document.getElementById(elementId);
+            ((sceneDiv, step): void => {
+                if (sceneDiv != null) {
+                    sceneDiv.addEventListener('mouseover', (): void => {
                         $step = step + 1;
                     });
                 }
-            })($step);
+            })(sceneDiv, $step);
 
             $step++;
 
         } else if ($mode == MODE_KAMISHIBAI) {
             // 中身を取り替える
             $display.innerHTML = scene.html;
+            sceneDiv = $display;
             $step++;
         }
 
-        for (let i: number = 0, len: number = scene.links.length; i < len; i++) {
-            let linkElm: HTMLElement | null = document.getElementById(scene.links[i].elementId);
-            if (linkElm != null) {
-                linkElm.style.color = 'blue';
-                linkElm.style.textDecoration = 'underline';
-                linkElm.style.cursor = 'pointer';
+        if (sceneDiv != null) {
+            let linkCount: number = 0;
+            for (let i: number = 0, len: number = sceneDiv.childNodes.length; i < len; i++) {
+                let linkElm: HTMLElement = <HTMLElement>sceneDiv.childNodes[i];
+                if (linkElm.className == 'link') {
+                    linkElm.style.color = 'blue';
+                    linkElm.style.textDecoration = 'underline';
+                    linkElm.style.cursor = 'pointer';
 
-                ((linkElm: HTMLElement, toIdx: number): void => {
-                    linkElm.addEventListener('click', (): void => {
-                        go(toIdx, linkElm);
-                    });
-                })(linkElm, scene.links[i].toIdx);
+                    ((linkElm: HTMLElement, toIdx: number): void => {
+                        linkElm.addEventListener('click', (): void => {
+                            go(toIdx, linkElm);
+                        });
+                    })(linkElm, scene.links[linkCount].toIdx);
+
+                    linkCount++;
+                }
             }
         }
 
