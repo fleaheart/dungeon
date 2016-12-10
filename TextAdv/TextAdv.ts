@@ -184,7 +184,7 @@ namespace TextAdv {
         if ($mode == MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
             let elementId = 'sc' + $step;
-            let div: string = '<div id="' + elementId + '" class="scene">' + '(' + $step + ')<>' + scene.html + '</div><p>';
+            let div: string = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
             let r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));

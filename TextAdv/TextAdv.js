@@ -146,7 +146,7 @@ var TextAdv;
         var sceneDiv = null;
         if ($mode == TextAdv.MODE_MAKIMONO) {
             var elementId = 'sc' + $step;
-            var div = '<div id="' + elementId + '" class="scene">' + '(' + $step + ')<>' + scene.html + '</div><p>';
+            var div = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
             var r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
