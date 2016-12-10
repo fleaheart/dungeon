@@ -138,6 +138,7 @@ namespace TextAdv {
     }
 
     export function start(): void {
+        $display.innerHTML = '';
         $step = 1;
         go(0);
     }

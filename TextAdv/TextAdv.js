@@ -108,6 +108,7 @@ var TextAdv;
     }
     TextAdv.initialize = initialize;
     function start() {
+        $display.innerHTML = '';
         $step = 1;
         go(0);
     }
