@@ -166,9 +166,10 @@ var TextAdv;
             $step++;
         }
         if (sceneDiv != null) {
-            var linkCount = 0;
-            for (var i = 0, len = sceneDiv.childNodes.length; i < len; i++) {
-                var linkElm = sceneDiv.childNodes[i];
+            var elms = new Array();
+            pickupElements(sceneDiv, 'link', elms);
+            for (var i = 0, len = elms.length; i < len; i++) {
+                var linkElm = elms[i];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
                     linkElm.style.textDecoration = 'underline';
@@ -177,8 +178,7 @@ var TextAdv;
                         linkElm.addEventListener('click', function () {
                             go(toIdx, linkElm);
                         });
-                    })(linkElm, scene.links[linkCount].toIdx);
-                    linkCount++;
+                    })(linkElm, scene.links[i].toIdx);
                 }
             }
         }

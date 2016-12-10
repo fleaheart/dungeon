@@ -207,9 +207,11 @@ namespace TextAdv {
         }
 
         if (sceneDiv != null) {
-            let linkCount: number = 0;
-            for (let i: number = 0, len: number = sceneDiv.childNodes.length; i < len; i++) {
-                let linkElm: HTMLElement = <HTMLElement>sceneDiv.childNodes[i];
+            let elms: HTMLElement[] = new Array();
+            pickupElements(sceneDiv, 'link', elms);
+
+            for (let i: number = 0, len: number = elms.length; i < len; i++) {
+                let linkElm: HTMLElement = elms[i];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
                     linkElm.style.textDecoration = 'underline';
@@ -219,9 +221,7 @@ namespace TextAdv {
                         linkElm.addEventListener('click', (): void => {
                             go(toIdx, linkElm);
                         });
-                    })(linkElm, scene.links[linkCount].toIdx);
-
-                    linkCount++;
+                    })(linkElm, scene.links[i].toIdx);
                 }
             }
         }
