@@ -32,9 +32,9 @@ var $MUKI_CHARACTER = ['↑', '→', '↓', '←'];
 var $MUKI_CHARACTER_LENGTH = $MUKI_CHARACTER.length;
 var $KEY;
 (function ($KEY) {
-    $KEY.W = '87';
-    $KEY.A = '65';
-    $KEY.D = '68';
+    $KEY.W = 87;
+    $KEY.A = 65;
+    $KEY.D = 68;
 })($KEY || ($KEY = {}));
 window.addEventListener('load', function () {
     var div_map;
@@ -213,11 +213,12 @@ function charkaiten(c, muki) {
     return c;
 }
 function draw3D(mapdata, zenpou, hidarimigi) {
-    var cvs = document.getElementById('map3d');
-    var context = null;
-    if (cvs != null) {
-        context = cvs.getContext('2d');
+    var elm = document.getElementById('map3d');
+    if (elm == null) {
+        return;
     }
+    var cvs = elm;
+    var context = cvs.getContext('2d');
     if (context == null) {
         return;
     }
@@ -225,7 +226,7 @@ function draw3D(mapdata, zenpou, hidarimigi) {
     context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
     var kabe = -1;
     for (var i = 0; i <= zenpou; i++) {
-        c = mapdata[zenpou - i].charAt(hidarimigi);
+        var c = mapdata[zenpou - i].charAt(hidarimigi);
         var n = parseInt(c, 16);
         var hidarikabeflg = 0;
         var migikabeflg = 0;
@@ -256,7 +257,7 @@ function draw3D(mapdata, zenpou, hidarimigi) {
                 }
             }
         }
-        var c = mapdata[zenpou - i].charAt(hidarimigi + 1);
+        c = mapdata[zenpou - i].charAt(hidarimigi + 1);
         n = parseInt(c, 16);
         if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i <= kabe) {

@@ -43,21 +43,19 @@ let $MUKI_CHARACTER: string[] = ['↑', '→', '↓', '←'];
 let $MUKI_CHARACTER_LENGTH: number = $MUKI_CHARACTER.length;
 
 namespace $KEY {
-    export const W: string = '87';
-    export const A: string = '65';
-    export const D: string = '68';
+    export const W: number = 87;
+    export const A: number = 65;
+    export const D: number = 68;
 }
 
 /**
  * 最初に実行されるもの
  */
-window.addEventListener('load', function () {
-    var div_map: HTMLElement | null;
+window.addEventListener('load', (): void => {
 
     document.addEventListener('keydown', keyDownEvent);
 
-    div_map = document.getElementById('div_map');
-
+    let div_map: HTMLElement | null = document.getElementById('div_map');
     if (div_map != null) {
         mapview(div_map, $mapdata);
     }
@@ -66,8 +64,7 @@ window.addEventListener('load', function () {
     $pc.ypos = 7;
     $pc.muki = 0;
 
-    let nakami: HTMLElement | null;
-    nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+    let nakami: HTMLElement | null = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
     if (nakami != null) {
         nakami.innerHTML = '↑';
     }
@@ -75,8 +72,8 @@ window.addEventListener('load', function () {
     submapview();
 });
 
-function keyDownEvent(evt: any) {
-    let keyCode: string = evt.keyCode;
+function keyDownEvent(evt: KeyboardEvent): void {
+    let keyCode: number = evt.keyCode;
     if (keyCode == $KEY.W) {
         let kabeChar: string = $mapdata[$pc.ypos].charAt($pc.xpos);
         let kabeType: number = parseInt(kabeChar, 16);
@@ -113,6 +110,7 @@ function keyDownEvent(evt: any) {
             if (nakami != null) {
                 nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
             }
+
             submapview();
         }
 
@@ -145,7 +143,7 @@ function keyDownEvent(evt: any) {
 
 }
 
-function submapview() {
+function submapview(): void {
     let zenpou: number = 3
     let hidarimigi: number = 1;
 
@@ -247,12 +245,13 @@ function charkaiten(c: string, muki: number): string {
     return c;
 }
 
-function draw3D(mapdata: string[], zenpou: number, hidarimigi: number) {
-    let cvs: HTMLCanvasElement | null = <HTMLCanvasElement>document.getElementById('map3d');
-    let context: CanvasRenderingContext2D | null = null;
-    if (cvs != null) {
-        context = cvs.getContext('2d');
+function draw3D(mapdata: string[], zenpou: number, hidarimigi: number): void {
+    let elm: HTMLElement | null = document.getElementById('map3d');
+    if (elm == null) {
+        return;
     }
+    let cvs: HTMLCanvasElement = <HTMLCanvasElement>elm;
+    let context: CanvasRenderingContext2D | null = cvs.getContext('2d');
     if (context == null) {
         return;
     }
@@ -263,11 +262,11 @@ function draw3D(mapdata: string[], zenpou: number, hidarimigi: number) {
     let kabe: number = -1;
 
     for (let i: number = 0; i <= zenpou; i++) {
-        c = mapdata[zenpou - i].charAt(hidarimigi);
+        let c: string = mapdata[zenpou - i].charAt(hidarimigi);
         let n: number = parseInt(c, 16);
 
-        var hidarikabeflg = 0;
-        var migikabeflg = 0;
+        let hidarikabeflg: number = 0;
+        let migikabeflg: number = 0;
 
         if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i < kabe) {
@@ -298,7 +297,7 @@ function draw3D(mapdata: string[], zenpou: number, hidarimigi: number) {
             }
         }
 
-        var c = mapdata[zenpou - i].charAt(hidarimigi + 1);
+        c = mapdata[zenpou - i].charAt(hidarimigi + 1);
         n = parseInt(c, 16);
         if ((n & $BIT_TOP) == $BIT_TOP) {
             if (kabe == -1 || i <= kabe) {
@@ -310,7 +309,7 @@ function draw3D(mapdata: string[], zenpou: number, hidarimigi: number) {
     }
 }
 
-function mapview(div_map: HTMLElement, kakumapdata: string[]) {
+function mapview(div_map: HTMLElement, kakumapdata: string[]): void {
     let ippen: number = 36;
     let futosa: number = 2;
 
@@ -329,8 +328,6 @@ function mapview(div_map: HTMLElement, kakumapdata: string[]) {
             map.id = 'map[' + x + '][' + y + ']';
             setStyle(map, c, ippen, futosa);
 
-            // map.className = 'box' + c;
-
             let nakami: HTMLElement = document.createElement('DIV');
             nakami.id = 'nakami[' + x + '][' + y + ']';
             nakami.className = 'nakami';
@@ -347,7 +344,7 @@ function mapview(div_map: HTMLElement, kakumapdata: string[]) {
     }
 }
 
-function setStyle(map: HTMLElement, c: string, ippen: number, futosa: number) {
+function setStyle(map: HTMLElement, c: string, ippen: number, futosa: number): void {
     let n: number = parseInt(c, 16);
 
     map.style.display = 'inline-block';
@@ -383,7 +380,7 @@ function setStyle(map: HTMLElement, c: string, ippen: number, futosa: number) {
     }
 }
 
-function kabemaekaku(context: CanvasRenderingContext2D, fukasa: number) {
+function kabemaekaku(context: CanvasRenderingContext2D, fukasa: number): void {
     context.beginPath();
 
     context.moveTo($kabex[fukasa], $kabey[fukasa]);
@@ -395,7 +392,7 @@ function kabemaekaku(context: CanvasRenderingContext2D, fukasa: number) {
     context.stroke();
 }
 
-function kabetatekaku(context: CanvasRenderingContext2D, fukasa: number, side: number) {
+function kabetatekaku(context: CanvasRenderingContext2D, fukasa: number, side: number): void {
     let startx: number;
     let fugou: number;
 
@@ -420,7 +417,7 @@ function kabetatekaku(context: CanvasRenderingContext2D, fukasa: number, side: n
     context.stroke();
 }
 
-function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, side: number) {
+function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, side: number): void {
     let startx: number;
     let fugou: number;
 
