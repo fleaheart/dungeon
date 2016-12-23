@@ -6,8 +6,6 @@ namespace Aao {
 		img: HTMLImageElement;
 		x: number;
 		y: number;
-		ascii_x: number;
-		ascii_y: number;
 		muki: string;
 
 		constructor(chr: string) {
@@ -16,8 +14,6 @@ namespace Aao {
 			this.img.style.position = 'absolute';
 			this.x = 0;
 			this.y = 0;
-			this.ascii_x = 0;
-			this.ascii_y = 0;
 			this.muki = 'e'
 		}
 
@@ -44,13 +40,15 @@ namespace Aao {
 			}
 			this.x += dx;
 			this.y += dy;
-			this.asciiPos();
 			this.refrectStyle();
 		}
 
-		private asciiPos(): void {
-			this.ascii_x = Math.floor((this.x) / 16);
-			this.ascii_y = Math.floor((this.y) / 32);
+		public asciiPosX(): number {
+			return Math.floor((this.x) / 16);
+		}
+
+		public asciiPosY(): number {
+			return Math.floor((this.y) / 32);
 		}
 
 		private refrectStyle(): void {
@@ -153,7 +151,7 @@ namespace Aao {
 	}
 
 	function put(obj: Charactor): void {
-		putc(obj.ascii_x, obj.ascii_y, obj.chr);
+		putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
 	}
 
 	function putc(x: number, y: number, chr: string): void {
@@ -188,7 +186,7 @@ namespace Aao {
 			$debugElm.innerHTML =
 				$mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
 				+ '<br>' + $pc.x + ',' + $pc.y
-				+ '<br>' + $pc.ascii_x + ',' + $pc.ascii_y
+				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
 				+ '<br>[' + $dbg + ']'
 				;
 		}
@@ -300,7 +298,7 @@ namespace Aao {
 			}
 		} else if ($mode == 'scrl') {
 			if ($hensu.frame == 0) {
-				putc($pc.ascii_x, $pc.ascii_y, ' ');
+				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
 			}
 
 			$hensu.frame++;
@@ -374,7 +372,7 @@ namespace Aao {
 	function move_check(hougaku: string, c1: string, c2: string, c3: string) {
 		if (c1 == ' ' && c2 == ' ' && c3 == ' ') {
 			if ($pc.muki == hougaku) {
-				putc($pc.ascii_x, $pc.ascii_y, ' ');
+				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
 				$koudouArray.push({ type: 'idou', value: $hougaku[hougaku] });
 			} else {
 				$pc.muki = hougaku;

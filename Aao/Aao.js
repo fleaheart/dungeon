@@ -8,8 +8,6 @@ var Aao;
             this.img.style.position = 'absolute';
             this.x = 0;
             this.y = 0;
-            this.ascii_x = 0;
-            this.ascii_y = 0;
             this.muki = 'e';
         }
         Charactor.prototype.moveTo = function (x, y) {
@@ -34,12 +32,13 @@ var Aao;
             }
             this.x += dx;
             this.y += dy;
-            this.asciiPos();
             this.refrectStyle();
         };
-        Charactor.prototype.asciiPos = function () {
-            this.ascii_x = Math.floor((this.x) / 16);
-            this.ascii_y = Math.floor((this.y) / 32);
+        Charactor.prototype.asciiPosX = function () {
+            return Math.floor((this.x) / 16);
+        };
+        Charactor.prototype.asciiPosY = function () {
+            return Math.floor((this.y) / 32);
         };
         Charactor.prototype.refrectStyle = function () {
             this.img.style.left = this.x + 'px';
@@ -127,7 +126,7 @@ var Aao;
         n: { x: 0, y: -1 }, e: { x: 1, y: 0 }, s: { x: 0, y: 1 }, w: { x: -1, y: 0 }
     };
     function put(obj) {
-        putc(obj.ascii_x, obj.ascii_y, obj.chr);
+        putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
     }
     function putc(x, y, chr) {
         var swp = $asciiPosition[y];
@@ -157,7 +156,7 @@ var Aao;
             $debugElm.innerHTML =
                 $mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
                     + '<br>' + $pc.x + ',' + $pc.y
-                    + '<br>' + $pc.ascii_x + ',' + $pc.ascii_y
+                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
                     + '<br>[' + $dbg + ']';
         }
         if ($lastKeyCode == 27) {
@@ -241,7 +240,7 @@ var Aao;
         }
         else if ($mode == 'scrl') {
             if ($hensu.frame == 0) {
-                putc($pc.ascii_x, $pc.ascii_y, ' ');
+                putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
             $hensu.frame++;
             if ($hensu.muki == 'n') {
@@ -308,7 +307,7 @@ var Aao;
     function move_check(hougaku, c1, c2, c3) {
         if (c1 == ' ' && c2 == ' ' && c3 == ' ') {
             if ($pc.muki == hougaku) {
-                putc($pc.ascii_x, $pc.ascii_y, ' ');
+                putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
                 $koudouArray.push({ type: 'idou', value: $hougaku[hougaku] });
             }
             else {
