@@ -280,14 +280,17 @@ namespace TextAdv {
         }
     }
 
+    let $timer: number;
     let $interval: number = 5;
     let $dy: number = 10;
 
     export function scroll(): void {
-        if (window.innerHeight + window.pageYOffset - $dy < document.body.scrollHeight) {
+        if (window.innerHeight + window.pageYOffset < document.body.scrollHeight) {
             window.scrollBy(0, $dy);
-            setTimeout(arguments.callee, $interval);
+            $timer = setTimeout(arguments.callee, $interval);
+            return;
         }
+        clearTimeout($timer);
     }
 }
 

@@ -224,13 +224,16 @@ var TextAdv;
             }
         }
     }
+    var $timer;
     var $interval = 5;
     var $dy = 10;
     function scroll() {
-        if (window.innerHeight + window.pageYOffset - $dy < document.body.scrollHeight) {
+        if (window.innerHeight + window.pageYOffset < document.body.scrollHeight) {
             window.scrollBy(0, $dy);
-            setTimeout(arguments.callee, $interval);
+            $timer = setTimeout(arguments.callee, $interval);
+            return;
         }
+        clearTimeout($timer);
     }
     TextAdv.scroll = scroll;
 })(TextAdv || (TextAdv = {}));
