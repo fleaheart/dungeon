@@ -14,7 +14,6 @@ var TextAdv;
     }());
     var $linkColor = 'blue';
     var $selectColor = 'red';
-    var $step = 1;
     var $trace = new Array();
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display;
@@ -109,13 +108,13 @@ var TextAdv;
     TextAdv.initialize = initialize;
     function start() {
         $display.innerHTML = '';
-        $step = 1;
         go(0);
     }
     TextAdv.start = start;
     function go(idx, selectedElm) {
+        var parentElm = null;
+        var step = 0;
         if (selectedElm != null) {
-            var parentElm = void 0;
             if ($mode == TextAdv.MODE_MAKIMONO) {
                 parentElm = searchUpperElement(selectedElm, 'scene');
             }
@@ -123,62 +122,56 @@ var TextAdv;
                 parentElm = $display;
             }
             if (parentElm != null) {
-                var elms = new Array();
-                pickupElements(parentElm, 'link', elms);
-                for (var i = 0; i < elms.length; i++) {
-                    elms[i].style.color = $linkColor;
+                parentElm.id.match(/^sc(\d+)$/);
+                step = +RegExp.$1;
+                var linkElms = new Array();
+                pickupElements(parentElm, 'link', linkElms);
+                for (var i = 0; i < linkElms.length; i++) {
+                    linkElms[i].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
             }
         }
-        {
-            var i = $step;
+        if (parentElm != null) {
+            var i = step + 1;
             while (true) {
                 var elm = document.getElementById('sc' + i);
                 if (elm == null) {
                     break;
                 }
-                elm.parentNode.removeChild(elm);
+                parentElm.removeChild(elm);
                 i++;
             }
         }
         var scene = $scenes[idx];
+        step++;
         var sceneDiv = null;
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            var elementId = 'sc' + $step;
+            var elementId = 'sc' + step;
             var div = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
             var r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
             sceneDiv = document.getElementById(elementId);
-            (function (sceneDiv, step) {
-                if (sceneDiv != null) {
-                    sceneDiv.addEventListener('mouseover', function () {
-                        $step = step + 1;
-                    });
-                }
-            })(sceneDiv, $step);
-            $step++;
         }
         else if ($mode == TextAdv.MODE_KAMISHIBAI) {
             $display.innerHTML = scene.html;
             sceneDiv = $display;
-            $step++;
         }
         if (sceneDiv != null) {
-            var elms = new Array();
-            pickupElements(sceneDiv, 'link', elms);
-            for (var i = 0, len = elms.length; i < len; i++) {
-                var linkElm = elms[i];
+            var linkElms = new Array();
+            pickupElements(sceneDiv, 'link', linkElms);
+            for (var i = 0, len = linkElms.length; i < len; i++) {
+                var linkElm = linkElms[i];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
                     linkElm.style.textDecoration = 'underline';
                     linkElm.style.cursor = 'pointer';
-                    (function (linkElm, toIdx) {
+                    (function (toIdx, linkElm) {
                         linkElm.addEventListener('click', function () {
                             go(toIdx, linkElm);
                         });
-                    })(linkElm, scene.links[i].toIdx);
+                    })(scene.links[i].toIdx, linkElm);
                 }
             }
         }
