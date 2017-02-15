@@ -18,7 +18,6 @@ namespace TextAdv {
     let $linkColor: string = 'blue';
     let $selectColor: string = 'red';
 
-    let $step: number = 1;   // 遷移数
     let $trace: number[] = new Array();  // 遷移順配列
     let $mode: string = MODE_MAKIMONO;
 
@@ -139,14 +138,14 @@ namespace TextAdv {
 
     export function start(): void {
         $display.innerHTML = '';
-        $step = 1;
         go(0);
     }
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
+        let parentElm: HTMLElement | null = null;
+        let step: number = 0;
         if (selectedElm != null) {
             // 選択されたものを赤くする
-            let parentElm: HTMLElement | null;
             if ($mode == MODE_MAKIMONO) {
                 parentElm = searchUpperElement(selectedElm, 'scene');
             } else {
@@ -154,24 +153,27 @@ namespace TextAdv {
             }
 
             if (parentElm != null) {
-                let elms: HTMLElement[] = new Array();
-                pickupElements(parentElm, 'link', elms);
-                for (let i: number = 0; i < elms.length; i++) {
-                    elms[i].style.color = $linkColor;
+                parentElm.id.match(/^sc(\d+)$/);
+                step = +RegExp.$1;
+
+                let linkElms: HTMLElement[] = new Array();
+                pickupElements(parentElm, 'link', linkElms);
+                for (let i: number = 0; i < linkElms.length; i++) {
+                    linkElms[i].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
             }
         }
 
-        {
+        if (parentElm != null) {
             // 次に表示する用にすでに表示しているものを消す
-            let i: number = $step;
+            let i: number = step + 1;
             while (true) {
                 let elm: HTMLElement | null = document.getElementById('sc' + i);
                 if (elm == null) {
                     break;
                 }
-                elm.parentNode.removeChild(elm);
+                parentElm.removeChild(elm);
 
                 i++;
             }
@@ -180,48 +182,39 @@ namespace TextAdv {
         let scene: Scene = $scenes[idx];
 
         // HTML化
+        step++;
         let sceneDiv: HTMLElement | null = null;
         if ($mode == MODE_MAKIMONO) {
             // HTMLとしてdivを作成し終端に取り付ける
-            let elementId = 'sc' + $step;
+            let elementId = 'sc' + step;
             let div: string = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
             let r = document.createRange();
             r.selectNode($display);
             $display.appendChild(r.createContextualFragment(div));
             sceneDiv = document.getElementById(elementId);
-            ((sceneDiv, step): void => {
-                if (sceneDiv != null) {
-                    sceneDiv.addEventListener('mouseover', (): void => {
-                        $step = step + 1;
-                    });
-                }
-            })(sceneDiv, $step);
-
-            $step++;
 
         } else if ($mode == MODE_KAMISHIBAI) {
             // 中身を取り替える
             $display.innerHTML = scene.html;
             sceneDiv = $display;
-            $step++;
         }
 
         if (sceneDiv != null) {
-            let elms: HTMLElement[] = new Array();
-            pickupElements(sceneDiv, 'link', elms);
+            let linkElms: HTMLElement[] = new Array();
+            pickupElements(sceneDiv, 'link', linkElms);
 
-            for (let i: number = 0, len: number = elms.length; i < len; i++) {
-                let linkElm: HTMLElement = elms[i];
+            for (let i: number = 0, len: number = linkElms.length; i < len; i++) {
+                let linkElm: HTMLElement = linkElms[i];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
                     linkElm.style.textDecoration = 'underline';
                     linkElm.style.cursor = 'pointer';
 
-                    ((linkElm: HTMLElement, toIdx: number): void => {
+                    ((toIdx: number, linkElm: HTMLElement): void => {
                         linkElm.addEventListener('click', (): void => {
                             go(toIdx, linkElm);
                         });
-                    })(linkElm, scene.links[i].toIdx);
+                    })(scene.links[i].toIdx, linkElm);
                 }
             }
         }
