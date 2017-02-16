@@ -112,36 +112,34 @@ var TextAdv;
     }
     TextAdv.start = start;
     function go(idx, selectedElm) {
-        var parentElm = null;
+        var sceneElm = null;
         var step = 0;
         if (selectedElm != null) {
             if ($mode == TextAdv.MODE_MAKIMONO) {
-                parentElm = searchUpperElement(selectedElm, 'scene');
+                sceneElm = searchUpperElement(selectedElm, 'scene');
             }
             else {
-                parentElm = $display;
+                sceneElm = $display;
             }
-            if (parentElm != null) {
-                parentElm.id.match(/^sc(\d+)$/);
+            if (sceneElm != null) {
+                sceneElm.id.match(/^sc(\d+)$/);
                 step = +RegExp.$1;
                 var linkElms = new Array();
-                pickupElements(parentElm, 'link', linkElms);
-                for (var i = 0; i < linkElms.length; i++) {
-                    linkElms[i].style.color = $linkColor;
+                pickupElements(sceneElm, 'link', linkElms);
+                for (var i_1 = 0; i_1 < linkElms.length; i_1++) {
+                    linkElms[i_1].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
             }
         }
-        if (parentElm != null) {
-            var i = step + 1;
-            while (true) {
-                var elm = document.getElementById('sc' + i);
-                if (elm == null) {
-                    break;
-                }
-                parentElm.removeChild(elm);
-                i++;
+        var i = step + 1;
+        while (true) {
+            var elm = document.getElementById('sc' + i);
+            if (elm == null) {
+                break;
             }
+            $display.removeChild(elm);
+            i++;
         }
         var scene = $scenes[idx];
         step++;
@@ -161,8 +159,8 @@ var TextAdv;
         if (sceneDiv != null) {
             var linkElms = new Array();
             pickupElements(sceneDiv, 'link', linkElms);
-            for (var i = 0, len = linkElms.length; i < len; i++) {
-                var linkElm = linkElms[i];
+            for (var i_2 = 0, len = linkElms.length; i_2 < len; i_2++) {
+                var linkElm = linkElms[i_2];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
                     linkElm.style.textDecoration = 'underline';
@@ -171,7 +169,7 @@ var TextAdv;
                         linkElm.addEventListener('click', function () {
                             go(toIdx, linkElm);
                         });
-                    })(scene.links[i].toIdx, linkElm);
+                    })(scene.links[i_2].toIdx, linkElm);
                 }
             }
         }

@@ -142,22 +142,22 @@ namespace TextAdv {
     }
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
-        let parentElm: HTMLElement | null = null;
+        let sceneElm: HTMLElement | null = null;
         let step: number = 0;
         if (selectedElm != null) {
             // 選択されたものを赤くする
             if ($mode == MODE_MAKIMONO) {
-                parentElm = searchUpperElement(selectedElm, 'scene');
+                sceneElm = searchUpperElement(selectedElm, 'scene');
             } else {
-                parentElm = $display;
+                sceneElm = $display;
             }
 
-            if (parentElm != null) {
-                parentElm.id.match(/^sc(\d+)$/);
+            if (sceneElm != null) {
+                sceneElm.id.match(/^sc(\d+)$/);
                 step = +RegExp.$1;
 
                 let linkElms: HTMLElement[] = new Array();
-                pickupElements(parentElm, 'link', linkElms);
+                pickupElements(sceneElm, 'link', linkElms);
                 for (let i: number = 0; i < linkElms.length; i++) {
                     linkElms[i].style.color = $linkColor;
                 }
@@ -165,18 +165,16 @@ namespace TextAdv {
             }
         }
 
-        if (parentElm != null) {
-            // 次に表示する用にすでに表示しているものを消す
-            let i: number = step + 1;
-            while (true) {
-                let elm: HTMLElement | null = document.getElementById('sc' + i);
-                if (elm == null) {
-                    break;
-                }
-                parentElm.removeChild(elm);
-
-                i++;
+        // 次に表示する用にすでに表示しているものを消す
+        let i: number = step + 1;
+        while (true) {
+            let elm: HTMLElement | null = document.getElementById('sc' + i);
+            if (elm == null) {
+                break;
             }
+            $display.removeChild(elm);
+
+            i++;
         }
 
         let scene: Scene = $scenes[idx];
