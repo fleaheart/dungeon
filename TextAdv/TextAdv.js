@@ -178,7 +178,7 @@ var TextAdv;
         }
         $trace.push(idx);
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            scroll();
+            scrollStart(selectedElm);
         }
     }
     TextAdv.go = go;
@@ -218,15 +218,52 @@ var TextAdv;
     var $timer;
     var $interval = 5;
     var $dy = 10;
+    var $base = null;
+    var $selectedElm = null;
+    var $lastTop = 0;
+    function scrollStart(selectedElm) {
+        if (selectedElm == undefined) {
+            return;
+        }
+        if ($base == null) {
+            $base = $display;
+            while ($base.style.height == '') {
+                if ($base.tagName == 'BODY') {
+                    break;
+                }
+                var elm = $base.parentNode;
+                if (elm == null) {
+                    break;
+                }
+                else {
+                    $base = elm;
+                }
+            }
+        }
+        $selectedElm = selectedElm;
+        var rect = $selectedElm.getBoundingClientRect();
+        $lastTop = rect.top + 1;
+        scroll();
+    }
     function scroll() {
-        if (window.innerHeight + window.pageYOffset < document.body.scrollHeight) {
-            window.scrollBy(0, $dy);
+        if ($base == null || $selectedElm == null) {
+            return;
+        }
+        var rect = $selectedElm.getBoundingClientRect();
+        if (rect.top < $lastTop && 20 < rect.top) {
+            if ($base.tagName == 'BODY') {
+                window.scrollBy(0, $dy);
+            }
+            else {
+                $base.scrollTop = $base.scrollTop + $dy;
+            }
             $timer = setTimeout(arguments.callee, $interval);
+            $lastTop = rect.top;
             return;
         }
         clearTimeout($timer);
+        $selectedElm = null;
     }
-    TextAdv.scroll = scroll;
 })(TextAdv || (TextAdv = {}));
 window.addEventListener('load', function () {
     var displayElm = document.getElementById('display');

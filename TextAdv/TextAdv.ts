@@ -226,7 +226,7 @@ namespace TextAdv {
 
         // 画面をスクロールする
         if ($mode == MODE_MAKIMONO) {
-            scroll();
+            scrollStart(selectedElm);
         }
 
     }
@@ -274,14 +274,55 @@ namespace TextAdv {
     let $timer: number;
     let $interval: number = 5;
     let $dy: number = 10;
+    let $base: HTMLElement | null = null;
+    let $selectedElm: HTMLElement | null = null;
+    let $lastTop: number = 0;
 
-    export function scroll(): void {
-        if (window.innerHeight + window.pageYOffset < document.body.scrollHeight) {
-            window.scrollBy(0, $dy);
+    function scrollStart(selectedElm?: HTMLElement) {
+        if (selectedElm == undefined) {
+            return;
+        }
+
+        // スクロールするelementの決定 height指定のあるもの
+        if ($base == null) {
+            $base = $display;
+            while ($base.style.height == '') {
+                if ($base.tagName == 'BODY') {
+                    break;
+                }
+                let elm: Node | null = $base.parentNode;
+                if (elm == null) {
+                    break;
+                } else {
+                    $base = <HTMLElement>elm;
+                }
+            }
+        }
+        $selectedElm = selectedElm;
+        let rect: ClientRect = $selectedElm.getBoundingClientRect();
+        $lastTop = rect.top + 1;
+
+        scroll();
+    }
+
+    function scroll(): void {
+        if ($base == null || $selectedElm == null) {
+            return;
+        }
+
+        let rect: ClientRect = $selectedElm.getBoundingClientRect();
+        if (rect.top < $lastTop && 20 < rect.top) {
+            if ($base.tagName == 'BODY') {
+                window.scrollBy(0, $dy);
+            } else {
+                $base.scrollTop = $base.scrollTop + $dy;
+            }
             $timer = setTimeout(arguments.callee, $interval);
+            $lastTop = rect.top;
             return;
         }
         clearTimeout($timer);
+        $selectedElm = null;
     }
 }
 
