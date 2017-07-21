@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=480,user-scalable=no" />
+
+    <title>マップ</title>
+
+    <style type="text/css">
+        html {
+            touch-action: manipulation;
+        }
+        
+        canvas {
+            border: 1px solid black;
+        }
+        
+        .map {
+            border: solid 2px black;
+            padding: 0px;
+            background-color: lightgrey;
+            vertical-align: top;
+        }
+        
+        .kukaku {
+            display: inline-block;
+            padding: 0px;
+            margin: 0px;
+            background-color: white;
+            vertical-align: top;
+            text-align: center;
+        }
+        
+        .nakami {
+            display: table-cell;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .controler {
+            border: solid 2px black;
+            padding: 0px;
+            background-color: lightgrey;
+        }
+        
+        .controler .block {
+            display: inline-block;
+            padding: 0px;
+            margin: 0px;
+            background-color: white;
+            vertical-align: top;
+            text-align: center;
+            border: 1px solid red;
+            width: 72px;
+            height: 72px;
+        }
+    </style>
+
+    <script type="text/javascript" src="Dangeon.js"></script>
+</head>
+
+<body>
+    <canvas id="map3d" width="400" height="300"></canvas>
+
+    <div id="div_submap" class="map" style="display:nonex; position:absolute; top:320px; left:320px;">
+    </div>
+    <div id="div_map" class="map" style="display:none;">
+    </div>
+    <div id="div_controler" class="controler" style="width: 240px; height: 240px; text-align: center;">
+        <div id="" class="controler block">
+
+        </div>
+        <div id="ctrl_W" class="controler block">
+            W
+        </div>
+        <div id="" class="controler block">
+
+        </div><br>
+        <div id="ctrl_A" class="controler block">
+            A
+        </div>
+        <div id="" class="controler block">
+
+        </div>
+        <div id="ctrl_D" class="controler block">
+            D
+        </div><br>
+        <div id="" class="controler block">
+
+        </div>
+        <div id="" class="controler block">
+
+        </div>
+        <div id="" class="controler block">
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

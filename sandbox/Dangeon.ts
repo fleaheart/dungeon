@@ -53,6 +53,8 @@ namespace $KEY {
  */
 window.addEventListener('load', (): void => {
 
+    document.addEventListener('touchstart', touchEvent);
+    document.addEventListener('click', clickEvent);
     document.addEventListener('keydown', keyDownEvent);
 
     let div_map: HTMLElement | null = document.getElementById('div_map');
@@ -72,8 +74,44 @@ window.addEventListener('load', (): void => {
     submapview();
 });
 
+function touchEvent(evt: TouchEvent) {
+    let elm: Element | null = evt.srcElement;
+    if (elm == null) {
+        return;
+    }
+    clickElement(elm);
+    evt.preventDefault();
+}
+
+function clickEvent(evt: MouseEvent) {
+    let elm: Element | null = evt.srcElement;
+    if (elm == null) {
+        return;
+    }
+    clickElement(elm);
+}
+
+function clickElement(elm: Element) {
+    let keyCode: number = 0;
+    if (elm.id == 'ctrl_W') {
+        keyCode = $KEY.W;
+    } else if (elm.id == 'ctrl_A') {
+        keyCode = $KEY.A;
+    } else if (elm.id == 'ctrl_D') {
+        keyCode = $KEY.D;
+    }
+
+    if (0 < keyCode) {
+        keyOperation(keyCode);
+    }
+}
+
 function keyDownEvent(evt: KeyboardEvent): void {
     let keyCode: number = evt.keyCode;
+    keyOperation(keyCode);
+}
+
+function keyOperation(keyCode: number) {
     if (keyCode == $KEY.W) {
         let kabeChar: string = $mapdata[$pc.ypos].charAt($pc.xpos);
         let kabeType: number = parseInt(kabeChar, 16);

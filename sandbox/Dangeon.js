@@ -37,24 +37,57 @@ var $KEY;
     $KEY.D = 68;
 })($KEY || ($KEY = {}));
 window.addEventListener('load', function () {
-    var div_map;
+    document.addEventListener('touchstart', touchEvent);
+    document.addEventListener('click', clickEvent);
     document.addEventListener('keydown', keyDownEvent);
-    div_map = document.getElementById('div_map');
+    var div_map = document.getElementById('div_map');
     if (div_map != null) {
         mapview(div_map, $mapdata);
     }
     $pc.xpos = 0;
     $pc.ypos = 7;
     $pc.muki = 0;
-    var nakami;
-    nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+    var nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
     if (nakami != null) {
         nakami.innerHTML = '↑';
     }
     submapview();
 });
+function touchEvent(evt) {
+    var elm = evt.srcElement;
+    if (elm == null) {
+        return;
+    }
+    clickElement(elm);
+    evt.preventDefault();
+}
+function clickEvent(evt) {
+    var elm = evt.srcElement;
+    if (elm == null) {
+        return;
+    }
+    clickElement(elm);
+}
+function clickElement(elm) {
+    var keyCode = 0;
+    if (elm.id == 'ctrl_W') {
+        keyCode = $KEY.W;
+    }
+    else if (elm.id == 'ctrl_A') {
+        keyCode = $KEY.A;
+    }
+    else if (elm.id == 'ctrl_D') {
+        keyCode = $KEY.D;
+    }
+    if (0 < keyCode) {
+        keyOperation(keyCode);
+    }
+}
 function keyDownEvent(evt) {
     var keyCode = evt.keyCode;
+    keyOperation(keyCode);
+}
+function keyOperation(keyCode) {
     if (keyCode == $KEY.W) {
         var kabeChar = $mapdata[$pc.ypos].charAt($pc.xpos);
         var kabeType = parseInt(kabeChar, 16);
