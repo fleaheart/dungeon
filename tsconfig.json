@@ -4,7 +4,6 @@
         "module": "commonjs",
         "noImplicitAny": true,
         "noImplicitReturns": true,
-        "noImplicitNull": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "strictNullChecks": true,
