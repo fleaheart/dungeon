@@ -9,6 +9,9 @@ namespace SaikoroBattle {
 
     let _mainBoard: HTMLDivElement;
 
+    let _playerHPElm: HTMLSpanElement;
+    let _enemyhpElm: HTMLSpanElement;
+
     function getElementById(elementId: string): HTMLElement {
         let elm: HTMLElement | null = document.getElementById(elementId);
         if (elm == null) {
@@ -20,6 +23,9 @@ namespace SaikoroBattle {
     window.addEventListener('load', () => {
         _debugBoard = <HTMLDivElement>getElementById('debugBoard');
         _mainBoard = <HTMLDivElement>getElementById('mainBoard');
+
+        _playerHPElm = <HTMLSpanElement>getElementById('playerHP');
+        _enemyhpElm = <HTMLSpanElement>getElementById('enemyHP');
 
         let startButton: HTMLButtonElement = <HTMLButtonElement>document.createElement('BUTTON');
 
@@ -39,19 +45,23 @@ namespace SaikoroBattle {
         return integerRandom(6);
     }
 
+    // メンバー変数
     let _mode: number = 0;
     let _attackArray: number[] = [20, 20, 30, 30, 40, 40];
-    let _defenseArray: (number | null)[] = [0, 5, 10, 0, -5, -10, null];
-    let _hp: number;
-    let _tekihp: number;
+    let _attackTextArray: string[] = ['パンチ', 'パンチ', 'キック', 'キック', '張り手', '張り手'];
+    let _defenseArray: (number | null)[] = [0, 5, 10, -5, -10, null];
+    let _defenseTextArray: string[] = ['普通に喰らう', 'ちょっとガード', 'だいぶガード', '余計に喰らう', 'かなり喰らう', '完全にかわす'];
+    let _playerhp: number;
+    let _enemyhp: number;
     let _attack: number;
     let _defense: number | null;
 
     function susumeruGame() {
 
         if (_mode == 0) {
-            _hp = 100;
-            _tekihp = 100;
+            _playerhp = 100;
+            _enemyhp = 100;
+            nokoriHpHyouji();
             debug('start');
             _mode = 1;
             return;
@@ -61,7 +71,7 @@ namespace SaikoroBattle {
             let me: number = saikoro();
             _attack = _attackArray[me];
 
-            debug('attack:[' + String(me + 1) + ']' + _attack);
+            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
             _mode = 2;
             return;
         }
@@ -70,7 +80,7 @@ namespace SaikoroBattle {
             let me: number = saikoro();
             _defense = _defenseArray[me];
 
-            debug('defense:[' + String(me + 1) + ']' + _defense);
+            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
             _mode = 3;
             return;
         }
@@ -84,12 +94,13 @@ namespace SaikoroBattle {
                 }
             }
 
-            _tekihp = _tekihp - damage;
+            _enemyhp = _enemyhp - damage;
 
+            nokoriHpHyouji();
             debug('damage:' + damage);
-            debug('teki nokori:' + _tekihp);
+            debug('enemy nokori:' + _enemyhp);
 
-            if (_tekihp <= 0) {
+            if (_enemyhp <= 0) {
                 debug('win');
                 _mode = 0;
                 return;
@@ -103,7 +114,7 @@ namespace SaikoroBattle {
             let me: number = saikoro();
             _attack = _attackArray[me];
 
-            debug('attack:[' + String(me + 1) + ']' + _attack);
+            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
             _mode = 5;
             return;
         }
@@ -112,7 +123,7 @@ namespace SaikoroBattle {
             let me: number = saikoro();
             _defense = _defenseArray[me];
 
-            debug('defense:[' + String(me + 1) + ']' + _defense);
+            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
             _mode = 6;
             return;
         }
@@ -126,12 +137,13 @@ namespace SaikoroBattle {
                 }
             }
 
-            _hp = _hp - damage;
+            _playerhp = _playerhp - damage;
 
+            nokoriHpHyouji();
             debug('damage:' + damage);
-            debug('player nokori:' + _hp);
+            debug('player nokori:' + _playerhp);
 
-            if (_hp <= 0) {
+            if (_playerhp <= 0) {
                 debug('loose');
                 _mode = 0;
                 return;
@@ -140,5 +152,11 @@ namespace SaikoroBattle {
             _mode = 1;
             return;
         }
+    }
+
+    function nokoriHpHyouji() {
+        _playerHPElm.textContent = String(_playerhp);
+        _enemyhpElm.textContent = String(_enemyhp);
+
     }
 }

@@ -7,6 +7,8 @@ var SaikoroBattle;
         _debugBoard.innerHTML = html;
     }
     var _mainBoard;
+    var _playerHPElm;
+    var _enemyhpElm;
     function getElementById(elementId) {
         var elm = document.getElementById(elementId);
         if (elm == null) {
@@ -17,6 +19,8 @@ var SaikoroBattle;
     window.addEventListener('load', function () {
         _debugBoard = getElementById('debugBoard');
         _mainBoard = getElementById('mainBoard');
+        _playerHPElm = getElementById('playerHP');
+        _enemyhpElm = getElementById('enemyHP');
         var startButton = document.createElement('BUTTON');
         startButton.textContent = 'start';
         startButton.addEventListener('click', susumeruGame);
@@ -31,15 +35,18 @@ var SaikoroBattle;
     }
     var _mode = 0;
     var _attackArray = [20, 20, 30, 30, 40, 40];
-    var _defenseArray = [0, 5, 10, 0, -5, -10, null];
-    var _hp;
-    var _tekihp;
+    var _attackTextArray = ['パンチ', 'パンチ', 'キック', 'キック', '張り手', '張り手'];
+    var _defenseArray = [0, 5, 10, -5, -10, null];
+    var _defenseTextArray = ['普通に喰らう', 'ちょっとガード', 'だいぶガード', '余計に喰らう', 'かなり喰らう', '完全にかわす'];
+    var _playerhp;
+    var _enemyhp;
     var _attack;
     var _defense;
     function susumeruGame() {
         if (_mode == 0) {
-            _hp = 100;
-            _tekihp = 100;
+            _playerhp = 100;
+            _enemyhp = 100;
+            nokoriHpHyouji();
             debug('start');
             _mode = 1;
             return;
@@ -47,14 +54,14 @@ var SaikoroBattle;
         if (_mode == 1) {
             var me = saikoro();
             _attack = _attackArray[me];
-            debug('attack:[' + String(me + 1) + ']' + _attack);
+            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
             _mode = 2;
             return;
         }
         if (_mode == 2) {
             var me = saikoro();
             _defense = _defenseArray[me];
-            debug('defense:[' + String(me + 1) + ']' + _defense);
+            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
             _mode = 3;
             return;
         }
@@ -66,10 +73,11 @@ var SaikoroBattle;
                     damage = 0;
                 }
             }
-            _tekihp = _tekihp - damage;
+            _enemyhp = _enemyhp - damage;
+            nokoriHpHyouji();
             debug('damage:' + damage);
-            debug('teki nokori:' + _tekihp);
-            if (_tekihp <= 0) {
+            debug('enemy nokori:' + _enemyhp);
+            if (_enemyhp <= 0) {
                 debug('win');
                 _mode = 0;
                 return;
@@ -80,14 +88,14 @@ var SaikoroBattle;
         if (_mode == 4) {
             var me = saikoro();
             _attack = _attackArray[me];
-            debug('attack:[' + String(me + 1) + ']' + _attack);
+            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
             _mode = 5;
             return;
         }
         if (_mode == 5) {
             var me = saikoro();
             _defense = _defenseArray[me];
-            debug('defense:[' + String(me + 1) + ']' + _defense);
+            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
             _mode = 6;
             return;
         }
@@ -99,10 +107,11 @@ var SaikoroBattle;
                     damage = 0;
                 }
             }
-            _hp = _hp - damage;
+            _playerhp = _playerhp - damage;
+            nokoriHpHyouji();
             debug('damage:' + damage);
-            debug('player nokori:' + _hp);
-            if (_hp <= 0) {
+            debug('player nokori:' + _playerhp);
+            if (_playerhp <= 0) {
                 debug('loose');
                 _mode = 0;
                 return;
@@ -110,6 +119,10 @@ var SaikoroBattle;
             _mode = 1;
             return;
         }
+    }
+    function nokoriHpHyouji() {
+        _playerHPElm.textContent = String(_playerhp);
+        _enemyhpElm.textContent = String(_enemyhp);
     }
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikotoBattole.js.map
