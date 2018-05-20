@@ -6,6 +6,9 @@ var SaikoroBattle;
         html += text + '<br>';
         _debugBoard.innerHTML = html;
     }
+    function debugClear() {
+        _debugBoard.innerHTML = '';
+    }
     var _mainBoard;
     var _playerHPElm;
     var _enemyhpElm;
@@ -52,31 +55,19 @@ var SaikoroBattle;
             return;
         }
         if (_mode == 1) {
-            var me = saikoro();
-            _attack = _attackArray[me];
-            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
+            attack('player');
             _mode = 2;
             return;
         }
         if (_mode == 2) {
-            var me = saikoro();
-            _defense = _defenseArray[me];
-            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
+            defense('ememy');
             _mode = 3;
             return;
         }
         if (_mode == 3) {
-            var damage = 0;
-            if (_defense != null) {
-                damage = _attack - _defense;
-                if (damage < 0) {
-                    damage = 0;
-                }
-            }
+            var damage = hantei('enemy');
             _enemyhp = _enemyhp - damage;
             nokoriHpHyouji();
-            debug('damage:' + damage);
-            debug('enemy nokori:' + _enemyhp);
             if (_enemyhp <= 0) {
                 debug('win');
                 _mode = 0;
@@ -86,31 +77,19 @@ var SaikoroBattle;
             return;
         }
         if (_mode == 4) {
-            var me = saikoro();
-            _attack = _attackArray[me];
-            debug('attack:[' + String(me + 1) + ']' + _attackTextArray[me] + _attack);
+            attack('enemy');
             _mode = 5;
             return;
         }
         if (_mode == 5) {
-            var me = saikoro();
-            _defense = _defenseArray[me];
-            debug('defense:[' + String(me + 1) + ']' + _defenseTextArray[me] + _defense);
+            defense('player');
             _mode = 6;
             return;
         }
         if (_mode == 6) {
-            var damage = 0;
-            if (_defense != null) {
-                damage = _attack - _defense;
-                if (damage < 0) {
-                    damage = 0;
-                }
-            }
+            var damage = hantei('player');
             _playerhp = _playerhp - damage;
             nokoriHpHyouji();
-            debug('damage:' + damage);
-            debug('player nokori:' + _playerhp);
             if (_playerhp <= 0) {
                 debug('loose');
                 _mode = 0;
@@ -123,6 +102,28 @@ var SaikoroBattle;
     function nokoriHpHyouji() {
         _playerHPElm.textContent = String(_playerhp);
         _enemyhpElm.textContent = String(_enemyhp);
+    }
+    function attack(tekimikata) {
+        var me = saikoro();
+        _attack = _attackArray[me];
+        debugClear();
+        debug(tekimikata + 'の攻撃: さいころの目 → [' + String(me + 1) + ']' + _attackTextArray[me]);
+    }
+    function defense(tekimikata) {
+        var me = saikoro();
+        _defense = _defenseArray[me];
+        debug(tekimikata + 'の防御:[' + String(me + 1) + ']' + _defenseTextArray[me]);
+    }
+    function hantei(tekimikata) {
+        var damage = 0;
+        if (_defense != null) {
+            damage = _attack - _defense;
+            if (damage < 0) {
+                damage = 0;
+            }
+        }
+        debug(tekimikata + 'は ' + damage + 'ポイントのダメージを喰らった');
+        return damage;
     }
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikotoBattole.js.map
