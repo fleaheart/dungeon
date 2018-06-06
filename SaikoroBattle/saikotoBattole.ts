@@ -6,7 +6,7 @@ namespace SaikoroBattle {
         html += text + '<br>';
         _debugBoard.innerHTML = html;
     }
-    function debugClear():void {
+    function debugClear(): void {
         _debugBoard.innerHTML = '';
     }
 
@@ -48,22 +48,98 @@ namespace SaikoroBattle {
         return integerRandom(6);
     }
 
+    class Item {
+        constructor(public name: string, public detail: string, public power: number) { }
+
+        public clone(): Item {
+            return new Item(this.name, this.detail, this.power);
+        }
+    }
+
+    class AttackItem extends Item {
+
+    }
+
+    let punch = new AttackItem('パンチ', '', 20);
+    let kick = new AttackItem('キック', '', 30);
+    let goshouha = new AttackItem('張り手', '', 40);
+
+    class DefenseItem extends Item {
+        through: boolean = false;
+        nigashiPoint: number = 0;
+
+        public clone(): DefenseItem {
+            let item = new DefenseItem(this.name, this.detail, this.power);
+            item.through = this.through;
+            item.nigashiPoint = this.nigashiPoint;
+
+            return item;
+        }
+
+    }
+
+    let futsu = new DefenseItem('普通に喰らう', '', 0);
+    let guard1 = new DefenseItem('ちょっとガード', '', 5);
+    let guard2 = new DefenseItem('だいぶガード', '', 10);
+    let yokei1 = new DefenseItem('余計に喰らう', '', -5);
+    let yokei2 = new DefenseItem('かなり喰らう', '', -10);
+    let kawasu = new DefenseItem('完全にかわす', '', 0);
+    kawasu.through = true;
+
+    class Chara {
+        type: string;
+
+        name: string;
+        hitpoint: number;
+
+        attackPalette: Array<AttackItem>;
+        defensePalette: Array<DefenseItem>;
+
+        constructor(type: string, name: string) {
+            this.type = type;
+            this.name = name;
+            this.hitpoint = 0;
+
+            this.attackPalette = new Array<AttackItem>();
+            this.defensePalette = new Array<DefenseItem>();
+        }
+
+        setAttackPalette = (palette: Array<AttackItem>) => {
+            this.attackPalette.length = 0;
+            for (let i = 0, l: number = palette.length; i < l; i++) {
+                this.attackPalette.push(palette[i].clone());
+            }
+        }
+
+        setDefensePalette = (palette: Array<DefenseItem>) => {
+            this.defensePalette.length = 0;
+            for (let i = 0, l: number = palette.length; i < l; i++) {
+                this.defensePalette.push(palette[i].clone());
+            }
+        }
+    }
+
     // メンバー変数
     let _mode: number = 0;
-    let _attackArray: number[] = [20, 20, 30, 30, 40, 40];
-    let _attackTextArray: string[] = ['パンチ', 'パンチ', 'キック', 'キック', '張り手', '張り手'];
-    let _defenseArray: (number | null)[] = [0, 5, 10, -5, -10, null];
-    let _defenseTextArray: string[] = ['普通に喰らう', 'ちょっとガード', 'だいぶガード', '余計に喰らう', 'かなり喰らう', '完全にかわす'];
-    let _playerhp: number;
-    let _enemyhp: number;
-    let _attack: number;
-    let _defense: number | null;
+    let _attack: AttackItem;
+    let _defense: DefenseItem;
+
+    let defaultAttackPalette: Array<AttackItem> = [punch, punch, kick, kick, goshouha, goshouha];
+    let defaultDefensePalette: Array<DefenseItem> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
+
+    let plyerobj = new Chara('main', 'player');
+    plyerobj.setAttackPalette(defaultAttackPalette);
+    plyerobj.setDefensePalette(defaultDefensePalette);
+
+    let enemyobj = new Chara('enemy', '敵');
+    enemyobj.setAttackPalette(defaultAttackPalette);
+    enemyobj.setDefensePalette(defaultDefensePalette);
 
     function susumeruGame() {
 
         if (_mode == 0) {
-            _playerhp = 100;
-            _enemyhp = 100;
+            plyerobj.hitpoint = 100;
+            enemyobj.hitpoint = 100;
             nokoriHpHyouji();
             debug('start');
             _mode = 1;
@@ -71,24 +147,24 @@ namespace SaikoroBattle {
         }
 
         if (_mode == 1) {
-            attack('player');
+            attack(plyerobj);
             _mode = 2;
             return;
         }
 
         if (_mode == 2) {
-            defense('ememy');
+            defense(enemyobj);
             _mode = 3;
             return;
         }
 
         if (_mode == 3) {
-            let damage: number = hantei('enemy');
-            _enemyhp = _enemyhp - damage;
+            let damage: number = hantei(enemyobj);
+            enemyobj.hitpoint = enemyobj.hitpoint - damage;
 
             nokoriHpHyouji();
 
-            if (_enemyhp <= 0) {
+            if (enemyobj.hitpoint <= 0) {
                 debug('win');
                 _mode = 0;
                 return;
@@ -99,24 +175,24 @@ namespace SaikoroBattle {
         }
 
         if (_mode == 4) {
-            attack('enemy');
+            attack(enemyobj);
             _mode = 5;
             return;
         }
 
         if (_mode == 5) {
-            defense('player');
+            defense(plyerobj);
             _mode = 6;
             return;
         }
 
         if (_mode == 6) {
-            let damage: number = hantei('player');
-            _playerhp = _playerhp - damage;
+            let damage: number = hantei(plyerobj);
+            plyerobj.hitpoint = plyerobj.hitpoint - damage;
 
             nokoriHpHyouji();
 
-            if (_playerhp <= 0) {
+            if (plyerobj.hitpoint <= 0) {
                 debug('loose');
                 _mode = 0;
                 return;
@@ -128,35 +204,39 @@ namespace SaikoroBattle {
     }
 
     function nokoriHpHyouji(): void {
-        _playerHPElm.textContent = String(_playerhp);
-        _enemyhpElm.textContent = String(_enemyhp);
+        _playerHPElm.textContent = String(plyerobj.hitpoint);
+        _enemyhpElm.textContent = String(enemyobj.hitpoint);
     }
 
-    function attack(tekimikata: string): void {
+    function attack(chara: Chara): void {
         let me: number = saikoro();
-        _attack = _attackArray[me];
+        let item = chara.attackPalette[me];
+
+        _attack = item;
 
         debugClear();
-        debug(tekimikata + 'の攻撃: さいころの目 → [' + String(me + 1) + ']' + _attackTextArray[me]);
+        debug(chara.name + 'の攻撃: さいころの目 → [' + String(me + 1) + ']' + item.name);
     }
 
-    function defense(tekimikata: string): void {
+    function defense(chara: Chara): void {
         let me: number = saikoro();
-        _defense = _defenseArray[me];
+        let item = chara.defensePalette[me];
 
-        debug(tekimikata + 'の防御:[' + String(me + 1) + ']' + _defenseTextArray[me]);
+        _defense = item;
+
+        debug(chara.name + 'の防御:[' + String(me + 1) + ']' + item.name);
     }
 
-    function hantei(tekimikata: string): number {
+    function hantei(chara: Chara): number {
         let damage: number = 0;
-        if (_defense != null) {
-            damage = _attack - _defense;
+        if (!_defense.through) {
+            damage = _attack.power - _defense.power;
             if (damage < 0) {
                 damage = 0;
             }
         }
 
-        debug(tekimikata + 'は ' + damage + 'ポイントのダメージを喰らった');
+        debug(chara.name + 'は ' + damage + 'ポイントのダメージを喰らった');
 
         return damage;
     }
