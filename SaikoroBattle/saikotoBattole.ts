@@ -48,25 +48,51 @@ namespace SaikoroBattle {
         return integerRandom(6);
     }
 
-    class Item {
-        constructor(public name: string, public detail: string, public power: number) { }
-
-        public clone(): Item {
-            return new Item(this.name, this.detail, this.power);
-        }
+    interface ActionItem {
+        type: string;
+        name: string;
+        detail: string;
+        power: number;
     }
 
-    class AttackItem extends Item {
+    class AttackItem implements ActionItem {
+        type: string;
+        name: string;
+        detail: string;
+        power: number;
 
+        constructor(name: string, detail: string, power: number) {
+            this.type = 'attack';
+            this.name = name;
+            this.detail = detail;
+            this.power = power;
+        }
+
+        public clone(): AttackItem {
+            let item = new AttackItem(this.name, this.detail, this.power);
+
+            return item;
+        }
     }
 
     let punch = new AttackItem('パンチ', '', 20);
     let kick = new AttackItem('キック', '', 30);
     let goshouha = new AttackItem('張り手', '', 40);
 
-    class DefenseItem extends Item {
+    class DefenseItem implements ActionItem {
+        type: string;
+        name: string;
+        detail: string;
+        power: number;
         through: boolean = false;
         nigashiPoint: number = 0;
+
+        constructor(name: string, detail: string, power: number) {
+            this.type = 'defense';
+            this.name = name;
+            this.detail = detail;
+            this.power = power;
+        }
 
         public clone(): DefenseItem {
             let item = new DefenseItem(this.name, this.detail, this.power);
@@ -75,7 +101,6 @@ namespace SaikoroBattle {
 
             return item;
         }
-
     }
 
     let futsu = new DefenseItem('普通に喰らう', '', 0);

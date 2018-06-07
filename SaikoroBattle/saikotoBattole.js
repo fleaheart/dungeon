@@ -1,13 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var SaikoroBattle;
 (function (SaikoroBattle) {
     var _debugBoard;
@@ -46,34 +36,30 @@ var SaikoroBattle;
     function saikoro() {
         return integerRandom(6);
     }
-    var Item = (function () {
-        function Item(name, detail, power) {
+    var AttackItem = (function () {
+        function AttackItem(name, detail, power) {
+            this.type = 'attack';
             this.name = name;
             this.detail = detail;
             this.power = power;
         }
-        Item.prototype.clone = function () {
-            return new Item(this.name, this.detail, this.power);
+        AttackItem.prototype.clone = function () {
+            var item = new AttackItem(this.name, this.detail, this.power);
+            return item;
         };
-        return Item;
-    }());
-    var AttackItem = (function (_super) {
-        __extends(AttackItem, _super);
-        function AttackItem() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
         return AttackItem;
-    }(Item));
+    }());
     var punch = new AttackItem('パンチ', '', 20);
     var kick = new AttackItem('キック', '', 30);
     var goshouha = new AttackItem('張り手', '', 40);
-    var DefenseItem = (function (_super) {
-        __extends(DefenseItem, _super);
-        function DefenseItem() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.through = false;
-            _this.nigashiPoint = 0;
-            return _this;
+    var DefenseItem = (function () {
+        function DefenseItem(name, detail, power) {
+            this.through = false;
+            this.nigashiPoint = 0;
+            this.type = 'defense';
+            this.name = name;
+            this.detail = detail;
+            this.power = power;
         }
         DefenseItem.prototype.clone = function () {
             var item = new DefenseItem(this.name, this.detail, this.power);
@@ -82,7 +68,7 @@ var SaikoroBattle;
             return item;
         };
         return DefenseItem;
-    }(Item));
+    }());
     var futsu = new DefenseItem('普通に喰らう', '', 0);
     var guard1 = new DefenseItem('ちょっとガード', '', 5);
     var guard2 = new DefenseItem('だいぶガード', '', 10);
