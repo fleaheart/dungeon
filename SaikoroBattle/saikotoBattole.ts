@@ -121,8 +121,6 @@ namespace SaikoroBattle {
 
     // メンバー変数
     let _mode: number = 0;
-    let _attack: AttackItem;
-    let _defense: DefenseItem;
 
     let defaultAttackPalette: Array<AttackItem> = [punch, punch, kick, kick, goshouha, goshouha];
     let defaultDefensePalette: Array<DefenseItem> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
@@ -141,65 +139,32 @@ namespace SaikoroBattle {
             plyerobj.hitpoint = 100;
             enemyobj.hitpoint = 100;
             nokoriHpHyouji();
+            debugClear();
             debug('start');
             _mode = 1;
             return;
         }
 
         if (_mode == 1) {
-            attack(plyerobj);
-            _mode = 2;
-            return;
-        }
-
-        if (_mode == 2) {
-            defense(enemyobj);
-            _mode = 3;
-            return;
-        }
-
-        if (_mode == 3) {
-            let damage: number = hantei(enemyobj);
-            enemyobj.hitpoint = enemyobj.hitpoint - damage;
-
-            nokoriHpHyouji();
-
+            attackDefence(plyerobj, enemyobj);
             if (enemyobj.hitpoint <= 0) {
                 debug('win');
                 _mode = 0;
+            } else {
+                _mode = 2;
                 return;
             }
-
-            _mode = 4;
-            return;
         }
 
-        if (_mode == 4) {
-            attack(enemyobj);
-            _mode = 5;
-            return;
-        }
-
-        if (_mode == 5) {
-            defense(plyerobj);
-            _mode = 6;
-            return;
-        }
-
-        if (_mode == 6) {
-            let damage: number = hantei(plyerobj);
-            plyerobj.hitpoint = plyerobj.hitpoint - damage;
-
-            nokoriHpHyouji();
-
+        if (_mode == 2) {
+            attackDefence(enemyobj, plyerobj);
             if (plyerobj.hitpoint <= 0) {
                 debug('loose');
                 _mode = 0;
+            } else {
+                _mode = 1;
                 return;
             }
-
-            _mode = 1;
-            return;
         }
     }
 
@@ -208,36 +173,37 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitpoint);
     }
 
-    function attack(chara: Chara): void {
-        let me: number = saikoro();
-        let item = chara.attackPalette[me];
-
-        _attack = item;
-
+    function attackDefence(attacker: Chara, defender: Chara): void {
         debugClear();
-        debug(chara.name + 'の攻撃: さいころの目 → [' + String(me + 1) + ']' + item.name);
-    }
 
-    function defense(chara: Chara): void {
-        let me: number = saikoro();
-        let item = chara.defensePalette[me];
+        let attackMe: number = saikoro();
+        let attackItem: AttackItem = attacker.attackPalette[attackMe];
 
-        _defense = item;
+        debug(attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name);
 
-        debug(chara.name + 'の防御:[' + String(me + 1) + ']' + item.name);
-    }
+        let defenderMe: number = saikoro();
+        let defenderItem: DefenseItem = defender.defensePalette[defenderMe];
 
-    function hantei(chara: Chara): number {
+        debug(defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name);
+
         let damage: number = 0;
-        if (!_defense.through) {
-            damage = _attack.power - _defense.power;
+        if (!defenderItem.through) {
+            damage = attackItem.power - defenderItem.power;
             if (damage < 0) {
                 damage = 0;
             }
+            debug(defender.name + 'は ' + damage + 'ポイントのダメージを喰らった');
         }
 
-        debug(chara.name + 'は ' + damage + 'ポイントのダメージを喰らった');
+        defender.hitpoint = defender.hitpoint - damage;
+        if (defender.hitpoint <= 0) {
+            defender.hitpoint = 0;
+        }
 
-        return damage;
+        nokoriHpHyouji();
+
+        if (defender.hitpoint <= 0) {
+            debug(defender.name + 'は、倒れた');
+        }
     }
 }

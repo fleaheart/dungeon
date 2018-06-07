@@ -114,8 +114,6 @@ var SaikoroBattle;
         return Chara;
     }());
     var _mode = 0;
-    var _attack;
-    var _defense;
     var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
     var defaultDefensePalette = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
     var plyerobj = new Chara('main', 'player');
@@ -129,82 +127,62 @@ var SaikoroBattle;
             plyerobj.hitpoint = 100;
             enemyobj.hitpoint = 100;
             nokoriHpHyouji();
+            debugClear();
             debug('start');
             _mode = 1;
             return;
         }
         if (_mode == 1) {
-            attack(plyerobj);
-            _mode = 2;
-            return;
-        }
-        if (_mode == 2) {
-            defense(enemyobj);
-            _mode = 3;
-            return;
-        }
-        if (_mode == 3) {
-            var damage = hantei(enemyobj);
-            enemyobj.hitpoint = enemyobj.hitpoint - damage;
-            nokoriHpHyouji();
+            attackDefence(plyerobj, enemyobj);
             if (enemyobj.hitpoint <= 0) {
                 debug('win');
                 _mode = 0;
+            }
+            else {
+                _mode = 2;
                 return;
             }
-            _mode = 4;
-            return;
         }
-        if (_mode == 4) {
-            attack(enemyobj);
-            _mode = 5;
-            return;
-        }
-        if (_mode == 5) {
-            defense(plyerobj);
-            _mode = 6;
-            return;
-        }
-        if (_mode == 6) {
-            var damage = hantei(plyerobj);
-            plyerobj.hitpoint = plyerobj.hitpoint - damage;
-            nokoriHpHyouji();
+        if (_mode == 2) {
+            attackDefence(enemyobj, plyerobj);
             if (plyerobj.hitpoint <= 0) {
                 debug('loose');
                 _mode = 0;
+            }
+            else {
+                _mode = 1;
                 return;
             }
-            _mode = 1;
-            return;
         }
     }
     function nokoriHpHyouji() {
         _playerHPElm.textContent = String(plyerobj.hitpoint);
         _enemyhpElm.textContent = String(enemyobj.hitpoint);
     }
-    function attack(chara) {
-        var me = saikoro();
-        var item = chara.attackPalette[me];
-        _attack = item;
+    function attackDefence(attacker, defender) {
         debugClear();
-        debug(chara.name + 'の攻撃: さいころの目 → [' + String(me + 1) + ']' + item.name);
-    }
-    function defense(chara) {
-        var me = saikoro();
-        var item = chara.defensePalette[me];
-        _defense = item;
-        debug(chara.name + 'の防御:[' + String(me + 1) + ']' + item.name);
-    }
-    function hantei(chara) {
+        var attackMe = saikoro();
+        var attackItem = attacker.attackPalette[attackMe];
+        debug(attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name);
+        var defenderMe = saikoro();
+        var defenderItem = defender.defensePalette[defenderMe];
+        debug(defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name);
         var damage = 0;
-        if (!_defense.through) {
-            damage = _attack.power - _defense.power;
+        if (!defenderItem.through) {
+            damage = attackItem.power - defenderItem.power;
             if (damage < 0) {
                 damage = 0;
             }
+            debug(defender.name + 'は ' + damage + 'ポイントのダメージを喰らった');
         }
-        debug(chara.name + 'は ' + damage + 'ポイントのダメージを喰らった');
-        return damage;
+        defender.hitpoint = defender.hitpoint - damage;
+        if (defender.hitpoint <= 0) {
+            defender.hitpoint = 0;
+        }
+        nokoriHpHyouji();
+        if (defender.hitpoint <= 0) {
+            debug(defender.name + 'は、倒れた');
+        }
     }
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikotoBattole.js.map
