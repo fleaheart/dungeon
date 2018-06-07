@@ -24,7 +24,9 @@ var TextAdv;
         var lines = result.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
             lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (m, g1) {
-                m = null;
+                if (m != null) {
+                    m = null;
+                }
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });

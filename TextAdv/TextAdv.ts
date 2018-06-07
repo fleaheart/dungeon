@@ -32,7 +32,9 @@ namespace TextAdv {
 
         for (let i: number = 0, len: number = lines.length; i < len; i++) {
             lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (m: string | null, g1: string): string => {
-                m = null;    // mは捨てる
+                if (m != null) {
+                    m = null;    // mは捨てる warning回避コード
+                }
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
