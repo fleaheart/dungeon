@@ -111,11 +111,11 @@ namespace SaikoroBattle {
     let kawasu = new DefenseItem('完全にかわす', '', 0);
     kawasu.through = true;
 
-    class Chara {
+    class Charactor {
         type: string;
 
         name: string;
-        hitpoint: number;
+        hitPoint: number;
 
         attackPalette: Array<AttackItem>;
         defensePalette: Array<DefenseItem>;
@@ -123,7 +123,7 @@ namespace SaikoroBattle {
         constructor(type: string, name: string) {
             this.type = type;
             this.name = name;
-            this.hitpoint = 0;
+            this.hitPoint = 0;
 
             this.attackPalette = new Array<AttackItem>();
             this.defensePalette = new Array<DefenseItem>();
@@ -150,19 +150,19 @@ namespace SaikoroBattle {
     let defaultAttackPalette: Array<AttackItem> = [punch, punch, kick, kick, goshouha, goshouha];
     let defaultDefensePalette: Array<DefenseItem> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
 
-    let plyerobj = new Chara('main', 'player');
+    let plyerobj = new Charactor('main', 'player');
     plyerobj.setAttackPalette(defaultAttackPalette);
     plyerobj.setDefensePalette(defaultDefensePalette);
 
-    let enemyobj = new Chara('enemy', '敵');
+    let enemyobj = new Charactor('enemy', '敵');
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
     function susumeruGame() {
 
         if (_mode == 0) {
-            plyerobj.hitpoint = 100;
-            enemyobj.hitpoint = 100;
+            plyerobj.hitPoint = 100;
+            enemyobj.hitPoint = 100;
             nokoriHpHyouji();
             debugClear();
             debug('start');
@@ -172,7 +172,7 @@ namespace SaikoroBattle {
 
         if (_mode == 1) {
             attackDefence(plyerobj, enemyobj);
-            if (enemyobj.hitpoint <= 0) {
+            if (enemyobj.hitPoint <= 0) {
                 debug('win');
                 _mode = 0;
             } else {
@@ -183,7 +183,7 @@ namespace SaikoroBattle {
 
         if (_mode == 2) {
             attackDefence(enemyobj, plyerobj);
-            if (plyerobj.hitpoint <= 0) {
+            if (plyerobj.hitPoint <= 0) {
                 debug('loose');
                 _mode = 0;
             } else {
@@ -194,11 +194,11 @@ namespace SaikoroBattle {
     }
 
     function nokoriHpHyouji(): void {
-        _playerHPElm.textContent = String(plyerobj.hitpoint);
-        _enemyhpElm.textContent = String(enemyobj.hitpoint);
+        _playerHPElm.textContent = String(plyerobj.hitPoint);
+        _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    function attackDefence(attacker: Chara, defender: Chara): void {
+    function attackDefence(attacker: Charactor, defender: Charactor): void {
         debugClear();
 
         let attackMe: number = saikoro();
@@ -220,14 +220,14 @@ namespace SaikoroBattle {
             debug(defender.name + 'は ' + damage + 'ポイントのダメージを喰らった');
         }
 
-        defender.hitpoint = defender.hitpoint - damage;
-        if (defender.hitpoint <= 0) {
-            defender.hitpoint = 0;
+        defender.hitPoint = defender.hitPoint - damage;
+        if (defender.hitPoint <= 0) {
+            defender.hitPoint = 0;
         }
 
         nokoriHpHyouji();
 
-        if (defender.hitpoint <= 0) {
+        if (defender.hitPoint <= 0) {
             debug(defender.name + 'は、倒れた');
         }
     }
