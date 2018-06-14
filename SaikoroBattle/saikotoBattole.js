@@ -76,8 +76,8 @@ var SaikoroBattle;
     var yokei2 = new DefenseItem('かなり喰らう', '', -10);
     var kawasu = new DefenseItem('完全にかわす', '', 0);
     kawasu.through = true;
-    var Chara = (function () {
-        function Chara(type, name) {
+    var Charactor = (function () {
+        function Charactor(type, name) {
             var _this = this;
             this.setAttackPalette = function (palette) {
                 _this.attackPalette.length = 0;
@@ -93,25 +93,25 @@ var SaikoroBattle;
             };
             this.type = type;
             this.name = name;
-            this.hitpoint = 0;
+            this.hitPoint = 0;
             this.attackPalette = new Array();
             this.defensePalette = new Array();
         }
-        return Chara;
+        return Charactor;
     }());
     var _mode = 0;
     var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
     var defaultDefensePalette = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
-    var plyerobj = new Chara('main', 'player');
+    var plyerobj = new Charactor('main', 'player');
     plyerobj.setAttackPalette(defaultAttackPalette);
     plyerobj.setDefensePalette(defaultDefensePalette);
-    var enemyobj = new Chara('enemy', '敵');
+    var enemyobj = new Charactor('enemy', '敵');
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
     function susumeruGame() {
         if (_mode == 0) {
-            plyerobj.hitpoint = 100;
-            enemyobj.hitpoint = 100;
+            plyerobj.hitPoint = 100;
+            enemyobj.hitPoint = 100;
             nokoriHpHyouji();
             debugClear();
             debug('start');
@@ -120,7 +120,7 @@ var SaikoroBattle;
         }
         if (_mode == 1) {
             attackDefence(plyerobj, enemyobj);
-            if (enemyobj.hitpoint <= 0) {
+            if (enemyobj.hitPoint <= 0) {
                 debug('win');
                 _mode = 0;
             }
@@ -131,7 +131,7 @@ var SaikoroBattle;
         }
         if (_mode == 2) {
             attackDefence(enemyobj, plyerobj);
-            if (plyerobj.hitpoint <= 0) {
+            if (plyerobj.hitPoint <= 0) {
                 debug('loose');
                 _mode = 0;
             }
@@ -142,33 +142,84 @@ var SaikoroBattle;
         }
     }
     function nokoriHpHyouji() {
-        _playerHPElm.textContent = String(plyerobj.hitpoint);
-        _enemyhpElm.textContent = String(enemyobj.hitpoint);
+        _playerHPElm.textContent = String(plyerobj.hitPoint);
+        _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
+    var _doTasks;
     function attackDefence(attacker, defender) {
-        debugClear();
+        var tasks = new Array();
+        tasks.push(new Task(debugClear, null, 100));
         var attackMe = saikoro();
         var attackItem = attacker.attackPalette[attackMe];
-        debug(attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name);
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name, 300));
         var defenderMe = saikoro();
         var defenderItem = defender.defensePalette[defenderMe];
-        debug(defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name);
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name, 300));
         var damage = 0;
         if (!defenderItem.through) {
             damage = attackItem.power - defenderItem.power;
             if (damage < 0) {
                 damage = 0;
             }
-            debug(defender.name + 'は ' + damage + 'ポイントのダメージを喰らった');
+            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', 300));
         }
-        defender.hitpoint = defender.hitpoint - damage;
-        if (defender.hitpoint <= 0) {
-            defender.hitpoint = 0;
+        defender.hitPoint = defender.hitPoint - damage;
+        if (defender.hitPoint <= 0) {
+            defender.hitPoint = 0;
         }
-        nokoriHpHyouji();
-        if (defender.hitpoint <= 0) {
-            debug(defender.name + 'は、倒れた');
+        tasks.push(new Task(nokoriHpHyouji, null, 300));
+        if (defender.hitPoint <= 0) {
+            tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
         }
+        _doTasks = new DoTasks(tasks);
+        _doTasks.start();
     }
+    var Task = (function () {
+        function Task(func, param, wait) {
+            this.func = func;
+            this.param = param;
+            this.wait = wait;
+        }
+        return Task;
+    }());
+    var DoTasks = (function () {
+        function DoTasks(tasks) {
+            this.step = null;
+            this.timer = null;
+            this.tasks = tasks;
+        }
+        DoTasks.prototype.start = function () {
+            this.step = 0;
+            this.doTask();
+        };
+        DoTasks.prototype.doTask = function () {
+            var _this = this;
+            if (this.step == null) {
+                this.destroy();
+                return;
+            }
+            if (this.timer != null) {
+                window.clearTimeout(this.timer);
+            }
+            if (this.tasks.length <= this.step) {
+                this.destroy();
+                return;
+            }
+            var func = this.tasks[this.step].func;
+            var param = this.tasks[this.step].param;
+            var wait = this.tasks[this.step].wait;
+            func(param);
+            this.step++;
+            this.timer = window.setTimeout(function () { _this.doTask(); }, wait);
+        };
+        DoTasks.prototype.destroy = function () {
+            this.step = null;
+            if (this.timer != null) {
+                window.clearTimeout(this.timer);
+            }
+            this.timer = null;
+        };
+        return DoTasks;
+    }());
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikotoBattole.js.map

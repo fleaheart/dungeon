@@ -198,18 +198,22 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
+    let _doTasks: DoTasks;
     function attackDefence(attacker: Charactor, defender: Charactor): void {
-        debugClear();
+
+        let tasks = new Array<Task>();
+
+        tasks.push(new Task(debugClear, null, 100));
 
         let attackMe: number = saikoro();
         let attackItem: AttackItem = attacker.attackPalette[attackMe];
 
-        debug(attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name);
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name, 300));
 
         let defenderMe: number = saikoro();
         let defenderItem: DefenseItem = defender.defensePalette[defenderMe];
 
-        debug(defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name);
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name, 300));
 
         let damage: number = 0;
         if (!defenderItem.through) {
@@ -217,7 +221,7 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            debug(defender.name + 'は ' + damage + 'ポイントのダメージを喰らった');
+            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', 300));
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -225,10 +229,72 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        nokoriHpHyouji();
+        tasks.push(new Task(nokoriHpHyouji, null, 300));
 
         if (defender.hitPoint <= 0) {
-            debug(defender.name + 'は、倒れた');
+            tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
+        }
+
+        _doTasks = new DoTasks(tasks);
+        _doTasks.start();
+    }
+
+    class Task {
+        public func: Function;
+        public param: any;
+        public wait: number;
+
+        constructor(func: Function, param: any, wait: number) {
+            this.func = func;
+            this.param = param;
+            this.wait = wait;
+        }
+    }
+
+    class DoTasks {
+        private tasks: Array<Task>;
+        private step: number | null = null;
+        private timer: number | null = null;
+
+        constructor(tasks: Array<Task>) {
+            this.tasks = tasks;
+        }
+
+        public start() {
+            this.step = 0;
+            this.doTask();
+        }
+
+        public doTask() {
+            if (this.step == null) {
+                this.destroy();
+                return;
+            }
+            if (this.timer != null) {
+                window.clearTimeout(this.timer);
+            }
+            if (this.tasks.length <= this.step) {
+                this.destroy();
+                return;
+            }
+
+            let func = this.tasks[this.step].func;
+            let param = this.tasks[this.step].param;
+            let wait = this.tasks[this.step].wait;
+
+            func(param);
+
+            this.step++;
+
+            this.timer = window.setTimeout(() => { this.doTask(); }, wait);
+        }
+
+        public destroy() {
+            this.step = null;
+            if (this.timer != null) {
+                window.clearTimeout(this.timer);
+            }
+            this.timer = null;
         }
     }
 }
