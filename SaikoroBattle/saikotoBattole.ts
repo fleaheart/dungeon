@@ -158,38 +158,53 @@ namespace SaikoroBattle {
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
+    let _doTasks: DoTasks;
     function susumeruGame() {
 
-        if (_mode == 0) {
-            plyerobj.hitPoint = 100;
-            enemyobj.hitPoint = 100;
-            nokoriHpHyouji();
-            debugClear();
-            debug('start');
-            _mode = 1;
-            return;
-        }
+        let tasks: Array<Task> | null = null;
 
-        if (_mode == 1) {
-            attackDefence(plyerobj, enemyobj);
-            if (enemyobj.hitPoint <= 0) {
-                debug('win');
-                _mode = 0;
-            } else {
-                _mode = 2;
-                return;
-            }
-        }
+        while (true) {
+            if (_mode == 0) {
+                plyerobj.hitPoint = 100;
+                enemyobj.hitPoint = 100;
 
-        if (_mode == 2) {
-            attackDefence(enemyobj, plyerobj);
-            if (plyerobj.hitPoint <= 0) {
-                debug('loose');
-                _mode = 0;
-            } else {
+                tasks = new Array<Task>();
+                tasks.push(new Task(nokoriHpHyouji, null, 100));
+                tasks.push(new Task(debugClear, null, 100));
+                tasks.push(new Task(debug, 'start', 200));
                 _mode = 1;
-                return;
+                break;
             }
+
+            if (_mode == 1) {
+                tasks = attackDefence(plyerobj, enemyobj);
+                if (enemyobj.hitPoint <= 0) {
+                    tasks.push(new Task(debug, 'win', 700));
+                    _mode = 0;
+                } else {
+                    _mode = 2;
+                }
+                break;
+            }
+
+            if (_mode == 2) {
+                tasks = attackDefence(enemyobj, plyerobj);
+                if (plyerobj.hitPoint <= 0) {
+                    tasks.push(new Task(debug, 'loose', 700));
+                    _mode = 0;
+                } else {
+                    _mode = 1;
+                }
+                break;
+            }
+
+            // 無限ループになるので絶対
+            break;
+        }
+
+        if (tasks != null) {
+            _doTasks = new DoTasks(tasks);
+            _doTasks.start();
         }
     }
 
@@ -198,8 +213,7 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    let _doTasks: DoTasks;
-    function attackDefence(attacker: Charactor, defender: Charactor): void {
+    function attackDefence(attacker: Charactor, defender: Charactor): Array<Task> {
 
         let tasks = new Array<Task>();
 
@@ -235,8 +249,7 @@ namespace SaikoroBattle {
             tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
         }
 
-        _doTasks = new DoTasks(tasks);
-        _doTasks.start();
+        return tasks;
     }
 
     class Task {
