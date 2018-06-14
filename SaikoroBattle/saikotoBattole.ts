@@ -161,7 +161,7 @@ namespace SaikoroBattle {
     let _doTasks: DoTasks;
     function susumeruGame() {
 
-        let tasks: Array<Task> | null = null;
+        let tasks = new Array<Task>();
 
         while (true) {
             if (_mode == 0) {
@@ -177,7 +177,7 @@ namespace SaikoroBattle {
             }
 
             if (_mode == 1) {
-                tasks = attackDefence(plyerobj, enemyobj);
+                attackDefence(tasks, plyerobj, enemyobj);
                 if (enemyobj.hitPoint <= 0) {
                     tasks.push(new Task(debug, 'win', 700));
                     _mode = 0;
@@ -188,7 +188,7 @@ namespace SaikoroBattle {
             }
 
             if (_mode == 2) {
-                tasks = attackDefence(enemyobj, plyerobj);
+                attackDefence(tasks, enemyobj, plyerobj);
                 if (plyerobj.hitPoint <= 0) {
                     tasks.push(new Task(debug, 'loose', 700));
                     _mode = 0;
@@ -202,10 +202,8 @@ namespace SaikoroBattle {
             break;
         }
 
-        if (tasks != null) {
-            _doTasks = new DoTasks(tasks);
-            _doTasks.start();
-        }
+        _doTasks = new DoTasks(tasks);
+        _doTasks.start();
     }
 
     function nokoriHpHyouji(): void {
@@ -213,9 +211,7 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    function attackDefence(attacker: Charactor, defender: Charactor): Array<Task> {
-
-        let tasks = new Array<Task>();
+    function attackDefence(tasks: Array<Task>, attacker: Charactor, defender: Charactor): void {
 
         tasks.push(new Task(debugClear, null, 100));
 
@@ -248,8 +244,6 @@ namespace SaikoroBattle {
         if (defender.hitPoint <= 0) {
             tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
         }
-
-        return tasks;
     }
 
     class Task {
