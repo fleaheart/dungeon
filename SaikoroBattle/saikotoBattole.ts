@@ -169,9 +169,9 @@ namespace SaikoroBattle {
                 enemyobj.hitPoint = 100;
 
                 tasks = new Array<Task>();
-                tasks.push(new Task(nokoriHpHyouji, null, 100));
-                tasks.push(new Task(debugClear, null, 100));
-                tasks.push(new Task(debug, 'start', 200));
+                tasks.push(new Task(nokoriHpHyouji, null, Wait.Short));
+                tasks.push(new Task(debugClear, null, Wait.Short));
+                tasks.push(new Task(debug, 'start', Wait.Normal));
                 _mode = 1;
                 break;
             }
@@ -179,7 +179,7 @@ namespace SaikoroBattle {
             if (_mode == 1) {
                 attackDefence(tasks, plyerobj, enemyobj);
                 if (enemyobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'win', 700));
+                    tasks.push(new Task(debug, 'win', Wait.Slow));
                     _mode = 0;
                 } else {
                     _mode = 2;
@@ -190,7 +190,7 @@ namespace SaikoroBattle {
             if (_mode == 2) {
                 attackDefence(tasks, enemyobj, plyerobj);
                 if (plyerobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'loose', 700));
+                    tasks.push(new Task(debug, 'loose', Wait.Slow));
                     _mode = 0;
                 } else {
                     _mode = 1;
@@ -213,17 +213,17 @@ namespace SaikoroBattle {
 
     function attackDefence(tasks: Array<Task>, attacker: Charactor, defender: Charactor): void {
 
-        tasks.push(new Task(debugClear, null, 100));
+        tasks.push(new Task(debugClear, null, Wait.Short));
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, 300));
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal));
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, 300));
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal));
 
         let damage: number = 0;
         if (!defenderAction.through) {
@@ -231,7 +231,7 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', 300));
+            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal));
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -239,23 +239,37 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        tasks.push(new Task(nokoriHpHyouji, null, 300));
+        tasks.push(new Task(nokoriHpHyouji, null, Wait.Normal));
 
         if (defender.hitPoint <= 0) {
-            tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
+            tasks.push(new Task(debug, defender.name + 'は、倒れた', Wait.Normal));
         }
     }
 
     class Task {
         public func: Function;
         public param: any;
-        public wait: number;
+        public wait: WaitValue;
 
-        constructor(func: Function, param: any, wait: number) {
+        constructor(func: Function, param: any, wait: WaitValue) {
             this.func = func;
             this.param = param;
             this.wait = wait;
         }
+    }
+
+    class WaitValue {
+        public value: number = 0;
+        constructor(value: number) {
+            this.value = value;
+        }
+    }
+
+    class Wait {
+        public static Zero = new WaitValue(0);
+        public static Short = new WaitValue(100);
+        public static Normal = new WaitValue(300);
+        public static Slow = new WaitValue(700);
     }
 
     class DoTasks {
@@ -293,7 +307,7 @@ namespace SaikoroBattle {
 
             this.step++;
 
-            this.timer = window.setTimeout(() => { this.doTask(); }, wait);
+            this.timer = window.setTimeout(() => { this.doTask(); }, wait.value);
         }
 
         public destroy() {

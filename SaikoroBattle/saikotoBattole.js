@@ -116,16 +116,16 @@ var SaikoroBattle;
                 plyerobj.hitPoint = 100;
                 enemyobj.hitPoint = 100;
                 tasks = new Array();
-                tasks.push(new Task(nokoriHpHyouji, null, 100));
-                tasks.push(new Task(debugClear, null, 100));
-                tasks.push(new Task(debug, 'start', 200));
+                tasks.push(new Task(nokoriHpHyouji, null, Wait.Short));
+                tasks.push(new Task(debugClear, null, Wait.Short));
+                tasks.push(new Task(debug, 'start', Wait.Normal));
                 _mode = 1;
                 break;
             }
             if (_mode == 1) {
                 attackDefence(tasks, plyerobj, enemyobj);
                 if (enemyobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'win', 700));
+                    tasks.push(new Task(debug, 'win', Wait.Slow));
                     _mode = 0;
                 }
                 else {
@@ -136,7 +136,7 @@ var SaikoroBattle;
             if (_mode == 2) {
                 attackDefence(tasks, enemyobj, plyerobj);
                 if (plyerobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'loose', 700));
+                    tasks.push(new Task(debug, 'loose', Wait.Slow));
                     _mode = 0;
                 }
                 else {
@@ -154,28 +154,28 @@ var SaikoroBattle;
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
     function attackDefence(tasks, attacker, defender) {
-        tasks.push(new Task(debugClear, null, 100));
+        tasks.push(new Task(debugClear, null, Wait.Short));
         var attackMe = saikoro();
         var attackAction = attacker.attackPalette[attackMe];
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, 300));
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal));
         var defenderMe = saikoro();
         var defenderAction = defender.defensePalette[defenderMe];
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, 300));
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal));
         var damage = 0;
         if (!defenderAction.through) {
             damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', 300));
+            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal));
         }
         defender.hitPoint = defender.hitPoint - damage;
         if (defender.hitPoint <= 0) {
             defender.hitPoint = 0;
         }
-        tasks.push(new Task(nokoriHpHyouji, null, 300));
+        tasks.push(new Task(nokoriHpHyouji, null, Wait.Normal));
         if (defender.hitPoint <= 0) {
-            tasks.push(new Task(debug, defender.name + 'は、倒れた', 300));
+            tasks.push(new Task(debug, defender.name + 'は、倒れた', Wait.Normal));
         }
     }
     var Task = (function () {
@@ -185,6 +185,22 @@ var SaikoroBattle;
             this.wait = wait;
         }
         return Task;
+    }());
+    var WaitValue = (function () {
+        function WaitValue(value) {
+            this.value = 0;
+            this.value = value;
+        }
+        return WaitValue;
+    }());
+    var Wait = (function () {
+        function Wait() {
+        }
+        Wait.Zero = new WaitValue(0);
+        Wait.Short = new WaitValue(100);
+        Wait.Normal = new WaitValue(300);
+        Wait.Slow = new WaitValue(700);
+        return Wait;
     }());
     var DoTasks = (function () {
         function DoTasks(tasks) {
@@ -214,7 +230,7 @@ var SaikoroBattle;
             var wait = this.tasks[this.step].wait;
             func(param);
             this.step++;
-            this.timer = window.setTimeout(function () { _this.doTask(); }, wait);
+            this.timer = window.setTimeout(function () { _this.doTask(); }, wait.value);
         };
         DoTasks.prototype.destroy = function () {
             this.step = null;
