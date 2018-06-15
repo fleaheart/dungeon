@@ -36,24 +36,24 @@ var SaikoroBattle;
     function saikoro() {
         return integerRandom(6);
     }
-    var AttackItem = (function () {
-        function AttackItem(name, detail, power) {
+    var AttackAction = (function () {
+        function AttackAction(name, detail, power) {
             this.type = 'attack';
             this.name = name;
             this.detail = detail;
             this.power = power;
         }
-        AttackItem.prototype.clone = function () {
-            var item = new AttackItem(this.name, this.detail, this.power);
-            return item;
+        AttackAction.prototype.clone = function () {
+            var action = new AttackAction(this.name, this.detail, this.power);
+            return action;
         };
-        return AttackItem;
+        return AttackAction;
     }());
-    var punch = new AttackItem('パンチ', '', 20);
-    var kick = new AttackItem('キック', '', 30);
-    var goshouha = new AttackItem('張り手', '', 40);
-    var DefenseItem = (function () {
-        function DefenseItem(name, detail, power) {
+    var punch = new AttackAction('パンチ', '', 20);
+    var kick = new AttackAction('キック', '', 30);
+    var goshouha = new AttackAction('張り手', '', 40);
+    var DefenseAction = (function () {
+        function DefenseAction(name, detail, power) {
             this.through = false;
             this.nigashiPoint = 0;
             this.type = 'defense';
@@ -61,20 +61,20 @@ var SaikoroBattle;
             this.detail = detail;
             this.power = power;
         }
-        DefenseItem.prototype.clone = function () {
-            var item = new DefenseItem(this.name, this.detail, this.power);
-            item.through = this.through;
-            item.nigashiPoint = this.nigashiPoint;
-            return item;
+        DefenseAction.prototype.clone = function () {
+            var action = new DefenseAction(this.name, this.detail, this.power);
+            action.through = this.through;
+            action.nigashiPoint = this.nigashiPoint;
+            return action;
         };
-        return DefenseItem;
+        return DefenseAction;
     }());
-    var futsu = new DefenseItem('普通に喰らう', '', 0);
-    var guard1 = new DefenseItem('ちょっとガード', '', 5);
-    var guard2 = new DefenseItem('だいぶガード', '', 10);
-    var yokei1 = new DefenseItem('余計に喰らう', '', -5);
-    var yokei2 = new DefenseItem('かなり喰らう', '', -10);
-    var kawasu = new DefenseItem('完全にかわす', '', 0);
+    var futsu = new DefenseAction('普通に喰らう', '', 0);
+    var guard1 = new DefenseAction('ちょっとガード', '', 5);
+    var guard2 = new DefenseAction('だいぶガード', '', 10);
+    var yokei1 = new DefenseAction('余計に喰らう', '', -5);
+    var yokei2 = new DefenseAction('かなり喰らう', '', -10);
+    var kawasu = new DefenseAction('完全にかわす', '', 0);
     kawasu.through = true;
     var Charactor = (function () {
         function Charactor(type, name) {
@@ -156,14 +156,14 @@ var SaikoroBattle;
     function attackDefence(tasks, attacker, defender) {
         tasks.push(new Task(debugClear, null, 100));
         var attackMe = saikoro();
-        var attackItem = attacker.attackPalette[attackMe];
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name, 300));
+        var attackAction = attacker.attackPalette[attackMe];
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, 300));
         var defenderMe = saikoro();
-        var defenderItem = defender.defensePalette[defenderMe];
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name, 300));
+        var defenderAction = defender.defensePalette[defenderMe];
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, 300));
         var damage = 0;
-        if (!defenderItem.through) {
-            damage = attackItem.power - defenderItem.power;
+        if (!defenderAction.through) {
+            damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }

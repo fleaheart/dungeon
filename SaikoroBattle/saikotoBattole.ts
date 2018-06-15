@@ -48,14 +48,14 @@ namespace SaikoroBattle {
         return integerRandom(6);
     }
 
-    interface ActionItem {
+    interface Action {
         type: string;
         name: string;
         detail: string;
         power: number;
     }
 
-    class AttackItem implements ActionItem {
+    class AttackAction implements Action {
         type: string;
         name: string;
         detail: string;
@@ -68,18 +68,18 @@ namespace SaikoroBattle {
             this.power = power;
         }
 
-        public clone(): AttackItem {
-            let item = new AttackItem(this.name, this.detail, this.power);
+        public clone(): AttackAction {
+            let action = new AttackAction(this.name, this.detail, this.power);
 
-            return item;
+            return action;
         }
     }
 
-    let punch = new AttackItem('パンチ', '', 20);
-    let kick = new AttackItem('キック', '', 30);
-    let goshouha = new AttackItem('張り手', '', 40);
+    let punch = new AttackAction('パンチ', '', 20);
+    let kick = new AttackAction('キック', '', 30);
+    let goshouha = new AttackAction('張り手', '', 40);
 
-    class DefenseItem implements ActionItem {
+    class DefenseAction implements Action {
         type: string;
         name: string;
         detail: string;
@@ -94,21 +94,21 @@ namespace SaikoroBattle {
             this.power = power;
         }
 
-        public clone(): DefenseItem {
-            let item = new DefenseItem(this.name, this.detail, this.power);
-            item.through = this.through;
-            item.nigashiPoint = this.nigashiPoint;
+        public clone(): DefenseAction {
+            let action = new DefenseAction(this.name, this.detail, this.power);
+            action.through = this.through;
+            action.nigashiPoint = this.nigashiPoint;
 
-            return item;
+            return action;
         }
     }
 
-    let futsu = new DefenseItem('普通に喰らう', '', 0);
-    let guard1 = new DefenseItem('ちょっとガード', '', 5);
-    let guard2 = new DefenseItem('だいぶガード', '', 10);
-    let yokei1 = new DefenseItem('余計に喰らう', '', -5);
-    let yokei2 = new DefenseItem('かなり喰らう', '', -10);
-    let kawasu = new DefenseItem('完全にかわす', '', 0);
+    let futsu = new DefenseAction('普通に喰らう', '', 0);
+    let guard1 = new DefenseAction('ちょっとガード', '', 5);
+    let guard2 = new DefenseAction('だいぶガード', '', 10);
+    let yokei1 = new DefenseAction('余計に喰らう', '', -5);
+    let yokei2 = new DefenseAction('かなり喰らう', '', -10);
+    let kawasu = new DefenseAction('完全にかわす', '', 0);
     kawasu.through = true;
 
     class Charactor {
@@ -117,26 +117,26 @@ namespace SaikoroBattle {
         name: string;
         hitPoint: number;
 
-        attackPalette: Array<AttackItem>;
-        defensePalette: Array<DefenseItem>;
+        attackPalette: Array<AttackAction>;
+        defensePalette: Array<DefenseAction>;
 
         constructor(type: string, name: string) {
             this.type = type;
             this.name = name;
             this.hitPoint = 0;
 
-            this.attackPalette = new Array<AttackItem>();
-            this.defensePalette = new Array<DefenseItem>();
+            this.attackPalette = new Array<AttackAction>();
+            this.defensePalette = new Array<DefenseAction>();
         }
 
-        setAttackPalette = (palette: Array<AttackItem>) => {
+        setAttackPalette = (palette: Array<AttackAction>) => {
             this.attackPalette.length = 0;
             for (let i = 0, l: number = palette.length; i < l; i++) {
                 this.attackPalette.push(palette[i].clone());
             }
         }
 
-        setDefensePalette = (palette: Array<DefenseItem>) => {
+        setDefensePalette = (palette: Array<DefenseAction>) => {
             this.defensePalette.length = 0;
             for (let i = 0, l: number = palette.length; i < l; i++) {
                 this.defensePalette.push(palette[i].clone());
@@ -147,8 +147,8 @@ namespace SaikoroBattle {
     // メンバー変数
     let _mode: number = 0;
 
-    let defaultAttackPalette: Array<AttackItem> = [punch, punch, kick, kick, goshouha, goshouha];
-    let defaultDefensePalette: Array<DefenseItem> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
+    let defaultAttackPalette: Array<AttackAction> = [punch, punch, kick, kick, goshouha, goshouha];
+    let defaultDefensePalette: Array<DefenseAction> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
 
     let plyerobj = new Charactor('main', 'player');
     plyerobj.setAttackPalette(defaultAttackPalette);
@@ -216,18 +216,18 @@ namespace SaikoroBattle {
         tasks.push(new Task(debugClear, null, 100));
 
         let attackMe: number = saikoro();
-        let attackItem: AttackItem = attacker.attackPalette[attackMe];
+        let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackItem.name, 300));
+        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, 300));
 
         let defenderMe: number = saikoro();
-        let defenderItem: DefenseItem = defender.defensePalette[defenderMe];
+        let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderItem.name, 300));
+        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, 300));
 
         let damage: number = 0;
-        if (!defenderItem.through) {
-            damage = attackItem.power - defenderItem.power;
+        if (!defenderAction.through) {
+            damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }
