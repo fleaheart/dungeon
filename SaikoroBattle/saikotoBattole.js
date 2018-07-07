@@ -38,7 +38,6 @@ var SaikoroBattle;
     }
     var AttackAction = (function () {
         function AttackAction(name, detail, power) {
-            this.type = 'attack';
             this.name = name;
             this.detail = detail;
             this.power = power;
@@ -56,7 +55,6 @@ var SaikoroBattle;
         function DefenseAction(name, detail, power) {
             this.through = false;
             this.nigashiPoint = 0;
-            this.type = 'defense';
             this.name = name;
             this.detail = detail;
             this.power = power;
@@ -108,83 +106,97 @@ var SaikoroBattle;
     var enemyobj = new Charactor('enemy', '敵');
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
-    var _doTasks;
+    var tasks = null;
     function susumeruGame() {
-        var tasks = new Array();
-        while (true) {
-            if (_mode == 0) {
-                plyerobj.hitPoint = 100;
-                enemyobj.hitPoint = 100;
-                tasks = new Array();
-                tasks.push(new Task(nokoriHpHyouji, null, Wait.Short));
-                tasks.push(new Task(debugClear, null, Wait.Short));
-                tasks.push(new Task(debug, 'start', Wait.Normal));
-                _mode = 1;
-                break;
-            }
-            if (_mode == 1) {
-                attackDefence(tasks, plyerobj, enemyobj);
-                if (enemyobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'win', Wait.Slow));
-                    _mode = 0;
-                }
-                else {
-                    _mode = 2;
-                }
-                break;
-            }
-            if (_mode == 2) {
-                attackDefence(tasks, enemyobj, plyerobj);
-                if (plyerobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'loose', Wait.Slow));
-                    _mode = 0;
-                }
-                else {
-                    _mode = 1;
-                }
-                break;
-            }
-            break;
+        if (tasks == null) {
+            tasks = new Tasks();
         }
-        _doTasks = new DoTasks(tasks);
-        _doTasks.start();
+        else {
+            tasks.destroy();
+        }
+        if (_mode == 0) {
+            plyerobj.hitPoint = 100;
+            enemyobj.hitPoint = 100;
+            tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
+            tasks.addFunction(debugClear, null, Wait.Short);
+            tasks.addFunction(debug, 'start', Wait.Slow);
+            _mode = 1;
+        }
+        else if (_mode == 1) {
+            attackDefence(tasks, plyerobj, enemyobj);
+            if (enemyobj.hitPoint <= 0) {
+                tasks.addFunction(debug, 'win', Wait.Slow);
+                _mode = 0;
+            }
+            else {
+                _mode = 2;
+            }
+        }
+        else if (_mode == 2) {
+            attackDefence(tasks, enemyobj, plyerobj);
+            if (plyerobj.hitPoint <= 0) {
+                tasks.addFunction(debug, 'loose', Wait.Slow);
+                _mode = 0;
+            }
+            else {
+                _mode = 1;
+            }
+        }
+        tasks.do();
     }
     function nokoriHpHyouji() {
         _playerHPElm.textContent = String(plyerobj.hitPoint);
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
-    function attackDefence(tasks, attacker, defender) {
-        tasks.push(new Task(debugClear, null, Wait.Short));
+    function attackDefence(doTasks, attacker, defender) {
+        doTasks.addFunction(debugClear, null, Wait.Short);
         var attackMe = saikoro();
         var attackAction = attacker.attackPalette[attackMe];
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal));
+        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal);
         var defenderMe = saikoro();
         var defenderAction = defender.defensePalette[defenderMe];
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal));
+        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal);
         var damage = 0;
         if (!defenderAction.through) {
             damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal));
+            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal);
         }
         defender.hitPoint = defender.hitPoint - damage;
         if (defender.hitPoint <= 0) {
             defender.hitPoint = 0;
         }
-        tasks.push(new Task(nokoriHpHyouji, null, Wait.Normal));
+        doTasks.addFunction(nokoriHpHyouji, null, Wait.Normal);
         if (defender.hitPoint <= 0) {
-            tasks.push(new Task(debug, defender.name + 'は、倒れた', Wait.Normal));
+            doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
         }
     }
-    var Task = (function () {
-        function Task(func, param, wait) {
+    function taskEndWait(task, callback) {
+        if (task.mode != 'running') {
+            callback();
+            return;
+        }
+        window.setTimeout(function () { taskEndWait(task, callback); }, 100);
+    }
+    var FunctionTask = (function () {
+        function FunctionTask(func, param, wait) {
+            var _this = this;
+            this.mode = 'idle';
+            this.do = function () {
+                _this.mode = 'running';
+                _this.func(_this.param);
+                window.setTimeout(function () { _this.finish(); }, _this.wait.value);
+            };
+            this.finish = function () {
+                _this.mode = 'finish';
+            };
             this.func = func;
             this.param = param;
             this.wait = wait;
         }
-        return Task;
+        return FunctionTask;
     }());
     var WaitValue = (function () {
         function WaitValue(value) {
@@ -202,44 +214,42 @@ var SaikoroBattle;
         Wait.Slow = new WaitValue(700);
         return Wait;
     }());
-    var DoTasks = (function () {
-        function DoTasks(tasks) {
-            this.step = null;
-            this.timer = null;
-            this.tasks = tasks;
-        }
-        DoTasks.prototype.start = function () {
+    var Tasks = (function () {
+        function Tasks() {
+            this.mode = 'idle';
+            this.tasks = new Array();
             this.step = 0;
-            this.doTask();
+        }
+        Tasks.prototype.add = function (task) {
+            this.tasks.push(task);
         };
-        DoTasks.prototype.doTask = function () {
+        Tasks.prototype.addFunction = function (func, param, wait) {
+            var task = new FunctionTask(func, param, wait);
+            this.add(task);
+        };
+        Tasks.prototype.do = function () {
+            this.mode = 'running';
+            this.step = 0;
+            this.next();
+        };
+        Tasks.prototype.next = function () {
             var _this = this;
-            if (this.step == null) {
-                this.destroy();
+            if (this.tasks.length < this.step) {
+                this.finish();
                 return;
             }
-            if (this.timer != null) {
-                window.clearTimeout(this.timer);
-            }
-            if (this.tasks.length <= this.step) {
-                this.destroy();
-                return;
-            }
-            var func = this.tasks[this.step].func;
-            var param = this.tasks[this.step].param;
-            var wait = this.tasks[this.step].wait;
-            func(param);
-            this.step++;
-            this.timer = window.setTimeout(function () { _this.doTask(); }, wait.value);
+            var task = this.tasks[this.step];
+            task.do();
+            taskEndWait(task, function () { _this.step++; _this.next(); });
         };
-        DoTasks.prototype.destroy = function () {
-            this.step = null;
-            if (this.timer != null) {
-                window.clearTimeout(this.timer);
-            }
-            this.timer = null;
+        Tasks.prototype.finish = function () {
+            this.mode = 'finish';
         };
-        return DoTasks;
+        Tasks.prototype.destroy = function () {
+            this.tasks.length = 0;
+            this.mode = 'idle';
+        };
+        return Tasks;
     }());
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikotoBattole.js.map

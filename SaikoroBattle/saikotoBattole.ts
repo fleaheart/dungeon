@@ -153,52 +153,44 @@ namespace SaikoroBattle {
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
-    let _doTasks: DoTasks;
+    let tasks: Tasks | null = null;
+
     function susumeruGame() {
-
-        let tasks = new Array<Task>();
-
-        while (true) {
-            if (_mode == 0) {
-                plyerobj.hitPoint = 100;
-                enemyobj.hitPoint = 100;
-
-                tasks = new Array<Task>();
-                tasks.push(new Task(nokoriHpHyouji, null, Wait.Short));
-                tasks.push(new Task(debugClear, null, Wait.Short));
-                tasks.push(new Task(debug, 'start', Wait.Normal));
-                _mode = 1;
-                break;
-            }
-
-            if (_mode == 1) {
-                attackDefence(tasks, plyerobj, enemyobj);
-                if (enemyobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'win', Wait.Slow));
-                    _mode = 0;
-                } else {
-                    _mode = 2;
-                }
-                break;
-            }
-
-            if (_mode == 2) {
-                attackDefence(tasks, enemyobj, plyerobj);
-                if (plyerobj.hitPoint <= 0) {
-                    tasks.push(new Task(debug, 'loose', Wait.Slow));
-                    _mode = 0;
-                } else {
-                    _mode = 1;
-                }
-                break;
-            }
-
-            // 無限ループになるので絶対
-            break;
+        if (tasks == null) {
+            tasks = new Tasks();
+        } else {
+            tasks.destroy();
         }
 
-        _doTasks = new DoTasks(tasks);
-        _doTasks.start();
+        if (_mode == 0) {
+            plyerobj.hitPoint = 100;
+            enemyobj.hitPoint = 100;
+
+            tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
+            tasks.addFunction(debugClear, null, Wait.Short);
+            tasks.addFunction(debug, 'start', Wait.Slow);
+            _mode = 1;
+
+        } else if (_mode == 1) {
+            attackDefence(tasks, plyerobj, enemyobj);
+            if (enemyobj.hitPoint <= 0) {
+                tasks.addFunction(debug, 'win', Wait.Slow);
+                _mode = 0;
+            } else {
+                _mode = 2;
+            }
+
+        } else if (_mode == 2) {
+            attackDefence(tasks, enemyobj, plyerobj);
+            if (plyerobj.hitPoint <= 0) {
+                tasks.addFunction(debug, 'loose', Wait.Slow);
+                _mode = 0;
+            } else {
+                _mode = 1;
+            }
+        }
+
+        tasks.do();
     }
 
     function nokoriHpHyouji(): void {
@@ -206,19 +198,19 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    function attackDefence(tasks: Array<Task>, attacker: Charactor, defender: Charactor): void {
+    function attackDefence(doTasks: Tasks, attacker: Charactor, defender: Charactor): void {
 
-        tasks.push(new Task(debugClear, null, Wait.Short));
+        doTasks.addFunction(debugClear, null, Wait.Short);
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        tasks.push(new Task(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal));
+        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal);
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        tasks.push(new Task(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal));
+        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal);
 
         let damage: number = 0;
         if (!defenderAction.through) {
@@ -226,7 +218,7 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.push(new Task(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal));
+            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal);
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -234,14 +226,32 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        tasks.push(new Task(nokoriHpHyouji, null, Wait.Normal));
+        doTasks.addFunction(nokoriHpHyouji, null, Wait.Normal);
 
         if (defender.hitPoint <= 0) {
-            tasks.push(new Task(debug, defender.name + 'は、倒れた', Wait.Normal));
+            doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
         }
     }
 
-    class Task {
+    type ModeType = 'idle' | 'running' | 'finish';
+
+    interface Task {
+        mode: ModeType;
+        do: Function;
+        finish: Function;
+    }
+
+    function taskEndWait(task: Task, callback: Function): void {
+        if (task.mode != 'running') {
+            callback();
+            return;
+        }
+
+        window.setTimeout((): void => { taskEndWait(task, callback); }, 100);
+    }
+
+    class FunctionTask implements Task {
+        public mode: ModeType = 'idle';
         public func: Function;
         public param: any;
         public wait: WaitValue;
@@ -250,6 +260,17 @@ namespace SaikoroBattle {
             this.func = func;
             this.param = param;
             this.wait = wait;
+        }
+
+        public do = () => {
+            this.mode = 'running';
+            this.func(this.param);
+
+            window.setTimeout((): void => { this.finish(); }, this.wait.value);
+        }
+
+        public finish = (): void => {
+            this.mode = 'finish';
         }
     }
 
@@ -267,50 +288,48 @@ namespace SaikoroBattle {
         public static Slow = new WaitValue(700);
     }
 
-    class DoTasks {
-        private tasks: Array<Task>;
-        private step: number | null = null;
-        private timer: number | null = null;
+    class Tasks implements Task {
+        public mode: ModeType = 'idle';
+        public tasks: Array<Task> = new Array<Task>();
 
-        constructor(tasks: Array<Task>) {
-            this.tasks = tasks;
+        private step: number = 0;
+
+        public add(task: Task): void {
+            this.tasks.push(task);
         }
 
-        public start() {
+        public addFunction(func: Function, param: any, wait: WaitValue): void {
+            let task = new FunctionTask(func, param, wait);
+            this.add(task);
+        }
+
+        public do() {
+            this.mode = 'running';
             this.step = 0;
-            this.doTask();
+            this.next();
         }
 
-        public doTask() {
-            if (this.step == null) {
-                this.destroy();
-                return;
-            }
-            if (this.timer != null) {
-                window.clearTimeout(this.timer);
-            }
-            if (this.tasks.length <= this.step) {
-                this.destroy();
+        public next(): void {
+            if (this.tasks.length < this.step) {
+                this.finish();
                 return;
             }
 
-            let func = this.tasks[this.step].func;
-            let param = this.tasks[this.step].param;
-            let wait = this.tasks[this.step].wait;
+            let task = this.tasks[this.step];
 
-            func(param);
+            task.do();
 
-            this.step++;
-
-            this.timer = window.setTimeout(() => { this.doTask(); }, wait.value);
+            taskEndWait(task, (): void => { this.step++; this.next(); });
         }
 
-        public destroy() {
-            this.step = null;
-            if (this.timer != null) {
-                window.clearTimeout(this.timer);
-            }
-            this.timer = null;
+        public finish(): void {
+            this.mode = 'finish';
+        }
+
+        public destroy(): void {
+            this.tasks.length = 0;
+            this.mode = 'idle';
         }
     }
+
 }
