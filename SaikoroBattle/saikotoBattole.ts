@@ -49,20 +49,17 @@ namespace SaikoroBattle {
     }
 
     interface Action {
-        type: string;
         name: string;
         detail: string;
         power: number;
     }
 
     class AttackAction implements Action {
-        type: string;
         name: string;
         detail: string;
         power: number;
 
         constructor(name: string, detail: string, power: number) {
-            this.type = 'attack';
             this.name = name;
             this.detail = detail;
             this.power = power;
@@ -80,7 +77,6 @@ namespace SaikoroBattle {
     let goshouha = new AttackAction('張り手', '', 40);
 
     class DefenseAction implements Action {
-        type: string;
         name: string;
         detail: string;
         power: number;
@@ -88,7 +84,6 @@ namespace SaikoroBattle {
         nigashiPoint: number = 0;
 
         constructor(name: string, detail: string, power: number) {
-            this.type = 'defense';
             this.name = name;
             this.detail = detail;
             this.power = power;
