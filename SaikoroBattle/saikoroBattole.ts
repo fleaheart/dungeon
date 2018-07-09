@@ -10,7 +10,6 @@ namespace SaikoroBattle {
         _debugBoard.innerHTML = '';
     }
 
-    let _mainBoard: HTMLDivElement;
 
     let _playerHPElm: HTMLSpanElement;
     let _enemyhpElm: HTMLSpanElement;
@@ -25,19 +24,33 @@ namespace SaikoroBattle {
 
     window.addEventListener('load', () => {
         _debugBoard = <HTMLDivElement>getElementById('debugBoard');
-        _mainBoard = <HTMLDivElement>getElementById('mainBoard');
 
         _playerHPElm = <HTMLSpanElement>getElementById('playerHP');
         _enemyhpElm = <HTMLSpanElement>getElementById('enemyHP');
 
-        let startButton: HTMLButtonElement = <HTMLButtonElement>document.createElement('BUTTON');
-
-        startButton.textContent = 'start';
-
-        startButton.addEventListener('click', susumeruGame);
-
-        _mainBoard.appendChild(startButton);
+        initMainBoard();
     });
+
+    function initMainBoard(): void {
+        let mainBoard = <HTMLDivElement>getElementById('mainBoard');
+
+        let startButton = <HTMLButtonElement>document.createElement('BUTTON');
+        startButton.textContent = 'start';
+        startButton.addEventListener('click', susumeruGame);
+        mainBoard.appendChild(startButton);
+
+        let actionBoard = <HTMLDivElement>document.createElement('DIV');
+        actionBoard.id = 'attackActionBoard';
+        actionBoard.className = 'actionBoard';
+
+        for (let i = 0; i < 6; i++) {
+            let actionBox = <HTMLDivElement>document.createElement('DIV');
+            actionBox.className = 'actionBox';
+            actionBoard.appendChild(actionBox);
+        }
+
+        mainBoard.appendChild(actionBoard);
+    }
 
     function integerRandom(maxValue: number): number {
         let value = Math.random() * maxValue;
@@ -165,6 +178,10 @@ namespace SaikoroBattle {
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
+
+            let actionBoard = <HTMLDivElement>getElementById('attackActionBoard');
+
+            tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
 
             tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
             tasks.addFunction(debugClear, null, Wait.Short);
@@ -310,7 +327,7 @@ namespace SaikoroBattle {
         }
 
         public next(): void {
-            if (this.tasks.length < this.step) {
+            if (this.tasks.length <= this.step) {
                 this.finish();
                 return;
             }
@@ -332,4 +349,36 @@ namespace SaikoroBattle {
         }
     }
 
+    class ActionSetTask implements Task {
+        public mode: ModeType = 'idle';
+        constructor(private div: HTMLDivElement, private actionList: Array<Action>) { }
+
+        public do() {
+            this.mode = 'running';
+
+            let tasks = new Tasks();
+
+            let childNodes = this.div.childNodes;
+            for (let i = 0; i < 6; i++) {
+                let box = <HTMLDivElement>childNodes.item(i);
+                let action: Action = this.actionList[i];
+
+                tasks.addFunction(() => {
+                    this.setBox(box, action);
+                }, null, Wait.Short);
+            }
+
+            tasks.do();
+
+            taskEndWait(tasks, (): void => { this.finish(); });
+        }
+
+        public setBox(box: HTMLDivElement, action: Action) {
+            box.innerHTML = action.name;
+        }
+
+        public finish(): void {
+            this.mode = 'finish';
+        }
+    }
 }

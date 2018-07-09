@@ -9,7 +9,6 @@ var SaikoroBattle;
     function debugClear() {
         _debugBoard.innerHTML = '';
     }
-    var _mainBoard;
     var _playerHPElm;
     var _enemyhpElm;
     function getElementById(elementId) {
@@ -21,14 +20,26 @@ var SaikoroBattle;
     }
     window.addEventListener('load', function () {
         _debugBoard = getElementById('debugBoard');
-        _mainBoard = getElementById('mainBoard');
         _playerHPElm = getElementById('playerHP');
         _enemyhpElm = getElementById('enemyHP');
+        initMainBoard();
+    });
+    function initMainBoard() {
+        var mainBoard = getElementById('mainBoard');
         var startButton = document.createElement('BUTTON');
         startButton.textContent = 'start';
         startButton.addEventListener('click', susumeruGame);
-        _mainBoard.appendChild(startButton);
-    });
+        mainBoard.appendChild(startButton);
+        var actionBoard = document.createElement('DIV');
+        actionBoard.id = 'attackActionBoard';
+        actionBoard.className = 'actionBoard';
+        for (var i = 0; i < 6; i++) {
+            var actionBox = document.createElement('DIV');
+            actionBox.className = 'actionBox';
+            actionBoard.appendChild(actionBox);
+        }
+        mainBoard.appendChild(actionBoard);
+    }
     function integerRandom(maxValue) {
         var value = Math.random() * maxValue;
         return Math.floor(value);
@@ -117,6 +128,8 @@ var SaikoroBattle;
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
+            var actionBoard = getElementById('attackActionBoard');
+            tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
             tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
             tasks.addFunction(debugClear, null, Wait.Short);
             tasks.addFunction(debug, 'start', Wait.Slow);
@@ -234,7 +247,7 @@ var SaikoroBattle;
         };
         Tasks.prototype.next = function () {
             var _this = this;
-            if (this.tasks.length < this.step) {
+            if (this.tasks.length <= this.step) {
                 this.finish();
                 return;
             }
@@ -251,5 +264,38 @@ var SaikoroBattle;
         };
         return Tasks;
     }());
+    var ActionSetTask = (function () {
+        function ActionSetTask(div, actionList) {
+            this.div = div;
+            this.actionList = actionList;
+            this.mode = 'idle';
+        }
+        ActionSetTask.prototype.do = function () {
+            var _this = this;
+            this.mode = 'running';
+            var tasks = new Tasks();
+            var childNodes = this.div.childNodes;
+            var _loop_1 = function (i) {
+                var box = childNodes.item(i);
+                var action = this_1.actionList[i];
+                tasks.addFunction(function () {
+                    _this.setBox(box, action);
+                }, null, Wait.Short);
+            };
+            var this_1 = this;
+            for (var i = 0; i < 6; i++) {
+                _loop_1(i);
+            }
+            tasks.do();
+            taskEndWait(tasks, function () { _this.finish(); });
+        };
+        ActionSetTask.prototype.setBox = function (box, action) {
+            box.innerHTML = action.name;
+        };
+        ActionSetTask.prototype.finish = function () {
+            this.mode = 'finish';
+        };
+        return ActionSetTask;
+    }());
 })(SaikoroBattle || (SaikoroBattle = {}));
-//# sourceMappingURL=saikotoBattole.js.map
+//# sourceMappingURL=saikoroBattole.js.map

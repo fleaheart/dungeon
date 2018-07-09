@@ -1,0 +1,10 @@
+.actionBoard {
+    display: flex;
+    border: 1px dashed black;
+}
+
+.actionBox {
+    width: 120px;
+    height: 80px;
+    border: 1px dashed black;
+}
