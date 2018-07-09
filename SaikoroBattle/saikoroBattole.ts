@@ -258,17 +258,29 @@ namespace SaikoroBattle {
         finish: Function;
     }
 
-    function taskEndWait(task: Task, callback: Function): void {
-        if (task.mode != 'running') {
-            callback();
-            return;
+    class TaskCtrl {
+        static readonly DEFAULT_MODE: ModeType = 'idle';
+
+        static do(task: Task): void {
+            task.mode = 'running';
         }
 
-        window.setTimeout((): void => { taskEndWait(task, callback); }, 100);
+        static finish(task: Task): void {
+            task.mode = 'finish';
+        }
+
+        static wait(task: Task, callback: Function): void {
+            if (task.mode != 'running') {
+                callback();
+                return;
+            }
+
+            window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
+        }
     }
 
     class FunctionTask implements Task {
-        public mode: ModeType = 'idle';
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public func: Function;
         public param: any;
         public wait: WaitValue;
@@ -279,15 +291,15 @@ namespace SaikoroBattle {
             this.wait = wait;
         }
 
-        public do = () => {
-            this.mode = 'running';
+        public do(): void {
+            TaskCtrl.do(this);
             this.func(this.param);
 
             window.setTimeout((): void => { this.finish(); }, this.wait.value);
         }
 
-        public finish = (): void => {
-            this.mode = 'finish';
+        public finish(): void {
+            TaskCtrl.finish(this);
         }
     }
 
@@ -306,7 +318,7 @@ namespace SaikoroBattle {
     }
 
     class Tasks implements Task {
-        public mode: ModeType = 'idle';
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public tasks: Array<Task> = new Array<Task>();
 
         private step: number = 0;
@@ -321,7 +333,7 @@ namespace SaikoroBattle {
         }
 
         public do() {
-            this.mode = 'running';
+            TaskCtrl.do(this);
             this.step = 0;
             this.next();
         }
@@ -336,25 +348,25 @@ namespace SaikoroBattle {
 
             task.do();
 
-            taskEndWait(task, (): void => { this.step++; this.next(); });
+            TaskCtrl.wait(task, (): void => { this.step++; this.next(); });
         }
 
         public finish(): void {
-            this.mode = 'finish';
+            TaskCtrl.finish(this);
         }
 
         public destroy(): void {
             this.tasks.length = 0;
-            this.mode = 'idle';
+            this.mode = TaskCtrl.DEFAULT_MODE;
         }
     }
 
     class ActionSetTask implements Task {
-        public mode: ModeType = 'idle';
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         constructor(private div: HTMLDivElement, private actionList: Array<Action>) { }
 
         public do() {
-            this.mode = 'running';
+            TaskCtrl.do(this);
 
             let tasks = new Tasks();
 
@@ -370,7 +382,7 @@ namespace SaikoroBattle {
 
             tasks.do();
 
-            taskEndWait(tasks, (): void => { this.finish(); });
+            TaskCtrl.wait(tasks, (): void => { this.finish(); });
         }
 
         public setBox(box: HTMLDivElement, action: Action) {
@@ -378,7 +390,7 @@ namespace SaikoroBattle {
         }
 
         public finish(): void {
-            this.mode = 'finish';
+            TaskCtrl.finish(this);
         }
     }
 }

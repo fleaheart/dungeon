@@ -186,29 +186,41 @@ var SaikoroBattle;
             doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
         }
     }
-    function taskEndWait(task, callback) {
-        if (task.mode != 'running') {
-            callback();
-            return;
+    var TaskCtrl = (function () {
+        function TaskCtrl() {
         }
-        window.setTimeout(function () { taskEndWait(task, callback); }, 100);
-    }
+        TaskCtrl.do = function (task) {
+            task.mode = 'running';
+        };
+        TaskCtrl.finish = function (task) {
+            task.mode = 'finish';
+        };
+        TaskCtrl.wait = function (task, callback) {
+            if (task.mode != 'running') {
+                callback();
+                return;
+            }
+            window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
+        };
+        TaskCtrl.DEFAULT_MODE = 'idle';
+        return TaskCtrl;
+    }());
     var FunctionTask = (function () {
         function FunctionTask(func, param, wait) {
-            var _this = this;
-            this.mode = 'idle';
-            this.do = function () {
-                _this.mode = 'running';
-                _this.func(_this.param);
-                window.setTimeout(function () { _this.finish(); }, _this.wait.value);
-            };
-            this.finish = function () {
-                _this.mode = 'finish';
-            };
+            this.mode = TaskCtrl.DEFAULT_MODE;
             this.func = func;
             this.param = param;
             this.wait = wait;
         }
+        FunctionTask.prototype.do = function () {
+            var _this = this;
+            TaskCtrl.do(this);
+            this.func(this.param);
+            window.setTimeout(function () { _this.finish(); }, this.wait.value);
+        };
+        FunctionTask.prototype.finish = function () {
+            TaskCtrl.finish(this);
+        };
         return FunctionTask;
     }());
     var WaitValue = (function () {
@@ -229,7 +241,7 @@ var SaikoroBattle;
     }());
     var Tasks = (function () {
         function Tasks() {
-            this.mode = 'idle';
+            this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
             this.step = 0;
         }
@@ -241,7 +253,7 @@ var SaikoroBattle;
             this.add(task);
         };
         Tasks.prototype.do = function () {
-            this.mode = 'running';
+            TaskCtrl.do(this);
             this.step = 0;
             this.next();
         };
@@ -253,14 +265,14 @@ var SaikoroBattle;
             }
             var task = this.tasks[this.step];
             task.do();
-            taskEndWait(task, function () { _this.step++; _this.next(); });
+            TaskCtrl.wait(task, function () { _this.step++; _this.next(); });
         };
         Tasks.prototype.finish = function () {
-            this.mode = 'finish';
+            TaskCtrl.finish(this);
         };
         Tasks.prototype.destroy = function () {
             this.tasks.length = 0;
-            this.mode = 'idle';
+            this.mode = TaskCtrl.DEFAULT_MODE;
         };
         return Tasks;
     }());
@@ -268,11 +280,11 @@ var SaikoroBattle;
         function ActionSetTask(div, actionList) {
             this.div = div;
             this.actionList = actionList;
-            this.mode = 'idle';
+            this.mode = TaskCtrl.DEFAULT_MODE;
         }
         ActionSetTask.prototype.do = function () {
             var _this = this;
-            this.mode = 'running';
+            TaskCtrl.do(this);
             var tasks = new Tasks();
             var childNodes = this.div.childNodes;
             var _loop_1 = function (i) {
@@ -287,13 +299,13 @@ var SaikoroBattle;
                 _loop_1(i);
             }
             tasks.do();
-            taskEndWait(tasks, function () { _this.finish(); });
+            TaskCtrl.wait(tasks, function () { _this.finish(); });
         };
         ActionSetTask.prototype.setBox = function (box, action) {
             box.innerHTML = action.name;
         };
         ActionSetTask.prototype.finish = function () {
-            this.mode = 'finish';
+            TaskCtrl.finish(this);
         };
         return ActionSetTask;
     }());
