@@ -152,6 +152,119 @@ namespace SaikoroBattle {
         }
     }
 
+    type ModeType = 'idle' | 'running' | 'finish';
+
+    interface Task {
+        mode: ModeType;
+        do: Function;
+        finish: Function;
+    }
+
+    class TaskCtrl {
+        static readonly DEFAULT_MODE: ModeType = 'idle';
+
+        static do(task: Task): void {
+            task.mode = 'running';
+        }
+
+        static finish(task: Task): void {
+            task.mode = 'finish';
+        }
+
+        static wait(task: Task, callback: Function): void {
+            if (task.mode != 'running') {
+                callback();
+                return;
+            }
+
+            window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
+        }
+    }
+
+    class WaitValue {
+        public value: number = 0;
+        constructor(value: number) {
+            this.value = value;
+        }
+    }
+
+    class Wait {
+        public static Zero = new WaitValue(0);
+        public static Short = new WaitValue(100);
+        public static Normal = new WaitValue(300);
+        public static Slow = new WaitValue(700);
+    }
+
+    class Tasks implements Task {
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        public tasks: Array<Task> = new Array<Task>();
+
+        private step: number = 0;
+
+        public add(task: Task): void {
+            this.tasks.push(task);
+        }
+
+        public addFunction(func: Function, param: any, wait: WaitValue): void {
+            let task = new FunctionTask(func, param, wait);
+            this.add(task);
+        }
+
+        public do() {
+            TaskCtrl.do(this);
+            this.step = 0;
+            this.next();
+        }
+
+        public next(): void {
+            if (this.tasks.length <= this.step) {
+                this.finish();
+                return;
+            }
+
+            let task = this.tasks[this.step];
+
+            task.do();
+
+            TaskCtrl.wait(task, (): void => { this.step++; this.next(); });
+        }
+
+        public finish(): void {
+            TaskCtrl.finish(this);
+        }
+
+        public destroy(): void {
+            this.tasks.length = 0;
+            this.step = 0;
+            this.mode = TaskCtrl.DEFAULT_MODE;
+        }
+    }
+
+    class FunctionTask implements Task {
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        public func: Function;
+        public param: any;
+        public wait: WaitValue;
+
+        constructor(func: Function, param: any, wait: WaitValue) {
+            this.func = func;
+            this.param = param;
+            this.wait = wait;
+        }
+
+        public do(): void {
+            TaskCtrl.do(this);
+
+            this.func(this.param);
+
+            window.setTimeout((): void => { this.finish(); }, this.wait.value);
+        }
+
+        public finish(): void {
+            TaskCtrl.finish(this);
+        }
+    }
+
     // メンバー変数
     let _mode: number = 0;
 
@@ -166,14 +279,10 @@ namespace SaikoroBattle {
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
-    let tasks: Tasks | null = null;
+    let tasks: Tasks = new Tasks();
 
     function susumeruGame() {
-        if (tasks == null) {
-            tasks = new Tasks();
-        } else {
-            tasks.destroy();
-        }
+        tasks.destroy();
 
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
@@ -247,117 +356,6 @@ namespace SaikoroBattle {
 
         if (defender.hitPoint <= 0) {
             doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
-        }
-    }
-
-    type ModeType = 'idle' | 'running' | 'finish';
-
-    interface Task {
-        mode: ModeType;
-        do: Function;
-        finish: Function;
-    }
-
-    class TaskCtrl {
-        static readonly DEFAULT_MODE: ModeType = 'idle';
-
-        static do(task: Task): void {
-            task.mode = 'running';
-        }
-
-        static finish(task: Task): void {
-            task.mode = 'finish';
-        }
-
-        static wait(task: Task, callback: Function): void {
-            if (task.mode != 'running') {
-                callback();
-                return;
-            }
-
-            window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
-        }
-    }
-
-    class FunctionTask implements Task {
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public func: Function;
-        public param: any;
-        public wait: WaitValue;
-
-        constructor(func: Function, param: any, wait: WaitValue) {
-            this.func = func;
-            this.param = param;
-            this.wait = wait;
-        }
-
-        public do(): void {
-            TaskCtrl.do(this);
-            this.func(this.param);
-
-            window.setTimeout((): void => { this.finish(); }, this.wait.value);
-        }
-
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-    }
-
-    class WaitValue {
-        public value: number = 0;
-        constructor(value: number) {
-            this.value = value;
-        }
-    }
-
-    class Wait {
-        public static Zero = new WaitValue(0);
-        public static Short = new WaitValue(100);
-        public static Normal = new WaitValue(300);
-        public static Slow = new WaitValue(700);
-    }
-
-    class Tasks implements Task {
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public tasks: Array<Task> = new Array<Task>();
-
-        private step: number = 0;
-
-        public add(task: Task): void {
-            this.tasks.push(task);
-        }
-
-        public addFunction(func: Function, param: any, wait: WaitValue): void {
-            let task = new FunctionTask(func, param, wait);
-            this.add(task);
-        }
-
-        public do() {
-            TaskCtrl.do(this);
-            this.step = 0;
-            this.next();
-        }
-
-        public next(): void {
-            if (this.tasks.length <= this.step) {
-                this.finish();
-                return;
-            }
-
-            let task = this.tasks[this.step];
-
-            task.do();
-
-            TaskCtrl.wait(task, (): void => { this.step++; this.next(); });
-        }
-
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-
-        public destroy(): void {
-            this.tasks.length = 0;
-            this.mode = TaskCtrl.DEFAULT_MODE;
         }
     }
 

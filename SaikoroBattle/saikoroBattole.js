@@ -108,6 +108,97 @@ var SaikoroBattle;
         }
         return Charactor;
     }());
+    var TaskCtrl = (function () {
+        function TaskCtrl() {
+        }
+        TaskCtrl.do = function (task) {
+            task.mode = 'running';
+        };
+        TaskCtrl.finish = function (task) {
+            task.mode = 'finish';
+        };
+        TaskCtrl.wait = function (task, callback) {
+            if (task.mode != 'running') {
+                callback();
+                return;
+            }
+            window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
+        };
+        TaskCtrl.DEFAULT_MODE = 'idle';
+        return TaskCtrl;
+    }());
+    var WaitValue = (function () {
+        function WaitValue(value) {
+            this.value = 0;
+            this.value = value;
+        }
+        return WaitValue;
+    }());
+    var Wait = (function () {
+        function Wait() {
+        }
+        Wait.Zero = new WaitValue(0);
+        Wait.Short = new WaitValue(100);
+        Wait.Normal = new WaitValue(300);
+        Wait.Slow = new WaitValue(700);
+        return Wait;
+    }());
+    var Tasks = (function () {
+        function Tasks() {
+            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Array();
+            this.step = 0;
+        }
+        Tasks.prototype.add = function (task) {
+            this.tasks.push(task);
+        };
+        Tasks.prototype.addFunction = function (func, param, wait) {
+            var task = new FunctionTask(func, param, wait);
+            this.add(task);
+        };
+        Tasks.prototype.do = function () {
+            TaskCtrl.do(this);
+            this.step = 0;
+            this.next();
+        };
+        Tasks.prototype.next = function () {
+            var _this = this;
+            if (this.tasks.length <= this.step) {
+                this.finish();
+                return;
+            }
+            var task = this.tasks[this.step];
+            task.do();
+            TaskCtrl.wait(task, function () { _this.step++; _this.next(); });
+        };
+        Tasks.prototype.finish = function () {
+            TaskCtrl.finish(this);
+        };
+        Tasks.prototype.destroy = function () {
+            this.tasks.length = 0;
+            this.step = 0;
+            this.mode = TaskCtrl.DEFAULT_MODE;
+        };
+        return Tasks;
+    }());
+    var FunctionTask = (function () {
+        function FunctionTask(func, param, wait) {
+            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.func = func;
+            this.param = param;
+            this.wait = wait;
+        }
+        FunctionTask.prototype.do = function () {
+            var _this = this;
+            TaskCtrl.do(this);
+            this.func(this.param);
+            window.setTimeout(function () { _this.finish(); }, this.wait.value);
+        };
+        FunctionTask.prototype.finish = function () {
+            TaskCtrl.finish(this);
+        };
+        return FunctionTask;
+    }());
     var _mode = 0;
     var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
     var defaultDefensePalette = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
@@ -117,14 +208,9 @@ var SaikoroBattle;
     var enemyobj = new Charactor('enemy', '敵');
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
-    var tasks = null;
+    var tasks = new Tasks();
     function susumeruGame() {
-        if (tasks == null) {
-            tasks = new Tasks();
-        }
-        else {
-            tasks.destroy();
-        }
+        tasks.destroy();
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
@@ -186,96 +272,6 @@ var SaikoroBattle;
             doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
         }
     }
-    var TaskCtrl = (function () {
-        function TaskCtrl() {
-        }
-        TaskCtrl.do = function (task) {
-            task.mode = 'running';
-        };
-        TaskCtrl.finish = function (task) {
-            task.mode = 'finish';
-        };
-        TaskCtrl.wait = function (task, callback) {
-            if (task.mode != 'running') {
-                callback();
-                return;
-            }
-            window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
-        };
-        TaskCtrl.DEFAULT_MODE = 'idle';
-        return TaskCtrl;
-    }());
-    var FunctionTask = (function () {
-        function FunctionTask(func, param, wait) {
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.func = func;
-            this.param = param;
-            this.wait = wait;
-        }
-        FunctionTask.prototype.do = function () {
-            var _this = this;
-            TaskCtrl.do(this);
-            this.func(this.param);
-            window.setTimeout(function () { _this.finish(); }, this.wait.value);
-        };
-        FunctionTask.prototype.finish = function () {
-            TaskCtrl.finish(this);
-        };
-        return FunctionTask;
-    }());
-    var WaitValue = (function () {
-        function WaitValue(value) {
-            this.value = 0;
-            this.value = value;
-        }
-        return WaitValue;
-    }());
-    var Wait = (function () {
-        function Wait() {
-        }
-        Wait.Zero = new WaitValue(0);
-        Wait.Short = new WaitValue(100);
-        Wait.Normal = new WaitValue(300);
-        Wait.Slow = new WaitValue(700);
-        return Wait;
-    }());
-    var Tasks = (function () {
-        function Tasks() {
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Array();
-            this.step = 0;
-        }
-        Tasks.prototype.add = function (task) {
-            this.tasks.push(task);
-        };
-        Tasks.prototype.addFunction = function (func, param, wait) {
-            var task = new FunctionTask(func, param, wait);
-            this.add(task);
-        };
-        Tasks.prototype.do = function () {
-            TaskCtrl.do(this);
-            this.step = 0;
-            this.next();
-        };
-        Tasks.prototype.next = function () {
-            var _this = this;
-            if (this.tasks.length <= this.step) {
-                this.finish();
-                return;
-            }
-            var task = this.tasks[this.step];
-            task.do();
-            TaskCtrl.wait(task, function () { _this.step++; _this.next(); });
-        };
-        Tasks.prototype.finish = function () {
-            TaskCtrl.finish(this);
-        };
-        Tasks.prototype.destroy = function () {
-            this.tasks.length = 0;
-            this.mode = TaskCtrl.DEFAULT_MODE;
-        };
-        return Tasks;
-    }());
     var ActionSetTask = (function () {
         function ActionSetTask(div, actionList) {
             this.div = div;
