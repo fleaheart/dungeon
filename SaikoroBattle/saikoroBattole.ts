@@ -181,13 +181,6 @@ namespace SaikoroBattle {
         }
     }
 
-    type WaitInterval = 0 | 100 | 300 | 700;
-
-    const WAIT_ZERO: WaitInterval = 0;
-    const WAIT_FAST: WaitInterval = 100;
-    const WAIT_NORMAL: WaitInterval = 300;
-    const WAIT_SLOW: WaitInterval = 700;
-
     class Tasks implements Task {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public tasks: Array<Task> = new Array<Task>();
@@ -196,11 +189,6 @@ namespace SaikoroBattle {
 
         public add(task: Task): void {
             this.tasks.push(task);
-        }
-
-        public addFunction(func: Function, param: any, millisec: WaitInterval): void {
-            let task = new FunctionTask(func, param, millisec);
-            this.add(task);
         }
 
         public do() {
@@ -237,12 +225,10 @@ namespace SaikoroBattle {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public func: Function;
         public param: any;
-        public millisec: WaitInterval;
 
-        constructor(func: Function, param: any, millisec: WaitInterval) {
+        constructor(func: Function, param: any) {
             this.func = func;
             this.param = param;
-            this.millisec = millisec;
         }
 
         public do(): void {
@@ -250,6 +236,30 @@ namespace SaikoroBattle {
 
             this.func(this.param);
 
+            this.finish();
+        }
+
+        public finish(): void {
+            TaskCtrl.finish(this);
+        }
+    }
+
+    type WaitInterval = 0 | 100 | 300 | 700;
+
+    class WaitTask implements Task {
+        static FAST: WaitInterval = 100;
+        static NORMAL: WaitInterval = 300;
+        static SLOW: WaitInterval = 700;
+
+        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        public millisec: WaitInterval;
+
+        constructor(millisec: WaitInterval) {
+            this.millisec = millisec;
+        }
+
+        public do(): void {
+            TaskCtrl.do(this);
             window.setTimeout((): void => { this.finish(); }, this.millisec);
         }
 
@@ -285,15 +295,19 @@ namespace SaikoroBattle {
 
             tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
 
-            tasks.addFunction(nokoriHpHyouji, null, WAIT_FAST);
-            tasks.addFunction(debugClear, null, WAIT_FAST);
-            tasks.addFunction(debug, 'start', WAIT_SLOW);
+            tasks.add(new FunctionTask(nokoriHpHyouji, null));
+            tasks.add(new WaitTask(WaitTask.FAST));
+            tasks.add(new FunctionTask(debugClear, null));
+            tasks.add(new WaitTask(WaitTask.FAST));
+            tasks.add(new FunctionTask(debug, 'start'));
+            tasks.add(new WaitTask(WaitTask.SLOW));
             _mode = 1;
 
         } else if (_mode == 1) {
             attackDefence(tasks, plyerobj, enemyobj);
             if (enemyobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'win', WAIT_SLOW);
+                tasks.add(new FunctionTask(debug, 'win'));
+                tasks.add(new WaitTask(WaitTask.SLOW));
                 _mode = 0;
             } else {
                 _mode = 2;
@@ -302,7 +316,8 @@ namespace SaikoroBattle {
         } else if (_mode == 2) {
             attackDefence(tasks, enemyobj, plyerobj);
             if (plyerobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'loose', WAIT_SLOW);
+                tasks.add(new FunctionTask(debug, 'loose'));
+                tasks.add(new WaitTask(WaitTask.SLOW));
                 _mode = 0;
             } else {
                 _mode = 1;
@@ -319,17 +334,19 @@ namespace SaikoroBattle {
 
     function attackDefence(doTasks: Tasks, attacker: Charactor, defender: Charactor): void {
 
-        doTasks.addFunction(debugClear, null, WAIT_ZERO);
+        doTasks.add(new FunctionTask(debugClear, null));
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, WAIT_NORMAL);
+        doTasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new WaitTask(WaitTask.NORMAL));
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, WAIT_NORMAL);
+        doTasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new WaitTask(WaitTask.NORMAL));
 
         let damage: number = 0;
         if (!defenderAction.through) {
@@ -337,7 +354,8 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', WAIT_NORMAL);
+            doTasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+            tasks.add(new WaitTask(WaitTask.NORMAL));
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -345,10 +363,12 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        doTasks.addFunction(nokoriHpHyouji, null, WAIT_NORMAL);
+        doTasks.add(new FunctionTask(nokoriHpHyouji, null));
+        tasks.add(new WaitTask(WaitTask.NORMAL));
 
         if (defender.hitPoint <= 0) {
-            doTasks.addFunction(debug, defender.name + 'は、倒れた', WAIT_NORMAL);
+            doTasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
+            tasks.add(new WaitTask(WaitTask.NORMAL));
         }
     }
 
@@ -366,9 +386,8 @@ namespace SaikoroBattle {
                 let box = <HTMLDivElement>childNodes.item(i);
                 let action: Action = this.actionList[i];
 
-                tasks.addFunction(() => {
-                    this.setBox(box, action);
-                }, null, WAIT_FAST);
+                tasks.add(new FunctionTask(() => { this.setBox(box, action); }, null));
+                tasks.add(new WaitTask(WaitTask.FAST));
             }
 
             tasks.do();
