@@ -181,19 +181,12 @@ namespace SaikoroBattle {
         }
     }
 
-    class WaitValue {
-        public value: number = 0;
-        constructor(value: number) {
-            this.value = value;
-        }
-    }
+    type WaitInterval = 0 | 100 | 300 | 700;
 
-    class Wait {
-        public static Zero = new WaitValue(0);
-        public static Short = new WaitValue(100);
-        public static Normal = new WaitValue(300);
-        public static Slow = new WaitValue(700);
-    }
+    const WAIT_ZERO: WaitInterval = 0;
+    const WAIT_FAST: WaitInterval = 100;
+    const WAIT_NORMAL: WaitInterval = 300;
+    const WAIT_SLOW: WaitInterval = 700;
 
     class Tasks implements Task {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
@@ -205,8 +198,8 @@ namespace SaikoroBattle {
             this.tasks.push(task);
         }
 
-        public addFunction(func: Function, param: any, wait: WaitValue): void {
-            let task = new FunctionTask(func, param, wait);
+        public addFunction(func: Function, param: any, millisec: WaitInterval): void {
+            let task = new FunctionTask(func, param, millisec);
             this.add(task);
         }
 
@@ -244,12 +237,12 @@ namespace SaikoroBattle {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public func: Function;
         public param: any;
-        public wait: WaitValue;
+        public millisec: WaitInterval;
 
-        constructor(func: Function, param: any, wait: WaitValue) {
+        constructor(func: Function, param: any, millisec: WaitInterval) {
             this.func = func;
             this.param = param;
-            this.wait = wait;
+            this.millisec = millisec;
         }
 
         public do(): void {
@@ -257,7 +250,7 @@ namespace SaikoroBattle {
 
             this.func(this.param);
 
-            window.setTimeout((): void => { this.finish(); }, this.wait.value);
+            window.setTimeout((): void => { this.finish(); }, this.millisec);
         }
 
         public finish(): void {
@@ -292,15 +285,15 @@ namespace SaikoroBattle {
 
             tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
 
-            tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
-            tasks.addFunction(debugClear, null, Wait.Short);
-            tasks.addFunction(debug, 'start', Wait.Slow);
+            tasks.addFunction(nokoriHpHyouji, null, WAIT_FAST);
+            tasks.addFunction(debugClear, null, WAIT_FAST);
+            tasks.addFunction(debug, 'start', WAIT_SLOW);
             _mode = 1;
 
         } else if (_mode == 1) {
             attackDefence(tasks, plyerobj, enemyobj);
             if (enemyobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'win', Wait.Slow);
+                tasks.addFunction(debug, 'win', WAIT_SLOW);
                 _mode = 0;
             } else {
                 _mode = 2;
@@ -309,7 +302,7 @@ namespace SaikoroBattle {
         } else if (_mode == 2) {
             attackDefence(tasks, enemyobj, plyerobj);
             if (plyerobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'loose', Wait.Slow);
+                tasks.addFunction(debug, 'loose', WAIT_SLOW);
                 _mode = 0;
             } else {
                 _mode = 1;
@@ -326,17 +319,17 @@ namespace SaikoroBattle {
 
     function attackDefence(doTasks: Tasks, attacker: Charactor, defender: Charactor): void {
 
-        doTasks.addFunction(debugClear, null, Wait.Short);
+        doTasks.addFunction(debugClear, null, WAIT_ZERO);
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal);
+        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, WAIT_NORMAL);
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal);
+        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, WAIT_NORMAL);
 
         let damage: number = 0;
         if (!defenderAction.through) {
@@ -344,7 +337,7 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal);
+            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', WAIT_NORMAL);
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -352,10 +345,10 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        doTasks.addFunction(nokoriHpHyouji, null, Wait.Normal);
+        doTasks.addFunction(nokoriHpHyouji, null, WAIT_NORMAL);
 
         if (defender.hitPoint <= 0) {
-            doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
+            doTasks.addFunction(debug, defender.name + 'は、倒れた', WAIT_NORMAL);
         }
     }
 
@@ -375,7 +368,7 @@ namespace SaikoroBattle {
 
                 tasks.addFunction(() => {
                     this.setBox(box, action);
-                }, null, Wait.Short);
+                }, null, WAIT_FAST);
             }
 
             tasks.do();

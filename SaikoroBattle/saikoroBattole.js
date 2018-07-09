@@ -127,22 +127,10 @@ var SaikoroBattle;
         TaskCtrl.DEFAULT_MODE = 'idle';
         return TaskCtrl;
     }());
-    var WaitValue = (function () {
-        function WaitValue(value) {
-            this.value = 0;
-            this.value = value;
-        }
-        return WaitValue;
-    }());
-    var Wait = (function () {
-        function Wait() {
-        }
-        Wait.Zero = new WaitValue(0);
-        Wait.Short = new WaitValue(100);
-        Wait.Normal = new WaitValue(300);
-        Wait.Slow = new WaitValue(700);
-        return Wait;
-    }());
+    var WAIT_ZERO = 0;
+    var WAIT_FAST = 100;
+    var WAIT_NORMAL = 300;
+    var WAIT_SLOW = 700;
     var Tasks = (function () {
         function Tasks() {
             this.mode = TaskCtrl.DEFAULT_MODE;
@@ -152,8 +140,8 @@ var SaikoroBattle;
         Tasks.prototype.add = function (task) {
             this.tasks.push(task);
         };
-        Tasks.prototype.addFunction = function (func, param, wait) {
-            var task = new FunctionTask(func, param, wait);
+        Tasks.prototype.addFunction = function (func, param, millisec) {
+            var task = new FunctionTask(func, param, millisec);
             this.add(task);
         };
         Tasks.prototype.do = function () {
@@ -182,17 +170,17 @@ var SaikoroBattle;
         return Tasks;
     }());
     var FunctionTask = (function () {
-        function FunctionTask(func, param, wait) {
+        function FunctionTask(func, param, millisec) {
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.func = func;
             this.param = param;
-            this.wait = wait;
+            this.millisec = millisec;
         }
         FunctionTask.prototype.do = function () {
             var _this = this;
             TaskCtrl.do(this);
             this.func(this.param);
-            window.setTimeout(function () { _this.finish(); }, this.wait.value);
+            window.setTimeout(function () { _this.finish(); }, this.millisec);
         };
         FunctionTask.prototype.finish = function () {
             TaskCtrl.finish(this);
@@ -216,15 +204,15 @@ var SaikoroBattle;
             enemyobj.hitPoint = 100;
             var actionBoard = getElementById('attackActionBoard');
             tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
-            tasks.addFunction(nokoriHpHyouji, null, Wait.Short);
-            tasks.addFunction(debugClear, null, Wait.Short);
-            tasks.addFunction(debug, 'start', Wait.Slow);
+            tasks.addFunction(nokoriHpHyouji, null, WAIT_FAST);
+            tasks.addFunction(debugClear, null, WAIT_FAST);
+            tasks.addFunction(debug, 'start', WAIT_SLOW);
             _mode = 1;
         }
         else if (_mode == 1) {
             attackDefence(tasks, plyerobj, enemyobj);
             if (enemyobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'win', Wait.Slow);
+                tasks.addFunction(debug, 'win', WAIT_SLOW);
                 _mode = 0;
             }
             else {
@@ -234,7 +222,7 @@ var SaikoroBattle;
         else if (_mode == 2) {
             attackDefence(tasks, enemyobj, plyerobj);
             if (plyerobj.hitPoint <= 0) {
-                tasks.addFunction(debug, 'loose', Wait.Slow);
+                tasks.addFunction(debug, 'loose', WAIT_SLOW);
                 _mode = 0;
             }
             else {
@@ -248,28 +236,28 @@ var SaikoroBattle;
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
     function attackDefence(doTasks, attacker, defender) {
-        doTasks.addFunction(debugClear, null, Wait.Short);
+        doTasks.addFunction(debugClear, null, WAIT_ZERO);
         var attackMe = saikoro();
         var attackAction = attacker.attackPalette[attackMe];
-        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, Wait.Normal);
+        doTasks.addFunction(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name, WAIT_NORMAL);
         var defenderMe = saikoro();
         var defenderAction = defender.defensePalette[defenderMe];
-        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, Wait.Normal);
+        doTasks.addFunction(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name, WAIT_NORMAL);
         var damage = 0;
         if (!defenderAction.through) {
             damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }
-            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', Wait.Normal);
+            doTasks.addFunction(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった', WAIT_NORMAL);
         }
         defender.hitPoint = defender.hitPoint - damage;
         if (defender.hitPoint <= 0) {
             defender.hitPoint = 0;
         }
-        doTasks.addFunction(nokoriHpHyouji, null, Wait.Normal);
+        doTasks.addFunction(nokoriHpHyouji, null, WAIT_NORMAL);
         if (defender.hitPoint <= 0) {
-            doTasks.addFunction(debug, defender.name + 'は、倒れた', Wait.Normal);
+            doTasks.addFunction(debug, defender.name + 'は、倒れた', WAIT_NORMAL);
         }
     }
     var ActionSetTask = (function () {
@@ -288,7 +276,7 @@ var SaikoroBattle;
                 var action = this_1.actionList[i];
                 tasks.addFunction(function () {
                     _this.setBox(box, action);
-                }, null, Wait.Short);
+                }, null, WAIT_FAST);
             };
             var this_1 = this;
             for (var i = 0; i < 6; i++) {
