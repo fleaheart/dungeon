@@ -232,7 +232,7 @@ namespace SaikoroBattle {
                 while (this.step < this.tasks.length) {
                     let task = this.tasks[this.step];
                     if (!(task instanceof WaitTask)) {
-                        task.do();
+                        task.asap();
                     }
                     this.step++;
                 }
@@ -268,6 +268,7 @@ namespace SaikoroBattle {
 
         public asap() {
             TaskCtrl.asap(this);
+            this.do();
         }
 
         public finish(): void {
@@ -435,6 +436,7 @@ namespace SaikoroBattle {
 
         public asap() {
             TaskCtrl.asap(this);
+            this.tasks.asap();
         }
 
         public setBox(box: HTMLDivElement, action: Action) {

@@ -172,7 +172,7 @@ var SaikoroBattle;
                 while (_this.step < _this.tasks.length) {
                     var task = _this.tasks[_this.step];
                     if (!(task instanceof WaitTask)) {
-                        task.do();
+                        task.asap();
                     }
                     _this.step++;
                 }
@@ -199,6 +199,7 @@ var SaikoroBattle;
         };
         FunctionTask.prototype.asap = function () {
             TaskCtrl.asap(this);
+            this.do();
         };
         FunctionTask.prototype.finish = function () {
             TaskCtrl.finish(this);
@@ -338,6 +339,7 @@ var SaikoroBattle;
         };
         ActionSetTask.prototype.asap = function () {
             TaskCtrl.asap(this);
+            this.tasks.asap();
         };
         ActionSetTask.prototype.setBox = function (box, action) {
             box.innerHTML = action.name;
