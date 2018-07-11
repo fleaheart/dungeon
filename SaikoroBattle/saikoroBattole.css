@@ -4,7 +4,18 @@
 }
 
 .actionBox {
-    width: 120px;
-    height: 80px;
+    width: 80px;
+    height: 40px;
     border: 1px dashed black;
+    padding: 3px;
+}
+
+.selected_attack {
+    border: 4px solid blue;
+    padding: 0px;
+}
+
+.selected_defense {
+    border: 4px solid green;
+    padding: 0px;
 }

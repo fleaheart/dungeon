@@ -45,17 +45,32 @@ namespace SaikoroBattle {
         startButton.addEventListener('click', susumeruGame);
         mainBoard.appendChild(startButton);
 
-        let actionBoard = <HTMLDivElement>document.createElement('DIV');
-        actionBoard.id = 'attackActionBoard';
-        actionBoard.className = 'actionBoard';
+        {
+            let actionBoard = <HTMLDivElement>document.createElement('DIV');
+            actionBoard.id = 'attackActionBoard';
+            actionBoard.className = 'actionBoard';
 
-        for (let i = 0; i < 6; i++) {
-            let actionBox = <HTMLDivElement>document.createElement('DIV');
-            actionBox.className = 'actionBox';
-            actionBoard.appendChild(actionBox);
+            for (let i = 0; i < 6; i++) {
+                let actionBox = <HTMLDivElement>document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+            }
+
+            mainBoard.appendChild(actionBoard);
         }
+        {
+            let actionBoard = <HTMLDivElement>document.createElement('DIV');
+            actionBoard.id = 'defenseActionBoard';
+            actionBoard.className = 'actionBoard';
 
-        mainBoard.appendChild(actionBoard);
+            for (let i = 0; i < 6; i++) {
+                let actionBox = <HTMLDivElement>document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+            }
+
+            mainBoard.appendChild(actionBoard);
+        }
     }
 
     function integerRandom(maxValue: number): number {
@@ -330,10 +345,14 @@ namespace SaikoroBattle {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
 
-            let actionBoard = <HTMLDivElement>getElementById('attackActionBoard');
-
-            tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
-
+            {
+                let actionBoard = <HTMLDivElement>getElementById('attackActionBoard');
+                tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
+            }
+            {
+                let actionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
+                tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
+            }
             tasks.add(new FunctionTask(nokoriHpHyouji, null));
             tasks.add(new WaitTask(WaitTask.FAST));
             tasks.add(new FunctionTask(debugClear, null));
@@ -371,20 +390,28 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    function attackDefence(doTasks: Tasks, attacker: Charactor, defender: Charactor): void {
+    function attackDefence(tasks: Tasks, attacker: Charactor, defender: Charactor): void {
+        let attackActionBoard = <HTMLDivElement>getElementById('attackActionBoard');
+        let defenceActionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
 
-        doTasks.add(new FunctionTask(debugClear, null));
+        tasks.add(new FunctionTask(debugClear, null));
+        tasks.add(new FunctionTask(actionSelectReset, { div: attackActionBoard }));
+        tasks.add(new FunctionTask(actionSelectReset, { div: defenceActionBoard }));
+        tasks.add(new WaitTask(WaitTask.FAST));
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        doTasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
         tasks.add(new WaitTask(WaitTask.NORMAL));
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        doTasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
+
         tasks.add(new WaitTask(WaitTask.NORMAL));
 
         let damage: number = 0;
@@ -393,7 +420,7 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            doTasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+            tasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
             tasks.add(new WaitTask(WaitTask.NORMAL));
         }
 
@@ -402,11 +429,11 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        doTasks.add(new FunctionTask(nokoriHpHyouji, null));
+        tasks.add(new FunctionTask(nokoriHpHyouji, null));
         tasks.add(new WaitTask(WaitTask.NORMAL));
 
         if (defender.hitPoint <= 0) {
-            doTasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
+            tasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
             tasks.add(new WaitTask(WaitTask.NORMAL));
         }
     }
@@ -446,5 +473,34 @@ namespace SaikoroBattle {
         public finish(): void {
             TaskCtrl.finish(this);
         }
+    }
+
+    function actionSelect(param: any) {
+        let div: HTMLDivElement = param.div;
+        let me: number = param.me;
+        let className = param.className;
+
+        let childNodes = div.childNodes;
+        for (let i = 0; i < 6; i++) {
+            let box = <HTMLDivElement>childNodes.item(i);
+
+            if (i == me) {
+                box.classList.add(className);
+            }
+        }
+
+    }
+
+    function actionSelectReset(param: any) {
+        let div: HTMLDivElement = param.div;
+
+        let childNodes = div.childNodes;
+        for (let i = 0; i < 6; i++) {
+            let box = <HTMLDivElement>childNodes.item(i);
+
+            box.classList.remove('selected_attack');
+            box.classList.remove('selected_defense');
+        }
+
     }
 }

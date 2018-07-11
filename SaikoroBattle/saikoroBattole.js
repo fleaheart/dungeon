@@ -37,15 +37,28 @@ var SaikoroBattle;
         startButton.textContent = 'start';
         startButton.addEventListener('click', susumeruGame);
         mainBoard.appendChild(startButton);
-        var actionBoard = document.createElement('DIV');
-        actionBoard.id = 'attackActionBoard';
-        actionBoard.className = 'actionBoard';
-        for (var i = 0; i < 6; i++) {
-            var actionBox = document.createElement('DIV');
-            actionBox.className = 'actionBox';
-            actionBoard.appendChild(actionBox);
+        {
+            var actionBoard = document.createElement('DIV');
+            actionBoard.id = 'attackActionBoard';
+            actionBoard.className = 'actionBoard';
+            for (var i = 0; i < 6; i++) {
+                var actionBox = document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+            }
+            mainBoard.appendChild(actionBoard);
         }
-        mainBoard.appendChild(actionBoard);
+        {
+            var actionBoard = document.createElement('DIV');
+            actionBoard.id = 'defenseActionBoard';
+            actionBoard.className = 'actionBoard';
+            for (var i = 0; i < 6; i++) {
+                var actionBox = document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+            }
+            mainBoard.appendChild(actionBoard);
+        }
     }
     function integerRandom(maxValue) {
         var value = Math.random() * maxValue;
@@ -245,8 +258,14 @@ var SaikoroBattle;
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
-            var actionBoard = getElementById('attackActionBoard');
-            tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
+            {
+                var actionBoard = getElementById('attackActionBoard');
+                tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
+            }
+            {
+                var actionBoard = getElementById('defenseActionBoard');
+                tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
+            }
             tasks.add(new FunctionTask(nokoriHpHyouji, null));
             tasks.add(new WaitTask(WaitTask.FAST));
             tasks.add(new FunctionTask(debugClear, null));
@@ -283,15 +302,22 @@ var SaikoroBattle;
         _playerHPElm.textContent = String(plyerobj.hitPoint);
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
-    function attackDefence(doTasks, attacker, defender) {
-        doTasks.add(new FunctionTask(debugClear, null));
+    function attackDefence(tasks, attacker, defender) {
+        var attackActionBoard = getElementById('attackActionBoard');
+        var defenceActionBoard = getElementById('defenseActionBoard');
+        tasks.add(new FunctionTask(debugClear, null));
+        tasks.add(new FunctionTask(actionSelectReset, { div: attackActionBoard }));
+        tasks.add(new FunctionTask(actionSelectReset, { div: defenceActionBoard }));
+        tasks.add(new WaitTask(WaitTask.FAST));
         var attackMe = saikoro();
         var attackAction = attacker.attackPalette[attackMe];
-        doTasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
         tasks.add(new WaitTask(WaitTask.NORMAL));
         var defenderMe = saikoro();
         var defenderAction = defender.defensePalette[defenderMe];
-        doTasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
         tasks.add(new WaitTask(WaitTask.NORMAL));
         var damage = 0;
         if (!defenderAction.through) {
@@ -299,17 +325,17 @@ var SaikoroBattle;
             if (damage < 0) {
                 damage = 0;
             }
-            doTasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+            tasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
             tasks.add(new WaitTask(WaitTask.NORMAL));
         }
         defender.hitPoint = defender.hitPoint - damage;
         if (defender.hitPoint <= 0) {
             defender.hitPoint = 0;
         }
-        doTasks.add(new FunctionTask(nokoriHpHyouji, null));
+        tasks.add(new FunctionTask(nokoriHpHyouji, null));
         tasks.add(new WaitTask(WaitTask.NORMAL));
         if (defender.hitPoint <= 0) {
-            doTasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
+            tasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
             tasks.add(new WaitTask(WaitTask.NORMAL));
         }
     }
@@ -349,5 +375,26 @@ var SaikoroBattle;
         };
         return ActionSetTask;
     }());
+    function actionSelect(param) {
+        var div = param.div;
+        var me = param.me;
+        var className = param.className;
+        var childNodes = div.childNodes;
+        for (var i = 0; i < 6; i++) {
+            var box = childNodes.item(i);
+            if (i == me) {
+                box.classList.add(className);
+            }
+        }
+    }
+    function actionSelectReset(param) {
+        var div = param.div;
+        var childNodes = div.childNodes;
+        for (var i = 0; i < 6; i++) {
+            var box = childNodes.item(i);
+            box.classList.remove('selected_attack');
+            box.classList.remove('selected_defense');
+        }
+    }
 })(SaikoroBattle || (SaikoroBattle = {}));
 //# sourceMappingURL=saikoroBattole.js.map
