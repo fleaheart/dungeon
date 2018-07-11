@@ -9,6 +9,13 @@ var SaikoroBattle;
     function debugClear() {
         _debugBoard.innerHTML = '';
     }
+    function dbg(text) {
+        var dbg = getElementById('debugBoard2');
+        var h = dbg.innerHTML;
+        h += text + ' / ';
+        dbg.innerHTML = h;
+    }
+    SaikoroBattle.dbg = dbg;
     var _playerHPElm;
     var _enemyhpElm;
     function getElementById(elementId) {
@@ -114,6 +121,9 @@ var SaikoroBattle;
         TaskCtrl.do = function (task) {
             task.mode = 'running';
         };
+        TaskCtrl.asap = function (task) {
+            task.mode = 'asap';
+        };
         TaskCtrl.finish = function (task) {
             task.mode = 'finish';
         };
@@ -131,33 +141,48 @@ var SaikoroBattle;
         function Tasks() {
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
-            this.step = 0;
+            this.step = -1;
         }
         Tasks.prototype.add = function (task) {
             this.tasks.push(task);
         };
         Tasks.prototype.do = function () {
             TaskCtrl.do(this);
-            this.step = 0;
+            this.step = -1;
             this.next();
         };
         Tasks.prototype.next = function () {
             var _this = this;
+            if (this.mode != 'running') {
+                return;
+            }
+            this.step++;
             if (this.tasks.length <= this.step) {
                 this.finish();
                 return;
             }
             var task = this.tasks[this.step];
             task.do();
-            TaskCtrl.wait(task, function () { _this.step++; _this.next(); });
+            TaskCtrl.wait(task, function () { _this.next(); });
+        };
+        Tasks.prototype.asap = function () {
+            var _this = this;
+            window.setTimeout(function () {
+                TaskCtrl.asap(_this);
+                while (_this.step < _this.tasks.length) {
+                    var task = _this.tasks[_this.step];
+                    if (!(task instanceof WaitTask)) {
+                        task.do();
+                    }
+                    _this.step++;
+                }
+                _this.finish();
+            });
         };
         Tasks.prototype.finish = function () {
             TaskCtrl.finish(this);
-        };
-        Tasks.prototype.destroy = function () {
             this.tasks.length = 0;
-            this.step = 0;
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.step = -1;
         };
         return Tasks;
     }());
@@ -171,6 +196,9 @@ var SaikoroBattle;
             TaskCtrl.do(this);
             this.func(this.param);
             this.finish();
+        };
+        FunctionTask.prototype.asap = function () {
+            TaskCtrl.asap(this);
         };
         FunctionTask.prototype.finish = function () {
             TaskCtrl.finish(this);
@@ -186,6 +214,9 @@ var SaikoroBattle;
             var _this = this;
             TaskCtrl.do(this);
             window.setTimeout(function () { _this.finish(); }, this.millisec);
+        };
+        WaitTask.prototype.asap = function () {
+            TaskCtrl.asap(this);
         };
         WaitTask.prototype.finish = function () {
             TaskCtrl.finish(this);
@@ -206,7 +237,10 @@ var SaikoroBattle;
     enemyobj.setDefensePalette(defaultDefensePalette);
     var tasks = new Tasks();
     function susumeruGame() {
-        tasks.destroy();
+        if (tasks.mode == 'running') {
+            tasks.asap();
+            return;
+        }
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
@@ -283,24 +317,27 @@ var SaikoroBattle;
             this.div = div;
             this.actionList = actionList;
             this.mode = TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Tasks();
         }
         ActionSetTask.prototype.do = function () {
             var _this = this;
             TaskCtrl.do(this);
-            var tasks = new Tasks();
             var childNodes = this.div.childNodes;
             var _loop_1 = function (i) {
                 var box = childNodes.item(i);
                 var action = this_1.actionList[i];
-                tasks.add(new FunctionTask(function () { _this.setBox(box, action); }, null));
-                tasks.add(new WaitTask(WaitTask.FAST));
+                this_1.tasks.add(new FunctionTask(function () { _this.setBox(box, action); }, null));
+                this_1.tasks.add(new WaitTask(WaitTask.FAST));
             };
             var this_1 = this;
             for (var i = 0; i < 6; i++) {
                 _loop_1(i);
             }
-            tasks.do();
-            TaskCtrl.wait(tasks, function () { _this.finish(); });
+            this.tasks.do();
+            TaskCtrl.wait(this.tasks, function () { _this.finish(); });
+        };
+        ActionSetTask.prototype.asap = function () {
+            TaskCtrl.asap(this);
         };
         ActionSetTask.prototype.setBox = function (box, action) {
             box.innerHTML = action.name;

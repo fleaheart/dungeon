@@ -10,6 +10,12 @@ namespace SaikoroBattle {
         _debugBoard.innerHTML = '';
     }
 
+    export function dbg(text: string) {
+        let dbg = getElementById('debugBoard2');
+        let h = dbg.innerHTML;
+        h += text + ' / ';
+        dbg.innerHTML = h;
+    }
 
     let _playerHPElm: HTMLSpanElement;
     let _enemyhpElm: HTMLSpanElement;
@@ -152,11 +158,12 @@ namespace SaikoroBattle {
         }
     }
 
-    type ModeType = 'idle' | 'running' | 'finish';
+    type ModeType = 'idle' | 'running' | 'asap' | 'finish';
 
     interface Task {
         mode: ModeType;
         do: Function;
+        asap: Function;
         finish: Function;
     }
 
@@ -165,6 +172,10 @@ namespace SaikoroBattle {
 
         static do(task: Task): void {
             task.mode = 'running';
+        }
+
+        static asap(task: Task): void {
+            task.mode = 'asap';
         }
 
         static finish(task: Task): void {
@@ -176,7 +187,6 @@ namespace SaikoroBattle {
                 callback();
                 return;
             }
-
             window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
         }
     }
@@ -185,19 +195,24 @@ namespace SaikoroBattle {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public tasks: Array<Task> = new Array<Task>();
 
-        private step: number = 0;
+        private step: number = -1;
 
         public add(task: Task): void {
             this.tasks.push(task);
         }
 
-        public do() {
+        public do(): void {
             TaskCtrl.do(this);
-            this.step = 0;
+            this.step = -1;
             this.next();
         }
 
         public next(): void {
+            if (this.mode != 'running') {
+                return;
+            }
+
+            this.step++;
             if (this.tasks.length <= this.step) {
                 this.finish();
                 return;
@@ -207,17 +222,29 @@ namespace SaikoroBattle {
 
             task.do();
 
-            TaskCtrl.wait(task, (): void => { this.step++; this.next(); });
+            TaskCtrl.wait(task, (): void => { this.next(); });
+        }
+
+        public asap() {
+            window.setTimeout((): void => {
+                TaskCtrl.asap(this);
+
+                while (this.step < this.tasks.length) {
+                    let task = this.tasks[this.step];
+                    if (!(task instanceof WaitTask)) {
+                        task.do();
+                    }
+                    this.step++;
+                }
+
+                this.finish();
+            });
         }
 
         public finish(): void {
             TaskCtrl.finish(this);
-        }
-
-        public destroy(): void {
             this.tasks.length = 0;
-            this.step = 0;
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.step = -1;
         }
     }
 
@@ -237,6 +264,10 @@ namespace SaikoroBattle {
             this.func(this.param);
 
             this.finish();
+        }
+
+        public asap() {
+            TaskCtrl.asap(this);
         }
 
         public finish(): void {
@@ -263,6 +294,10 @@ namespace SaikoroBattle {
             window.setTimeout((): void => { this.finish(); }, this.millisec);
         }
 
+        public asap() {
+            TaskCtrl.asap(this);
+        }
+
         public finish(): void {
             TaskCtrl.finish(this);
         }
@@ -285,7 +320,10 @@ namespace SaikoroBattle {
     let tasks: Tasks = new Tasks();
 
     function susumeruGame() {
-        tasks.destroy();
+        if (tasks.mode == 'running') {
+            tasks.asap();
+            return;
+        }
 
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
@@ -376,23 +414,27 @@ namespace SaikoroBattle {
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         constructor(private div: HTMLDivElement, private actionList: Array<Action>) { }
 
+        private tasks = new Tasks();
+
         public do() {
             TaskCtrl.do(this);
-
-            let tasks = new Tasks();
 
             let childNodes = this.div.childNodes;
             for (let i = 0; i < 6; i++) {
                 let box = <HTMLDivElement>childNodes.item(i);
                 let action: Action = this.actionList[i];
 
-                tasks.add(new FunctionTask(() => { this.setBox(box, action); }, null));
-                tasks.add(new WaitTask(WaitTask.FAST));
+                this.tasks.add(new FunctionTask(() => { this.setBox(box, action); }, null));
+                this.tasks.add(new WaitTask(WaitTask.FAST));
             }
 
-            tasks.do();
+            this.tasks.do();
 
-            TaskCtrl.wait(tasks, (): void => { this.finish(); });
+            TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
+        }
+
+        public asap() {
+            TaskCtrl.asap(this);
         }
 
         public setBox(box: HTMLDivElement, action: Action) {
