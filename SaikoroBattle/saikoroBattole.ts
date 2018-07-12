@@ -28,14 +28,14 @@ namespace SaikoroBattle {
         return elm;
     }
 
-    window.addEventListener('load', () => {
+    export function init(): void {
         _debugBoard = <HTMLDivElement>getElementById('debugBoard');
 
         _playerHPElm = <HTMLSpanElement>getElementById('playerHP');
         _enemyhpElm = <HTMLSpanElement>getElementById('enemyHP');
 
         initMainBoard();
-    });
+    };
 
     function initMainBoard(): void {
         let mainBoard = <HTMLDivElement>getElementById('mainBoard');

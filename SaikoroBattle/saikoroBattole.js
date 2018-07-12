@@ -25,12 +25,14 @@ var SaikoroBattle;
         }
         return elm;
     }
-    window.addEventListener('load', function () {
+    function init() {
         _debugBoard = getElementById('debugBoard');
         _playerHPElm = getElementById('playerHP');
         _enemyhpElm = getElementById('enemyHP');
         initMainBoard();
-    });
+    }
+    SaikoroBattle.init = init;
+    ;
     function initMainBoard() {
         var mainBoard = getElementById('mainBoard');
         var startButton = document.createElement('BUTTON');
