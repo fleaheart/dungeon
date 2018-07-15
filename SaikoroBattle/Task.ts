@@ -3,6 +3,7 @@ namespace Task {
     export type ModeType = 'idle' | 'running' | 'asap' | 'finish';
 
     export interface Task {
+        name: string;
         mode: ModeType;
         do: Function;
         asap: Function;
@@ -11,6 +12,7 @@ namespace Task {
 
     export class TaskCtrl {
         static readonly DEFAULT_MODE: ModeType = 'idle';
+        static debugBoard: HTMLDivElement | null = null;
 
         static do(task: Task): void {
             task.mode = 'running';
@@ -25,16 +27,26 @@ namespace Task {
         }
 
         static wait(task: Task, callback: Function): void {
-            if (task.mode != 'running') {
+            if (task.mode == 'finish') {
                 callback();
                 return;
             }
             window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
         }
 
+        static debug(task: Task, text: string): void {
+            if (this.debugBoard == null) {
+                return;
+            }
+            let dbg: HTMLDivElement = this.debugBoard;
+            let h = dbg.innerHTML;
+            h += '[' + task.name + ']' + text + '<br>';
+            dbg.innerHTML = h;
+        }
     }
 
     export class Tasks implements Task {
+        public readonly name: string = 'Tasks';
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public tasks: Array<Task> = new Array<Task>();
 
@@ -69,19 +81,18 @@ namespace Task {
         }
 
         public asap() {
-            window.setTimeout((): void => {
-                TaskCtrl.asap(this);
-
-                while (this.step < this.tasks.length) {
-                    let task = this.tasks[this.step];
-                    if (!(task instanceof WaitTask)) {
-                        task.asap();
-                    }
-                    this.step++;
+            if (this.step == -1) {
+                this.step = 0;
+            }
+            while (this.step < this.tasks.length) {
+                let task = this.tasks[this.step];
+                if (!(task instanceof WaitTask)) {
+                    task.asap();
                 }
+                this.step++;
+            }
 
-                this.finish();
-            });
+            this.finish();
         }
 
         public finish(): void {
@@ -92,6 +103,7 @@ namespace Task {
     }
 
     export class FunctionTask implements Task {
+        public readonly name: string = 'FunctionTask';
         public mode: ModeType = TaskCtrl.DEFAULT_MODE;
         public func: Function;
         public param: any;
@@ -122,6 +134,8 @@ namespace Task {
     export type WaitInterval = 0 | 100 | 300 | 700;
 
     export class WaitTask implements Task {
+        public readonly name: string = 'WaitTask';
+
         static FAST: WaitInterval = 100;
         static NORMAL: WaitInterval = 300;
         static SLOW: WaitInterval = 700;

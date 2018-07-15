@@ -13,18 +13,29 @@ var Task;
             task.mode = 'finish';
         };
         TaskCtrl.wait = function (task, callback) {
-            if (task.mode != 'running') {
+            if (task.mode == 'finish') {
                 callback();
                 return;
             }
             window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
         };
+        TaskCtrl.debug = function (task, text) {
+            if (this.debugBoard == null) {
+                return;
+            }
+            var dbg = this.debugBoard;
+            var h = dbg.innerHTML;
+            h += '[' + task.name + ']' + text + '<br>';
+            dbg.innerHTML = h;
+        };
         TaskCtrl.DEFAULT_MODE = 'idle';
+        TaskCtrl.debugBoard = null;
         return TaskCtrl;
     }());
     Task.TaskCtrl = TaskCtrl;
     var Tasks = (function () {
         function Tasks() {
+            this.name = 'Tasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
             this.step = -1;
@@ -52,18 +63,17 @@ var Task;
             TaskCtrl.wait(task, function () { _this.next(); });
         };
         Tasks.prototype.asap = function () {
-            var _this = this;
-            window.setTimeout(function () {
-                TaskCtrl.asap(_this);
-                while (_this.step < _this.tasks.length) {
-                    var task = _this.tasks[_this.step];
-                    if (!(task instanceof WaitTask)) {
-                        task.asap();
-                    }
-                    _this.step++;
+            if (this.step == -1) {
+                this.step = 0;
+            }
+            while (this.step < this.tasks.length) {
+                var task = this.tasks[this.step];
+                if (!(task instanceof WaitTask)) {
+                    task.asap();
                 }
-                _this.finish();
-            });
+                this.step++;
+            }
+            this.finish();
         };
         Tasks.prototype.finish = function () {
             TaskCtrl.finish(this);
@@ -75,6 +85,7 @@ var Task;
     Task.Tasks = Tasks;
     var FunctionTask = (function () {
         function FunctionTask(func, param) {
+            this.name = 'FunctionTask';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.func = func;
             this.param = param;
@@ -96,6 +107,7 @@ var Task;
     Task.FunctionTask = FunctionTask;
     var WaitTask = (function () {
         function WaitTask(millisec) {
+            this.name = 'WaitTask';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.millisec = millisec;
         }

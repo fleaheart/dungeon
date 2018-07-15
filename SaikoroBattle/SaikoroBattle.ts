@@ -293,13 +293,16 @@ namespace SaikoroBattle {
     }
 
     class ActionSetTask implements Task.Task {
+        public readonly name: string = 'ActionSetTask';
         public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
-        constructor(private div: HTMLDivElement, private actionList: Array<Action>) { }
 
+        private div: HTMLDivElement
+        private actionList: Array<Action>;
         private tasks = new Task.Tasks();
 
-        public do() {
-            Task.TaskCtrl.do(this);
+        constructor(div: HTMLDivElement, actionList: Array<Action>) {
+            this.div = div;
+            this.actionList = actionList;
 
             let childNodes = this.div.childNodes;
             for (let i = 0; i < 6; i++) {
@@ -309,6 +312,14 @@ namespace SaikoroBattle {
                 this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
                 this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             }
+        }
+
+        public setBox(box: HTMLDivElement, action: Action) {
+            box.innerHTML = action.name;
+        }
+
+        public do() {
+            Task.TaskCtrl.do(this);
 
             this.tasks.do();
 
@@ -318,10 +329,6 @@ namespace SaikoroBattle {
         public asap() {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
-        }
-
-        public setBox(box: HTMLDivElement, action: Action) {
-            box.innerHTML = action.name;
         }
 
         public finish(): void {

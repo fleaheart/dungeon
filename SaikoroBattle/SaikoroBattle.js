@@ -148,6 +148,7 @@ var SaikoroBattle;
         if (_mode == 0) {
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
+            Task.TaskCtrl.debugBoard = getElementById('debugBoard2');
             {
                 var actionBoard = getElementById('attackActionBoard');
                 tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
@@ -231,14 +232,12 @@ var SaikoroBattle;
     }
     var ActionSetTask = (function () {
         function ActionSetTask(div, actionList) {
-            this.div = div;
-            this.actionList = actionList;
+            var _this = this;
+            this.name = 'ActionSetTask';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
-        }
-        ActionSetTask.prototype.do = function () {
-            var _this = this;
-            Task.TaskCtrl.do(this);
+            this.div = div;
+            this.actionList = actionList;
             var childNodes = this.div.childNodes;
             var _loop_1 = function (i) {
                 var box = childNodes.item(i);
@@ -250,15 +249,19 @@ var SaikoroBattle;
             for (var i = 0; i < 6; i++) {
                 _loop_1(i);
             }
+        }
+        ActionSetTask.prototype.setBox = function (box, action) {
+            box.innerHTML = action.name;
+        };
+        ActionSetTask.prototype.do = function () {
+            var _this = this;
+            Task.TaskCtrl.do(this);
             this.tasks.do();
             Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
         };
         ActionSetTask.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
-        };
-        ActionSetTask.prototype.setBox = function (box, action) {
-            box.innerHTML = action.name;
         };
         ActionSetTask.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
