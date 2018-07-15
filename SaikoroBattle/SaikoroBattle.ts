@@ -56,6 +56,10 @@ namespace SaikoroBattle {
                 actionBoard.appendChild(actionBox);
             }
 
+            let actionSaikoro = <HTMLDivElement>document.createElement('DIV');
+            actionSaikoro.className = 'saikoro';
+            actionBoard.appendChild(actionSaikoro);
+
             mainBoard.appendChild(actionBoard);
         }
         {
@@ -68,6 +72,10 @@ namespace SaikoroBattle {
                 actionBox.className = 'actionBox';
                 actionBoard.appendChild(actionBox);
             }
+
+            let actionSaikoro = <HTMLDivElement>document.createElement('DIV');
+            actionSaikoro.className = 'saikoro';
+            actionBoard.appendChild(actionSaikoro);
 
             mainBoard.appendChild(actionBoard);
         }
@@ -132,11 +140,11 @@ namespace SaikoroBattle {
         }
     }
 
+    let yokei2 = new DefenseAction('かなり喰らう', '', -10);
+    let yokei1 = new DefenseAction('余計に喰らう', '', -5);
     let futsu = new DefenseAction('普通に喰らう', '', 0);
     let guard1 = new DefenseAction('ちょっとガード', '', 5);
     let guard2 = new DefenseAction('だいぶガード', '', 10);
-    let yokei1 = new DefenseAction('余計に喰らう', '', -5);
-    let yokei2 = new DefenseAction('かなり喰らう', '', -10);
     let kawasu = new DefenseAction('完全にかわす', '', 0);
     kawasu.through = true;
 
@@ -173,11 +181,11 @@ namespace SaikoroBattle {
         }
     }
 
-    // メンバー変数
-    let _mode: number = 0;
+    let NullCharactor = new Charactor('NULL', 'NULL');
 
+    // メンバー変数
     let defaultAttackPalette: Array<AttackAction> = [punch, punch, kick, kick, goshouha, goshouha];
-    let defaultDefensePalette: Array<DefenseAction> = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
+    let defaultDefensePalette: Array<DefenseAction> = [yokei2, yokei1, futsu, guard1, guard2, kawasu];
 
     let plyerobj = new Charactor('main', 'player');
     plyerobj.setAttackPalette(defaultAttackPalette);
@@ -187,109 +195,345 @@ namespace SaikoroBattle {
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
-    let tasks = new Task.Tasks();
+    interface GameMode extends Task.Task {
+        gameStatus: GameStatus;
+    }
 
-    function susumeruGame() {
-        if (tasks.mode == 'running') {
-            tasks.asap();
-            return;
+    class GameStatus {
+        public gameMode: GameMode | null = null;
+        public attacker: Charactor = NullCharactor;
+        public defender: Charactor = NullCharactor;
+        public attackMe: number;
+        public defenseMe: number = -1;
+    }
+
+    let _gameStatus = new GameStatus();
+
+    export function susumeruGame() {
+        if (_gameStatus.gameMode == null) {
+            _gameStatus.gameMode = new InitGameMode(_gameStatus);
         }
 
-        if (_mode == 0) {
+        if (_gameStatus.gameMode.mode == 'running') {
+            _gameStatus.gameMode.asap();
+            return;
+        } else if (_gameStatus.gameMode.mode == 'idle') {
+            _gameStatus.gameMode.do();
+        }
+    }
+
+    class InitGameMode implements GameMode {
+        public readonly name: string = 'InitGameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
             plyerobj.hitPoint = 100;
             enemyobj.hitPoint = 100;
 
             {
                 let actionBoard = <HTMLDivElement>getElementById('attackActionBoard');
-                tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
+                this.tasks.add(new ActionSetTask(actionBoard, plyerobj.attackPalette));
             }
             {
                 let actionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
-                tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
+                this.tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
             }
-            tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
-            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-            tasks.add(new Task.FunctionTask(debugClear, null));
-            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-            tasks.add(new Task.FunctionTask(debug, 'start'));
-            tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-            _mode = 1;
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            this.tasks.add(new Task.FunctionTask(debugClear, null));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            this.tasks.add(new Task.FunctionTask(debug, 'start'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+        }
 
-        } else if (_mode == 1) {
-            attackDefence(tasks, plyerobj, enemyobj);
-            if (enemyobj.hitPoint <= 0) {
-                tasks.add(new Task.FunctionTask(debug, 'win'));
-                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-                _mode = 0;
-            } else {
-                _mode = 2;
-            }
+        public do(): void {
+            Task.TaskCtrl.do(this);
 
-        } else if (_mode == 2) {
-            attackDefence(tasks, enemyobj, plyerobj);
-            if (plyerobj.hitPoint <= 0) {
-                tasks.add(new Task.FunctionTask(debug, 'loose'));
-                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-                _mode = 0;
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.attacker = plyerobj;
+            this.gameStatus.defender = enemyobj;
+            this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+        }
+    }
+
+    class SaikoroTask implements Task.Task {
+        public name: string = 'SaikoroTask';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        private callback: Function;
+        private rollingFunc: Function;
+        private rollingCount = 0;
+        private rollingMaxCount = 200;
+        private me = -1;
+
+        constructor(callback: Function, rollingFunc?: Function) {
+            this.callback = callback;
+            if (rollingFunc != undefined) {
+                this.rollingFunc = rollingFunc;
             } else {
-                _mode = 1;
+                this.rollingFunc = (): void => { }; // null object model
             }
         }
 
-        tasks.do();
+        public do(): void {
+            Task.TaskCtrl.do(this);
+            this.rollingCount = 0;
+            this.rolling();
+        }
+
+        public rolling() {
+            if (this.mode != 'running' && this.mode != 'asap') {
+                return;
+            }
+
+            this.me = saikoro();
+
+            if (this.rollingFunc != null) {
+                window.setTimeout((): void => { this.rollingFunc(this.me); });
+            }
+
+            this.rollingCount++;
+
+            if (this.mode == 'asap' || this.rollingMaxCount <= this.rollingCount) {
+                this.finish();
+                return;
+            } else {
+                window.setTimeout((): void => { this.rolling(); }, 50);
+            }
+        }
+
+        public static saikoroHTML(me: number): string {
+            return [
+                '　　　<br>　<span style="color:red">●</span>　<br>　　　<br>',
+                '●　　<br>　　　<br>　　●<br>',
+                '●　　<br>　●　<br>　　●<br>',
+                '●　●<br>　　　<br>●　●<br>',
+                '●　●<br>　●　<br>●　●<br>',
+                '●　●<br>●　●<br>●　●<br>'
+            ][me];
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.rolling();
+        }
+
+        public finish(): void {
+            Task.TaskCtrl.finish(this);
+
+            this.callback(this.me);
+        }
+    }
+
+    class Attack1GameMode implements GameMode {
+        public readonly name: string = 'Attack1GameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            let attackActionBoard = <HTMLDivElement>getElementById('attackActionBoard');
+            let defenseActionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
+
+            this.tasks.add(new Task.FunctionTask(debugClear, null));
+            this.tasks.add(new Task.FunctionTask(actionSelectReset, { div: attackActionBoard }));
+            this.tasks.add(new Task.FunctionTask(actionSelectReset, { div: defenseActionBoard }));
+            this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.attacker.name + 'の攻撃'));
+            this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
+        }
+
+        private callback = (me: number) => {
+            this.gameStatus.attackMe = me;
+        }
+
+        private rollingFunc(me: number) {
+            let div = <HTMLDivElement>getElementById('attackActionBoard');
+            let box = <HTMLDivElement>div.childNodes.item(6);
+
+            box.innerHTML = SaikoroTask.saikoroHTML(me);
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
+            this.gameStatus.gameMode.do();
+        }
+    }
+
+    class Attack2GameMode implements GameMode {
+        public readonly name: string = 'Attack1GameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            let attackActionBoard = <HTMLDivElement>getElementById('attackActionBoard');
+
+            let attackMe = this.gameStatus.attackMe;
+            let attackAction: AttackAction = this.gameStatus.attacker.attackPalette[attackMe];
+
+            this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+            this.tasks.add(new Task.FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
+
+            this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.name + 'の防御'));
+            this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        private callback = (me: number) => {
+            this.gameStatus.defenseMe = me;
+        }
+
+        private rollingFunc(me: number) {
+            let div = <HTMLDivElement>getElementById('defenseActionBoard');
+            let box = <HTMLDivElement>div.childNodes.item(6);
+
+            box.innerHTML = SaikoroTask.saikoroHTML(me);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
+            this.gameStatus.gameMode.do();
+        }
+    }
+
+    class Attack3GameMode implements GameMode {
+        public readonly name: string = 'Attack1GameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            let defenseActionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
+
+            let attackMe = this.gameStatus.attackMe;
+            let attackAction: AttackAction = this.gameStatus.attacker.attackPalette[attackMe];
+
+            let defenseMe = this.gameStatus.defenseMe;
+            let defenseAction: DefenseAction = this.gameStatus.defender.defensePalette[defenseMe];
+
+            this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name));
+            this.tasks.add(new Task.FunctionTask(actionSelect, { div: defenseActionBoard, me: defenseMe, className: 'selected_defense' }));
+
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
+
+            let damage: number = 0;
+            if (!defenseAction.through) {
+                damage = attackAction.power - defenseAction.power;
+                if (damage < 0) {
+                    damage = 0;
+                }
+                this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+                this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
+            }
+
+            this.gameStatus.defender.hitPoint = this.gameStatus.defender.hitPoint - damage;
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.gameStatus.defender.hitPoint = 0;
+            }
+
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
+
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.name + 'は、倒れた'));
+                this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
+            }
+
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            if (0 < this.gameStatus.defender.hitPoint) {
+                let swap: Charactor = this.gameStatus.attacker;
+                this.gameStatus.attacker = this.gameStatus.defender;
+                this.gameStatus.defender = swap;
+                this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+            } else {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            }
+        }
     }
 
     function nokoriHpHyouji(): void {
         _playerHPElm.textContent = String(plyerobj.hitPoint);
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
-    }
-
-    function attackDefence(tasks: Task.Tasks, attacker: Charactor, defender: Charactor): void {
-        let attackActionBoard = <HTMLDivElement>getElementById('attackActionBoard');
-        let defenceActionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
-
-        tasks.add(new Task.FunctionTask(debugClear, null));
-        tasks.add(new Task.FunctionTask(actionSelectReset, { div: attackActionBoard }));
-        tasks.add(new Task.FunctionTask(actionSelectReset, { div: defenceActionBoard }));
-        tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-
-        let attackMe: number = saikoro();
-        let attackAction: AttackAction = attacker.attackPalette[attackMe];
-
-        tasks.add(new Task.FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
-        tasks.add(new Task.FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
-        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
-
-        let defenderMe: number = saikoro();
-        let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
-
-        tasks.add(new Task.FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
-        tasks.add(new Task.FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
-
-        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
-
-        let damage: number = 0;
-        if (!defenderAction.through) {
-            damage = attackAction.power - defenderAction.power;
-            if (damage < 0) {
-                damage = 0;
-            }
-            tasks.add(new Task.FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
-            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
-        }
-
-        defender.hitPoint = defender.hitPoint - damage;
-        if (defender.hitPoint <= 0) {
-            defender.hitPoint = 0;
-        }
-
-        tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
-        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
-
-        if (defender.hitPoint <= 0) {
-            tasks.add(new Task.FunctionTask(debug, defender.name + 'は、倒れた'));
-            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
-        }
     }
 
     class ActionSetTask implements Task.Task {
