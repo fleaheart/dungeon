@@ -287,4 +287,4 @@ var SaikoroBattle;
         }
     }
 })(SaikoroBattle || (SaikoroBattle = {}));
-//# sourceMappingURL=SaikoroBattole.js.map
+//# sourceMappingURL=SaikoroBattle.js.map
