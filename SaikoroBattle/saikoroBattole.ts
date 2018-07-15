@@ -173,152 +173,6 @@ namespace SaikoroBattle {
         }
     }
 
-    type ModeType = 'idle' | 'running' | 'asap' | 'finish';
-
-    interface Task {
-        mode: ModeType;
-        do: Function;
-        asap: Function;
-        finish: Function;
-    }
-
-    class TaskCtrl {
-        static readonly DEFAULT_MODE: ModeType = 'idle';
-
-        static do(task: Task): void {
-            task.mode = 'running';
-        }
-
-        static asap(task: Task): void {
-            task.mode = 'asap';
-        }
-
-        static finish(task: Task): void {
-            task.mode = 'finish';
-        }
-
-        static wait(task: Task, callback: Function): void {
-            if (task.mode != 'running') {
-                callback();
-                return;
-            }
-            window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
-        }
-    }
-
-    class Tasks implements Task {
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public tasks: Array<Task> = new Array<Task>();
-
-        private step: number = -1;
-
-        public add(task: Task): void {
-            this.tasks.push(task);
-        }
-
-        public do(): void {
-            TaskCtrl.do(this);
-            this.step = -1;
-            this.next();
-        }
-
-        public next(): void {
-            if (this.mode != 'running') {
-                return;
-            }
-
-            this.step++;
-            if (this.tasks.length <= this.step) {
-                this.finish();
-                return;
-            }
-
-            let task = this.tasks[this.step];
-
-            task.do();
-
-            TaskCtrl.wait(task, (): void => { this.next(); });
-        }
-
-        public asap() {
-            window.setTimeout((): void => {
-                TaskCtrl.asap(this);
-
-                while (this.step < this.tasks.length) {
-                    let task = this.tasks[this.step];
-                    if (!(task instanceof WaitTask)) {
-                        task.asap();
-                    }
-                    this.step++;
-                }
-
-                this.finish();
-            });
-        }
-
-        public finish(): void {
-            TaskCtrl.finish(this);
-            this.tasks.length = 0;
-            this.step = -1;
-        }
-    }
-
-    class FunctionTask implements Task {
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public func: Function;
-        public param: any;
-
-        constructor(func: Function, param: any) {
-            this.func = func;
-            this.param = param;
-        }
-
-        public do(): void {
-            TaskCtrl.do(this);
-
-            this.func(this.param);
-
-            this.finish();
-        }
-
-        public asap() {
-            TaskCtrl.asap(this);
-            this.do();
-        }
-
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-    }
-
-    type WaitInterval = 0 | 100 | 300 | 700;
-
-    class WaitTask implements Task {
-        static FAST: WaitInterval = 100;
-        static NORMAL: WaitInterval = 300;
-        static SLOW: WaitInterval = 700;
-
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public millisec: WaitInterval;
-
-        constructor(millisec: WaitInterval) {
-            this.millisec = millisec;
-        }
-
-        public do(): void {
-            TaskCtrl.do(this);
-            window.setTimeout((): void => { this.finish(); }, this.millisec);
-        }
-
-        public asap() {
-            TaskCtrl.asap(this);
-        }
-
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-    }
-
     // メンバー変数
     let _mode: number = 0;
 
@@ -333,7 +187,7 @@ namespace SaikoroBattle {
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
 
-    let tasks: Tasks = new Tasks();
+    let tasks = new Task.Tasks();
 
     function susumeruGame() {
         if (tasks.mode == 'running') {
@@ -353,19 +207,19 @@ namespace SaikoroBattle {
                 let actionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
                 tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
             }
-            tasks.add(new FunctionTask(nokoriHpHyouji, null));
-            tasks.add(new WaitTask(WaitTask.FAST));
-            tasks.add(new FunctionTask(debugClear, null));
-            tasks.add(new WaitTask(WaitTask.FAST));
-            tasks.add(new FunctionTask(debug, 'start'));
-            tasks.add(new WaitTask(WaitTask.SLOW));
+            tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            tasks.add(new Task.FunctionTask(debugClear, null));
+            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            tasks.add(new Task.FunctionTask(debug, 'start'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
             _mode = 1;
 
         } else if (_mode == 1) {
             attackDefence(tasks, plyerobj, enemyobj);
             if (enemyobj.hitPoint <= 0) {
-                tasks.add(new FunctionTask(debug, 'win'));
-                tasks.add(new WaitTask(WaitTask.SLOW));
+                tasks.add(new Task.FunctionTask(debug, 'win'));
+                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
                 _mode = 0;
             } else {
                 _mode = 2;
@@ -374,8 +228,8 @@ namespace SaikoroBattle {
         } else if (_mode == 2) {
             attackDefence(tasks, enemyobj, plyerobj);
             if (plyerobj.hitPoint <= 0) {
-                tasks.add(new FunctionTask(debug, 'loose'));
-                tasks.add(new WaitTask(WaitTask.SLOW));
+                tasks.add(new Task.FunctionTask(debug, 'loose'));
+                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
                 _mode = 0;
             } else {
                 _mode = 1;
@@ -390,29 +244,29 @@ namespace SaikoroBattle {
         _enemyhpElm.textContent = String(enemyobj.hitPoint);
     }
 
-    function attackDefence(tasks: Tasks, attacker: Charactor, defender: Charactor): void {
+    function attackDefence(tasks: Task.Tasks, attacker: Charactor, defender: Charactor): void {
         let attackActionBoard = <HTMLDivElement>getElementById('attackActionBoard');
         let defenceActionBoard = <HTMLDivElement>getElementById('defenseActionBoard');
 
-        tasks.add(new FunctionTask(debugClear, null));
-        tasks.add(new FunctionTask(actionSelectReset, { div: attackActionBoard }));
-        tasks.add(new FunctionTask(actionSelectReset, { div: defenceActionBoard }));
-        tasks.add(new WaitTask(WaitTask.FAST));
+        tasks.add(new Task.FunctionTask(debugClear, null));
+        tasks.add(new Task.FunctionTask(actionSelectReset, { div: attackActionBoard }));
+        tasks.add(new Task.FunctionTask(actionSelectReset, { div: defenceActionBoard }));
+        tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
 
         let attackMe: number = saikoro();
         let attackAction: AttackAction = attacker.attackPalette[attackMe];
 
-        tasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
-        tasks.add(new FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new Task.FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
         let defenderMe: number = saikoro();
         let defenderAction: DefenseAction = defender.defensePalette[defenderMe];
 
-        tasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
-        tasks.add(new FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
+        tasks.add(new Task.FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new Task.FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
 
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
         let damage: number = 0;
         if (!defenderAction.through) {
@@ -420,8 +274,8 @@ namespace SaikoroBattle {
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
-            tasks.add(new WaitTask(WaitTask.NORMAL));
+            tasks.add(new Task.FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         }
 
         defender.hitPoint = defender.hitPoint - damage;
@@ -429,40 +283,40 @@ namespace SaikoroBattle {
             defender.hitPoint = 0;
         }
 
-        tasks.add(new FunctionTask(nokoriHpHyouji, null));
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
         if (defender.hitPoint <= 0) {
-            tasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
-            tasks.add(new WaitTask(WaitTask.NORMAL));
+            tasks.add(new Task.FunctionTask(debug, defender.name + 'は、倒れた'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         }
     }
 
-    class ActionSetTask implements Task {
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+    class ActionSetTask implements Task.Task {
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
         constructor(private div: HTMLDivElement, private actionList: Array<Action>) { }
 
-        private tasks = new Tasks();
+        private tasks = new Task.Tasks();
 
         public do() {
-            TaskCtrl.do(this);
+            Task.TaskCtrl.do(this);
 
             let childNodes = this.div.childNodes;
             for (let i = 0; i < 6; i++) {
                 let box = <HTMLDivElement>childNodes.item(i);
                 let action: Action = this.actionList[i];
 
-                this.tasks.add(new FunctionTask(() => { this.setBox(box, action); }, null));
-                this.tasks.add(new WaitTask(WaitTask.FAST));
+                this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
+                this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             }
 
             this.tasks.do();
 
-            TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
+            Task.TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
         }
 
         public asap() {
-            TaskCtrl.asap(this);
+            Task.TaskCtrl.asap(this);
             this.tasks.asap();
         }
 
@@ -471,7 +325,7 @@ namespace SaikoroBattle {
         }
 
         public finish(): void {
-            TaskCtrl.finish(this);
+            Task.TaskCtrl.finish(this);
         }
     }
 

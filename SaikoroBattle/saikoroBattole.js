@@ -130,118 +130,6 @@ var SaikoroBattle;
         }
         return Charactor;
     }());
-    var TaskCtrl = (function () {
-        function TaskCtrl() {
-        }
-        TaskCtrl.do = function (task) {
-            task.mode = 'running';
-        };
-        TaskCtrl.asap = function (task) {
-            task.mode = 'asap';
-        };
-        TaskCtrl.finish = function (task) {
-            task.mode = 'finish';
-        };
-        TaskCtrl.wait = function (task, callback) {
-            if (task.mode != 'running') {
-                callback();
-                return;
-            }
-            window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
-        };
-        TaskCtrl.DEFAULT_MODE = 'idle';
-        return TaskCtrl;
-    }());
-    var Tasks = (function () {
-        function Tasks() {
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Array();
-            this.step = -1;
-        }
-        Tasks.prototype.add = function (task) {
-            this.tasks.push(task);
-        };
-        Tasks.prototype.do = function () {
-            TaskCtrl.do(this);
-            this.step = -1;
-            this.next();
-        };
-        Tasks.prototype.next = function () {
-            var _this = this;
-            if (this.mode != 'running') {
-                return;
-            }
-            this.step++;
-            if (this.tasks.length <= this.step) {
-                this.finish();
-                return;
-            }
-            var task = this.tasks[this.step];
-            task.do();
-            TaskCtrl.wait(task, function () { _this.next(); });
-        };
-        Tasks.prototype.asap = function () {
-            var _this = this;
-            window.setTimeout(function () {
-                TaskCtrl.asap(_this);
-                while (_this.step < _this.tasks.length) {
-                    var task = _this.tasks[_this.step];
-                    if (!(task instanceof WaitTask)) {
-                        task.asap();
-                    }
-                    _this.step++;
-                }
-                _this.finish();
-            });
-        };
-        Tasks.prototype.finish = function () {
-            TaskCtrl.finish(this);
-            this.tasks.length = 0;
-            this.step = -1;
-        };
-        return Tasks;
-    }());
-    var FunctionTask = (function () {
-        function FunctionTask(func, param) {
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.func = func;
-            this.param = param;
-        }
-        FunctionTask.prototype.do = function () {
-            TaskCtrl.do(this);
-            this.func(this.param);
-            this.finish();
-        };
-        FunctionTask.prototype.asap = function () {
-            TaskCtrl.asap(this);
-            this.do();
-        };
-        FunctionTask.prototype.finish = function () {
-            TaskCtrl.finish(this);
-        };
-        return FunctionTask;
-    }());
-    var WaitTask = (function () {
-        function WaitTask(millisec) {
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.millisec = millisec;
-        }
-        WaitTask.prototype.do = function () {
-            var _this = this;
-            TaskCtrl.do(this);
-            window.setTimeout(function () { _this.finish(); }, this.millisec);
-        };
-        WaitTask.prototype.asap = function () {
-            TaskCtrl.asap(this);
-        };
-        WaitTask.prototype.finish = function () {
-            TaskCtrl.finish(this);
-        };
-        WaitTask.FAST = 100;
-        WaitTask.NORMAL = 300;
-        WaitTask.SLOW = 700;
-        return WaitTask;
-    }());
     var _mode = 0;
     var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
     var defaultDefensePalette = [futsu, guard1, guard2, yokei1, yokei2, kawasu];
@@ -251,7 +139,7 @@ var SaikoroBattle;
     var enemyobj = new Charactor('enemy', '敵');
     enemyobj.setAttackPalette(defaultAttackPalette);
     enemyobj.setDefensePalette(defaultDefensePalette);
-    var tasks = new Tasks();
+    var tasks = new Task.Tasks();
     function susumeruGame() {
         if (tasks.mode == 'running') {
             tasks.asap();
@@ -268,19 +156,19 @@ var SaikoroBattle;
                 var actionBoard = getElementById('defenseActionBoard');
                 tasks.add(new ActionSetTask(actionBoard, plyerobj.defensePalette));
             }
-            tasks.add(new FunctionTask(nokoriHpHyouji, null));
-            tasks.add(new WaitTask(WaitTask.FAST));
-            tasks.add(new FunctionTask(debugClear, null));
-            tasks.add(new WaitTask(WaitTask.FAST));
-            tasks.add(new FunctionTask(debug, 'start'));
-            tasks.add(new WaitTask(WaitTask.SLOW));
+            tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            tasks.add(new Task.FunctionTask(debugClear, null));
+            tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+            tasks.add(new Task.FunctionTask(debug, 'start'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
             _mode = 1;
         }
         else if (_mode == 1) {
             attackDefence(tasks, plyerobj, enemyobj);
             if (enemyobj.hitPoint <= 0) {
-                tasks.add(new FunctionTask(debug, 'win'));
-                tasks.add(new WaitTask(WaitTask.SLOW));
+                tasks.add(new Task.FunctionTask(debug, 'win'));
+                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
                 _mode = 0;
             }
             else {
@@ -290,8 +178,8 @@ var SaikoroBattle;
         else if (_mode == 2) {
             attackDefence(tasks, enemyobj, plyerobj);
             if (plyerobj.hitPoint <= 0) {
-                tasks.add(new FunctionTask(debug, 'loose'));
-                tasks.add(new WaitTask(WaitTask.SLOW));
+                tasks.add(new Task.FunctionTask(debug, 'loose'));
+                tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
                 _mode = 0;
             }
             else {
@@ -307,73 +195,73 @@ var SaikoroBattle;
     function attackDefence(tasks, attacker, defender) {
         var attackActionBoard = getElementById('attackActionBoard');
         var defenceActionBoard = getElementById('defenseActionBoard');
-        tasks.add(new FunctionTask(debugClear, null));
-        tasks.add(new FunctionTask(actionSelectReset, { div: attackActionBoard }));
-        tasks.add(new FunctionTask(actionSelectReset, { div: defenceActionBoard }));
-        tasks.add(new WaitTask(WaitTask.FAST));
+        tasks.add(new Task.FunctionTask(debugClear, null));
+        tasks.add(new Task.FunctionTask(actionSelectReset, { div: attackActionBoard }));
+        tasks.add(new Task.FunctionTask(actionSelectReset, { div: defenceActionBoard }));
+        tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
         var attackMe = saikoro();
         var attackAction = attacker.attackPalette[attackMe];
-        tasks.add(new FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
-        tasks.add(new FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.FunctionTask(debug, attacker.name + 'の攻撃: さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+        tasks.add(new Task.FunctionTask(actionSelect, { div: attackActionBoard, me: attackMe, className: 'selected_attack' }));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         var defenderMe = saikoro();
         var defenderAction = defender.defensePalette[defenderMe];
-        tasks.add(new FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
-        tasks.add(new FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.FunctionTask(debug, defender.name + 'の防御:[' + String(defenderMe + 1) + ']' + defenderAction.name));
+        tasks.add(new Task.FunctionTask(actionSelect, { div: defenceActionBoard, me: defenderMe, className: 'selected_defense' }));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         var damage = 0;
         if (!defenderAction.through) {
             damage = attackAction.power - defenderAction.power;
             if (damage < 0) {
                 damage = 0;
             }
-            tasks.add(new FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
-            tasks.add(new WaitTask(WaitTask.NORMAL));
+            tasks.add(new Task.FunctionTask(debug, defender.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         }
         defender.hitPoint = defender.hitPoint - damage;
         if (defender.hitPoint <= 0) {
             defender.hitPoint = 0;
         }
-        tasks.add(new FunctionTask(nokoriHpHyouji, null));
-        tasks.add(new WaitTask(WaitTask.NORMAL));
+        tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+        tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         if (defender.hitPoint <= 0) {
-            tasks.add(new FunctionTask(debug, defender.name + 'は、倒れた'));
-            tasks.add(new WaitTask(WaitTask.NORMAL));
+            tasks.add(new Task.FunctionTask(debug, defender.name + 'は、倒れた'));
+            tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
         }
     }
     var ActionSetTask = (function () {
         function ActionSetTask(div, actionList) {
             this.div = div;
             this.actionList = actionList;
-            this.mode = TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Tasks();
+            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Task.Tasks();
         }
         ActionSetTask.prototype.do = function () {
             var _this = this;
-            TaskCtrl.do(this);
+            Task.TaskCtrl.do(this);
             var childNodes = this.div.childNodes;
             var _loop_1 = function (i) {
                 var box = childNodes.item(i);
                 var action = this_1.actionList[i];
-                this_1.tasks.add(new FunctionTask(function () { _this.setBox(box, action); }, null));
-                this_1.tasks.add(new WaitTask(WaitTask.FAST));
+                this_1.tasks.add(new Task.FunctionTask(function () { _this.setBox(box, action); }, null));
+                this_1.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             };
             var this_1 = this;
             for (var i = 0; i < 6; i++) {
                 _loop_1(i);
             }
             this.tasks.do();
-            TaskCtrl.wait(this.tasks, function () { _this.finish(); });
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
         };
         ActionSetTask.prototype.asap = function () {
-            TaskCtrl.asap(this);
+            Task.TaskCtrl.asap(this);
             this.tasks.asap();
         };
         ActionSetTask.prototype.setBox = function (box, action) {
             box.innerHTML = action.name;
         };
         ActionSetTask.prototype.finish = function () {
-            TaskCtrl.finish(this);
+            Task.TaskCtrl.finish(this);
         };
         return ActionSetTask;
     }());
@@ -399,4 +287,4 @@ var SaikoroBattle;
         }
     }
 })(SaikoroBattle || (SaikoroBattle = {}));
-//# sourceMappingURL=saikoroBattole.js.map
+//# sourceMappingURL=SaikoroBattole.js.map
