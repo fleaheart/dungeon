@@ -17,9 +17,12 @@ namespace SaikoroBattle {
         dbg.innerHTML = h;
     }
 
+    type OmoteUraType = 'OMOTE' | 'URA';
+
     class GameStatus {
         public gameMode: GameMode | null = null;
         public players: Array<Character> = new Array<Character>();
+        public omoteUra: OmoteUraType = 'OMOTE'
         public attacker: Character = NullCharacter;
         public defender: Character = NullCharacter;
     }
@@ -286,9 +289,7 @@ namespace SaikoroBattle {
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.attacker = this.gameStatus.players[0];
-            this.gameStatus.defender = this.gameStatus.players[1];
-            this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+            this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
         }
     }
 
@@ -416,6 +417,120 @@ namespace SaikoroBattle {
             Task.TaskCtrl.finish(this);
 
             this.callback(this.me);
+        }
+    }
+
+    // 攻撃順序判断
+    class KougekiJunjoHandanMode implements GameMode {
+        public readonly name: string = 'KougekiJunjoHandanMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private taskArray: Array<Task.Task> = new Array<Task.Task>();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            for (let i = 0, len = gameStatus.players.length; i < len; i++) {
+                ((playerIdx: number): void => {
+                    this.taskArray.push(new SaikoroTask(
+                        (me: number): void => { this.callback(playerIdx, me); },
+                        (me: number): void => { this.rollingFunc(playerIdx, me); }
+                    ));
+                })(i);
+            }
+        }
+
+        private callback = (playerIdx: number, me: number) => {
+            this.gameStatus.players[playerIdx].saikoroMe = me;
+        }
+
+        private rollingFunc = (playerIdx: number, me: number) => {
+            this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            window.setTimeout(() => {
+                let tasks: Task.Tasks = new Task.Tasks();
+                tasks.add(new Task.FunctionTask(debugClear, null));
+                for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                    tasks.add(new Task.FunctionTask(actionSelectReset, this.gameStatus.players[i]));
+                }
+                tasks.add(new Task.FunctionTask(debug, '攻撃順判定'));
+                tasks.do();
+            });
+
+            for (let i = 0, len = this.taskArray.length; i < len; i++) {
+                this.taskArray[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+                window.setTimeout((): void => { this.taskArray[i].do(); });
+            }
+
+            this.wait(this.taskArray, this.check);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            for (let i = 0, len = this.taskArray.length; i < len; i++) {
+                this.taskArray[i].asap();
+            }
+        }
+
+        public wait(taskArray: Array<Task.Task>, callback: Function): void {
+            let finish: boolean = true;
+            for (let i = 0, len: number = taskArray.length; i < len; i++) {
+                if (taskArray[i].mode != 'finish') {
+                    finish = false;
+                    break;
+                }
+            }
+            if (finish) {
+                callback();
+                return;
+            }
+
+            window.setTimeout((): void => { this.wait(taskArray, callback); }, 100);
+        }
+
+        private check = (): void => {
+            let tasks: Task.Tasks = new Task.Tasks();
+
+            let saikoroP0: number = this.gameStatus.players[0].saikoroMe;
+            let saikoroP1: number = this.gameStatus.players[1].saikoroMe;
+
+            tasks.add(new Task.FunctionTask(debug, '[' + (saikoroP0 + 1) + '] : [' + (saikoroP1 + 1) + ']'));
+
+            if (saikoroP0 == saikoroP1) {
+                tasks.do();
+
+                // もう一回
+                this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                return;
+            }
+
+            if (saikoroP0 < saikoroP1) {
+                this.gameStatus.attacker = this.gameStatus.players[1];
+                this.gameStatus.defender = this.gameStatus.players[0];
+            } else {
+                this.gameStatus.attacker = this.gameStatus.players[0];
+                this.gameStatus.defender = this.gameStatus.players[1];
+            }
+
+            tasks.add(new Task.FunctionTask(debug, this.gameStatus.attacker.name + 'の攻撃から'));
+            tasks.do();
+
+            this.gameStatus.omoteUra = 'OMOTE';
+
+            this.finish();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
         }
     }
 
@@ -581,10 +696,16 @@ namespace SaikoroBattle {
             Task.TaskCtrl.finish(this);
 
             if (0 < this.gameStatus.defender.hitPoint) {
-                let swap: Character = this.gameStatus.attacker;
-                this.gameStatus.attacker = this.gameStatus.defender;
-                this.gameStatus.defender = swap;
-                this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                if (this.gameStatus.omoteUra == 'OMOTE') {
+                    this.gameStatus.omoteUra = 'URA';
+                    let swap: Character = this.gameStatus.attacker;
+                    this.gameStatus.attacker = this.gameStatus.defender;
+                    this.gameStatus.defender = swap;
+
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                } else {
+                    this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+                }
             } else {
                 this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
             }
