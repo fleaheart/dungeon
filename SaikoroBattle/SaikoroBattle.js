@@ -56,45 +56,46 @@ var SaikoroBattle;
         mainBoard.appendChild(startButton);
         for (var i = 0, len = gameStatus.players.length; i < len; i++) {
             var character = gameStatus.players[i];
-            {
-                var span = document.createElement('SPAN');
-                span.textContent = character.name + ' HP: ';
-                character.characterBoard.appendChild(span);
-            }
-            {
-                var span = document.createElement('SPAN');
-                character.characterBoard.appendChild(span);
-                character.hitPointElement = span;
-            }
-            {
-                var saikoro_1 = character.saikoroElement;
-                saikoro_1.className = 'saikoro';
-                character.characterBoard.appendChild(saikoro_1);
-            }
-            createActonBoard(character, 1);
-            createActonBoard(character, 2);
+            createActonBoard(character);
             mainBoard.appendChild(character.characterBoard);
         }
     }
-    function createActonBoard(character, attackDefense) {
-        var actionBoard;
-        var actionBoxList;
-        if (attackDefense == 1) {
-            actionBoard = character.attackActionBoard;
-            actionBoxList = character.attackBoxList;
+    function createActonBoard(character) {
+        {
+            var span = document.createElement('SPAN');
+            span.textContent = character.name + ' HP: ';
+            character.characterBoard.appendChild(span);
         }
-        else {
-            actionBoard = character.defenseActionBoard;
-            actionBoxList = character.defenseBoxList;
+        {
+            var span = document.createElement('SPAN');
+            character.characterBoard.appendChild(span);
+            character.hitPointElement = span;
         }
-        actionBoard.className = 'actionBoard';
-        for (var i = 0; i < 6; i++) {
-            var actionBox = document.createElement('DIV');
-            actionBox.className = 'actionBox';
-            actionBoard.appendChild(actionBox);
-            actionBoxList.push(actionBox);
+        {
+            var saikoro_1 = character.saikoroElement;
+            saikoro_1.className = 'saikoro';
+            character.characterBoard.appendChild(saikoro_1);
         }
-        character.characterBoard.appendChild(actionBoard);
+        for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
+            var actionBoard = void 0;
+            var actionBoxList = void 0;
+            if (attackDefense == 1) {
+                actionBoard = character.attackActionBoard;
+                actionBoxList = character.attackBoxList;
+            }
+            else {
+                actionBoard = character.defenseActionBoard;
+                actionBoxList = character.defenseBoxList;
+            }
+            actionBoard.className = 'actionBoard';
+            for (var i = 0; i < 6; i++) {
+                var actionBox = document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+                actionBoxList.push(actionBox);
+            }
+            character.characterBoard.appendChild(actionBoard);
+        }
     }
     function integerRandom(maxValue) {
         var value = Math.random() * maxValue;
@@ -224,35 +225,38 @@ var SaikoroBattle;
     }());
     var ActionSetTask = (function () {
         function ActionSetTask(gameStatus) {
-            var _this = this;
             this.name = 'ActionSetTask';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
-            for (var p = 0, plen = gameStatus.players.length; p < plen; p++) {
-                var character = gameStatus.players[p];
-                for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                    var actionBoxList = void 0;
-                    if (attackDefense == 1) {
-                        this.actionList = character.attackPalette;
-                        actionBoxList = character.attackBoxList;
-                    }
-                    else {
-                        this.actionList = character.defensePalette;
-                        actionBoxList = character.defenseBoxList;
-                    }
-                    var _loop_1 = function (i) {
-                        var box = actionBoxList[i];
-                        var action = this_1.actionList[i];
-                        this_1.tasks.add(new Task.FunctionTask(function () { _this.setBox(box, action); }, null));
-                        this_1.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-                    };
-                    var this_1 = this;
-                    for (var i = 0; i < 6; i++) {
-                        _loop_1(i);
-                    }
-                }
+            for (var i = 0, len = gameStatus.players.length; i < len; i++) {
+                var character = gameStatus.players[i];
+                this.setActionBox(character);
             }
         }
+        ActionSetTask.prototype.setActionBox = function (character) {
+            var _this = this;
+            for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
+                var actionBoxList = void 0;
+                if (attackDefense == 1) {
+                    this.actionList = character.attackPalette;
+                    actionBoxList = character.attackBoxList;
+                }
+                else {
+                    this.actionList = character.defensePalette;
+                    actionBoxList = character.defenseBoxList;
+                }
+                var _loop_1 = function (i) {
+                    var box = actionBoxList[i];
+                    var action = this_1.actionList[i];
+                    this_1.tasks.add(new Task.FunctionTask(function () { _this.setBox(box, action); }, null));
+                    this_1.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+                };
+                var this_1 = this;
+                for (var i = 0; i < 6; i++) {
+                    _loop_1(i);
+                }
+            }
+        };
         ActionSetTask.prototype.setBox = function (box, action) {
             box.innerHTML = action.name;
         };

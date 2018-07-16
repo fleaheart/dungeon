@@ -63,53 +63,51 @@ namespace SaikoroBattle {
         for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
             let character: Character = gameStatus.players[i];
 
-            {
-                let span = <HTMLSpanElement>document.createElement('SPAN');
-                span.textContent = character.name + ' HP: ';
-                character.characterBoard.appendChild(span);
-            }
-            {
-                let span = <HTMLSpanElement>document.createElement('SPAN');
-                character.characterBoard.appendChild(span);
-                character.hitPointElement = span;
-            }
-
-            {
-                let saikoro:HTMLDivElement = character.saikoroElement;
-                saikoro.className = 'saikoro';
-                character.characterBoard.appendChild(saikoro);
-            }
-
-            createActonBoard(character, 1);
-            createActonBoard(character, 2);
+            createActonBoard(character);
 
             mainBoard.appendChild(character.characterBoard);
         }
     }
 
-    function createActonBoard(character: Character, attackDefense: number) {
-
-        let actionBoard: HTMLDivElement;
-        let actionBoxList: Array<HTMLDivElement>;
-
-        if (attackDefense == 1) {
-            actionBoard = character.attackActionBoard;
-            actionBoxList = character.attackBoxList;
-        } else {
-            actionBoard = character.defenseActionBoard;
-            actionBoxList = character.defenseBoxList;
+    function createActonBoard(character: Character) {
+        {
+            let span = <HTMLSpanElement>document.createElement('SPAN');
+            span.textContent = character.name + ' HP: ';
+            character.characterBoard.appendChild(span);
+        }
+        {
+            let span = <HTMLSpanElement>document.createElement('SPAN');
+            character.characterBoard.appendChild(span);
+            character.hitPointElement = span;
+        }
+        {
+            let saikoro: HTMLDivElement = character.saikoroElement;
+            saikoro.className = 'saikoro';
+            character.characterBoard.appendChild(saikoro);
         }
 
+        for (let attackDefense: number = 1; attackDefense <= 2; attackDefense++) {
+            let actionBoard: HTMLDivElement;
+            let actionBoxList: Array<HTMLDivElement>;
 
-        actionBoard.className = 'actionBoard';
-        for (let i = 0; i < 6; i++) {
-            let actionBox = <HTMLDivElement>document.createElement('DIV');
-            actionBox.className = 'actionBox';
-            actionBoard.appendChild(actionBox);
-            actionBoxList.push(actionBox);
+            if (attackDefense == 1) {
+                actionBoard = character.attackActionBoard;
+                actionBoxList = character.attackBoxList;
+            } else {
+                actionBoard = character.defenseActionBoard;
+                actionBoxList = character.defenseBoxList;
+            }
+
+            actionBoard.className = 'actionBoard';
+            for (let i = 0; i < 6; i++) {
+                let actionBox = <HTMLDivElement>document.createElement('DIV');
+                actionBox.className = 'actionBox';
+                actionBoard.appendChild(actionBox);
+                actionBoxList.push(actionBox);
+            }
+
+            character.characterBoard.appendChild(actionBoard);
         }
-
-        character.characterBoard.appendChild(actionBoard);
     }
 
     function integerRandom(maxValue: number): number {
@@ -206,6 +204,7 @@ namespace SaikoroBattle {
             this.characterBoard = <HTMLDivElement>document.createElement('DIV');
             this.hitPointElement = <HTMLSpanElement>document.createElement('SPAN');
             this.saikoroElement = <HTMLDivElement>document.createElement('DIV');
+
             this.attackPalette = new Array<AttackAction>();
             this.attackActionBoard = <HTMLDivElement>document.createElement('DIV');
             this.defensePalette = new Array<DefenseAction>();
@@ -302,26 +301,29 @@ namespace SaikoroBattle {
         private tasks = new Task.Tasks();
 
         constructor(gameStatus: GameStatus) {
-            for (let p = 0, plen: number = gameStatus.players.length; p < plen; p++) {
-                let character: Character = gameStatus.players[p];
+            for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
+                let character: Character = gameStatus.players[i];
+                this.setActionBox(character);
+            }
+        }
 
-                for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                    let actionBoxList: Array<HTMLDivElement>;
-                    if (attackDefense == 1) {
-                        this.actionList = character.attackPalette;
-                        actionBoxList = character.attackBoxList;
-                    } else {
-                        this.actionList = character.defensePalette;
-                        actionBoxList = character.defenseBoxList;
-                    }
+        private setActionBox(character: Character) {
+            for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
+                let actionBoxList: Array<HTMLDivElement>;
+                if (attackDefense == 1) {
+                    this.actionList = character.attackPalette;
+                    actionBoxList = character.attackBoxList;
+                } else {
+                    this.actionList = character.defensePalette;
+                    actionBoxList = character.defenseBoxList;
+                }
 
-                    for (let i = 0; i < 6; i++) {
-                        let box = actionBoxList[i];
-                        let action: Action = this.actionList[i];
+                for (let i = 0; i < 6; i++) {
+                    let box = actionBoxList[i];
+                    let action: Action = this.actionList[i];
 
-                        this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
-                        this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-                    }
+                    this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
+                    this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
                 }
             }
         }
@@ -560,7 +562,6 @@ namespace SaikoroBattle {
                 this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.name + 'は、倒れた'));
                 this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
             }
-
         }
 
         public do(): void {
