@@ -27,8 +27,6 @@ var SaikoroBattle;
         return GameStatus;
     }());
     var _gameStatus = new GameStatus();
-    var _playerHPElm;
-    var _enemyhpElm;
     function getElementById(elementId) {
         var elm = document.getElementById(elementId);
         if (elm == null) {
@@ -38,8 +36,12 @@ var SaikoroBattle;
     }
     function init() {
         _debugBoard = getElementById('debugBoard');
-        _playerHPElm = getElementById('playerHP');
-        _enemyhpElm = getElementById('enemyHP');
+        var plyerobj = new Charactor('main', 'player');
+        plyerobj.setAttackPalette(defaultAttackPalette);
+        plyerobj.setDefensePalette(defaultDefensePalette);
+        var enemyobj = new Charactor('enemy', '敵');
+        enemyobj.setAttackPalette(defaultAttackPalette);
+        enemyobj.setDefensePalette(defaultDefensePalette);
         _gameStatus.players.push(plyerobj);
         _gameStatus.players.push(enemyobj);
         initMainBoard(_gameStatus);
@@ -54,6 +56,16 @@ var SaikoroBattle;
         mainBoard.appendChild(startButton);
         for (var i = 0, len = gameStatus.players.length; i < len; i++) {
             var charactor = gameStatus.players[i];
+            {
+                var span = document.createElement('SPAN');
+                span.textContent = charactor.name + ' HP: ';
+                charactor.charactorBoard.appendChild(span);
+            }
+            {
+                var span = document.createElement('SPAN');
+                charactor.charactorBoard.appendChild(span);
+                charactor.hitPointElement = span;
+            }
             createActonBoard(charactor, 1);
             createActonBoard(charactor, 2);
             mainBoard.appendChild(charactor.charactorBoard);
@@ -129,6 +141,8 @@ var SaikoroBattle;
     var guard2 = new DefenseAction('だいぶガード', '', 10);
     var kawasu = new DefenseAction('完全にかわす', '', 0);
     kawasu.through = true;
+    var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
+    var defaultDefensePalette = [yokei2, yokei1, futsu, guard1, guard2, kawasu];
     var Charactor = (function () {
         function Charactor(type, name) {
             var _this = this;
@@ -150,6 +164,7 @@ var SaikoroBattle;
             this.name = name;
             this.hitPoint = 0;
             this.charactorBoard = document.createElement('DIV');
+            this.hitPointElement = document.createElement('SPAN');
             this.attackPalette = new Array();
             this.attackActionBoard = document.createElement('DIV');
             this.attackSaikoro = document.createElement('DIV');
@@ -160,14 +175,6 @@ var SaikoroBattle;
         return Charactor;
     }());
     var NullCharactor = new Charactor('NULL', 'NULL');
-    var defaultAttackPalette = [punch, punch, kick, kick, goshouha, goshouha];
-    var defaultDefensePalette = [yokei2, yokei1, futsu, guard1, guard2, kawasu];
-    var plyerobj = new Charactor('main', 'player');
-    plyerobj.setAttackPalette(defaultAttackPalette);
-    plyerobj.setDefensePalette(defaultDefensePalette);
-    var enemyobj = new Charactor('enemy', '敵');
-    enemyobj.setAttackPalette(defaultAttackPalette);
-    enemyobj.setDefensePalette(defaultDefensePalette);
     function susumeruGame() {
         if (_gameStatus.gameMode == null) {
             _gameStatus.gameMode = new InitGameMode(_gameStatus);
@@ -189,17 +196,17 @@ var SaikoroBattle;
             this.tasks = new Task.Tasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
-                _this.gameStatus.attacker = plyerobj;
-                _this.gameStatus.defender = enemyobj;
+                _this.gameStatus.attacker = _this.gameStatus.players[0];
+                _this.gameStatus.defender = _this.gameStatus.players[1];
                 _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
             for (var i = 0, len = gameStatus.players.length; i < len; i++) {
                 var charactor = gameStatus.players[i];
-                charactor.hitPoint = 200;
-                this.tasks.add(new ActionSetTask(gameStatus));
+                charactor.hitPoint = 100;
             }
-            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new ActionSetTask(gameStatus));
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, gameStatus));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask(debugClear, null));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
@@ -215,6 +222,56 @@ var SaikoroBattle;
             this.tasks.asap();
         };
         return InitGameMode;
+    }());
+    var ActionSetTask = (function () {
+        function ActionSetTask(gameStatus) {
+            var _this = this;
+            this.name = 'ActionSetTask';
+            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Task.Tasks();
+            for (var p = 0, plen = gameStatus.players.length; p < plen; p++) {
+                var charactor = gameStatus.players[p];
+                for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
+                    var actionBoxList = void 0;
+                    if (attackDefense == 1) {
+                        this.actionList = charactor.attackPalette;
+                        actionBoxList = charactor.attackBoxList;
+                    }
+                    else {
+                        this.actionList = charactor.defensePalette;
+                        actionBoxList = charactor.defenseBoxList;
+                    }
+                    var _loop_1 = function (i) {
+                        var box = actionBoxList[i];
+                        var action = this_1.actionList[i];
+                        this_1.tasks.add(new Task.FunctionTask(function () { _this.setBox(box, action); }, null));
+                        this_1.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+                    };
+                    var this_1 = this;
+                    for (var i = 0; i < 6; i++) {
+                        _loop_1(i);
+                    }
+                }
+            }
+        }
+        ActionSetTask.prototype.setBox = function (box, action) {
+            box.innerHTML = action.name;
+        };
+        ActionSetTask.prototype.do = function () {
+            var _this = this;
+            Task.TaskCtrl.do(this);
+            this.tasks.do();
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
+        };
+        ActionSetTask.prototype.asap = function () {
+            Task.TaskCtrl.asap(this);
+            this.tasks.asap();
+        };
+        ActionSetTask.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            dbg('finish');
+        };
+        return ActionSetTask;
     }());
     var SaikoroTask = (function () {
         function SaikoroTask(callback, rollingFunc) {
@@ -384,7 +441,7 @@ var SaikoroBattle;
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.gameStatus.defender.hitPoint = 0;
             }
-            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, gameStatus));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.name + 'は、倒れた'));
@@ -402,59 +459,12 @@ var SaikoroBattle;
         };
         return Attack3GameMode;
     }());
-    function nokoriHpHyouji() {
-        _playerHPElm.textContent = String(plyerobj.hitPoint);
-        _enemyhpElm.textContent = String(enemyobj.hitPoint);
-    }
-    var ActionSetTask = (function () {
-        function ActionSetTask(gameStatus) {
-            var _this = this;
-            this.name = 'ActionSetTask';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
-            for (var p = 0, plen = gameStatus.players.length; p < plen; p++) {
-                var charactor = gameStatus.players[p];
-                for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                    var actionBoxList = void 0;
-                    if (attackDefense == 1) {
-                        this.actionList = charactor.attackPalette;
-                        actionBoxList = charactor.attackBoxList;
-                    }
-                    else {
-                        this.actionList = charactor.defensePalette;
-                        actionBoxList = charactor.defenseBoxList;
-                    }
-                    var _loop_1 = function (i) {
-                        var box = actionBoxList[i];
-                        var action = this_1.actionList[i];
-                        this_1.tasks.add(new Task.FunctionTask(function () { _this.setBox(box, action); }, null));
-                        this_1.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-                    };
-                    var this_1 = this;
-                    for (var i = 0; i < 6; i++) {
-                        _loop_1(i);
-                    }
-                }
-            }
+    function nokoriHpHyouji(gameStatus) {
+        for (var i = 0, len = gameStatus.players.length; i < len; i++) {
+            var charactor = gameStatus.players[i];
+            charactor.hitPointElement.textContent = String(charactor.hitPoint);
         }
-        ActionSetTask.prototype.setBox = function (box, action) {
-            box.innerHTML = action.name;
-        };
-        ActionSetTask.prototype.do = function () {
-            var _this = this;
-            Task.TaskCtrl.do(this);
-            this.tasks.do();
-            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
-        };
-        ActionSetTask.prototype.asap = function () {
-            Task.TaskCtrl.asap(this);
-            this.tasks.asap();
-        };
-        ActionSetTask.prototype.finish = function () {
-            Task.TaskCtrl.finish(this);
-        };
-        return ActionSetTask;
-    }());
+    }
     function actionSelect(param) {
         var actionBoxList = param.actionBoxList;
         var me = param.me;

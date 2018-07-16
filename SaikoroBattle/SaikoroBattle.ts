@@ -27,9 +27,6 @@ namespace SaikoroBattle {
     }
     let _gameStatus = new GameStatus();
 
-    let _playerHPElm: HTMLSpanElement;
-    let _enemyhpElm: HTMLSpanElement;
-
     function getElementById(elementId: string): HTMLElement {
         let elm: HTMLElement | null = document.getElementById(elementId);
         if (elm == null) {
@@ -41,8 +38,13 @@ namespace SaikoroBattle {
     export function init(): void {
         _debugBoard = <HTMLDivElement>getElementById('debugBoard');
 
-        _playerHPElm = <HTMLSpanElement>getElementById('playerHP');
-        _enemyhpElm = <HTMLSpanElement>getElementById('enemyHP');
+        let plyerobj = new Charactor('main', 'player');
+        plyerobj.setAttackPalette(defaultAttackPalette);
+        plyerobj.setDefensePalette(defaultDefensePalette);
+
+        let enemyobj = new Charactor('enemy', '敵');
+        enemyobj.setAttackPalette(defaultAttackPalette);
+        enemyobj.setDefensePalette(defaultDefensePalette);
 
         _gameStatus.players.push(plyerobj);
         _gameStatus.players.push(enemyobj);
@@ -60,6 +62,17 @@ namespace SaikoroBattle {
 
         for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
             let charactor: Charactor = gameStatus.players[i];
+
+            {
+                let span = <HTMLSpanElement>document.createElement('SPAN');
+                span.textContent = charactor.name + ' HP: ';
+                charactor.charactorBoard.appendChild(span);
+            }
+            {
+                let span = <HTMLSpanElement>document.createElement('SPAN');
+                charactor.charactorBoard.appendChild(span);
+                charactor.hitPointElement = span;
+            }
 
             createActonBoard(charactor, 1);
             createActonBoard(charactor, 2);
@@ -165,6 +178,9 @@ namespace SaikoroBattle {
     let kawasu = new DefenseAction('完全にかわす', '', 0);
     kawasu.through = true;
 
+    let defaultAttackPalette: Array<AttackAction> = [punch, punch, kick, kick, goshouha, goshouha];
+    let defaultDefensePalette: Array<DefenseAction> = [yokei2, yokei1, futsu, guard1, guard2, kawasu];
+
     class Charactor {
         type: string;
 
@@ -172,6 +188,7 @@ namespace SaikoroBattle {
         hitPoint: number;
 
         charactorBoard: HTMLDivElement;
+        hitPointElement: HTMLSpanElement;
         attackPalette: Array<AttackAction>;
         attackActionBoard: HTMLDivElement;
         attackSaikoro: HTMLDivElement;
@@ -187,6 +204,7 @@ namespace SaikoroBattle {
             this.hitPoint = 0;
 
             this.charactorBoard = <HTMLDivElement>document.createElement('DIV');
+            this.hitPointElement = <HTMLSpanElement>document.createElement('SPAN');
             this.attackPalette = new Array<AttackAction>();
             this.attackActionBoard = <HTMLDivElement>document.createElement('DIV');
             this.attackSaikoro = <HTMLDivElement>document.createElement('DIV');
@@ -211,18 +229,6 @@ namespace SaikoroBattle {
     }
 
     let NullCharactor = new Charactor('NULL', 'NULL');
-
-    // メンバー変数
-    let defaultAttackPalette: Array<AttackAction> = [punch, punch, kick, kick, goshouha, goshouha];
-    let defaultDefensePalette: Array<DefenseAction> = [yokei2, yokei1, futsu, guard1, guard2, kawasu];
-
-    let plyerobj = new Charactor('main', 'player');
-    plyerobj.setAttackPalette(defaultAttackPalette);
-    plyerobj.setDefensePalette(defaultDefensePalette);
-
-    let enemyobj = new Charactor('enemy', '敵');
-    enemyobj.setAttackPalette(defaultAttackPalette);
-    enemyobj.setDefensePalette(defaultDefensePalette);
 
     interface GameMode extends Task.Task {
         gameStatus: GameStatus;
@@ -254,12 +260,12 @@ namespace SaikoroBattle {
 
             for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
                 let charactor: Charactor = gameStatus.players[i];
-
-                charactor.hitPoint = 200;
-                this.tasks.add(new ActionSetTask(gameStatus));
+                charactor.hitPoint = 100;
             }
 
-            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new ActionSetTask(gameStatus));
+
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, gameStatus));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask(debugClear, null));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
@@ -283,9 +289,64 @@ namespace SaikoroBattle {
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.attacker = plyerobj;
-            this.gameStatus.defender = enemyobj;
+            this.gameStatus.attacker = this.gameStatus.players[0];
+            this.gameStatus.defender = this.gameStatus.players[1];
             this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+        }
+    }
+
+    class ActionSetTask implements Task.Task {
+        public readonly name: string = 'ActionSetTask';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        private actionList: Array<Action>;
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            for (let p = 0, plen: number = gameStatus.players.length; p < plen; p++) {
+                let charactor: Charactor = gameStatus.players[p];
+
+                for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
+                    let actionBoxList: Array<HTMLDivElement>;
+                    if (attackDefense == 1) {
+                        this.actionList = charactor.attackPalette;
+                        actionBoxList = charactor.attackBoxList;
+                    } else {
+                        this.actionList = charactor.defensePalette;
+                        actionBoxList = charactor.defenseBoxList;
+                    }
+
+                    for (let i = 0; i < 6; i++) {
+                        let box = actionBoxList[i];
+                        let action: Action = this.actionList[i];
+
+                        this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
+                        this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+                    }
+                }
+            }
+        }
+
+        public setBox(box: HTMLDivElement, action: Action) {
+            box.innerHTML = action.name;
+        }
+
+        public do() {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
+        }
+
+        public asap() {
+            Task.TaskCtrl.asap(this);
+            this.tasks.asap();
+        }
+
+        public finish(): void {
+            Task.TaskCtrl.finish(this);
+            dbg('finish')
         }
     }
 
@@ -494,7 +555,7 @@ namespace SaikoroBattle {
                 this.gameStatus.defender.hitPoint = 0;
             }
 
-            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, null));
+            this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, gameStatus));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
             if (this.gameStatus.defender.hitPoint <= 0) {
@@ -532,63 +593,10 @@ namespace SaikoroBattle {
         }
     }
 
-    function nokoriHpHyouji(): void {
-        _playerHPElm.textContent = String(plyerobj.hitPoint);
-        _enemyhpElm.textContent = String(enemyobj.hitPoint);
-    }
-
-    class ActionSetTask implements Task.Task {
-        public readonly name: string = 'ActionSetTask';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
-
-        private actionList: Array<Action>;
-        private tasks = new Task.Tasks();
-
-        constructor(gameStatus: GameStatus) {
-            for (let p = 0, plen: number = gameStatus.players.length; p < plen; p++) {
-                let charactor: Charactor = gameStatus.players[p];
-
-                for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                    let actionBoxList: Array<HTMLDivElement>;
-                    if (attackDefense == 1) {
-                        this.actionList = charactor.attackPalette;
-                        actionBoxList = charactor.attackBoxList;
-                    } else {
-                        this.actionList = charactor.defensePalette;
-                        actionBoxList = charactor.defenseBoxList;
-                    }
-
-                    for (let i = 0; i < 6; i++) {
-                        let box = actionBoxList[i];
-                        let action: Action = this.actionList[i];
-
-                        this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
-                        this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-                    }
-                }
-            }
-
-        }
-
-        public setBox(box: HTMLDivElement, action: Action) {
-            box.innerHTML = action.name;
-        }
-
-        public do() {
-            Task.TaskCtrl.do(this);
-
-            this.tasks.do();
-
-            Task.TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
-        }
-
-        public asap() {
-            Task.TaskCtrl.asap(this);
-            this.tasks.asap();
-        }
-
-        public finish(): void {
-            Task.TaskCtrl.finish(this);
+    function nokoriHpHyouji(gameStatus: GameStatus): void {
+        for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
+            let charactor: Charactor = gameStatus.players[i];
+            charactor.hitPointElement.textContent = String(charactor.hitPoint);
         }
     }
 
