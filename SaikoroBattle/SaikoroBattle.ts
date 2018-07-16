@@ -22,8 +22,6 @@ namespace SaikoroBattle {
         public players: Array<Character> = new Array<Character>();
         public attacker: Character = NullCharacter;
         public defender: Character = NullCharacter;
-        public attackMe: number;
-        public defenseMe: number = -1;
     }
     let _gameStatus = new GameStatus();
 
@@ -189,6 +187,7 @@ namespace SaikoroBattle {
         characterBoard: HTMLDivElement;
         hitPointElement: HTMLSpanElement;
         saikoroElement: HTMLDivElement;
+        saikoroMe: number = 1;
         attackPalette: Array<AttackAction>;
         attackActionBoard: HTMLDivElement;
         attackBoxList: Array<HTMLDivElement> = new Array<HTMLDivElement>();
@@ -439,7 +438,7 @@ namespace SaikoroBattle {
         }
 
         private callback = (me: number) => {
-            this.gameStatus.attackMe = me;
+            this.gameStatus.attacker.saikoroMe = me;
         }
 
         private rollingFunc = (me: number) => {
@@ -469,7 +468,7 @@ namespace SaikoroBattle {
     }
 
     class Attack2GameMode implements GameMode {
-        public readonly name: string = 'Attack1GameMode';
+        public readonly name: string = 'Attack2GameMode';
         public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
@@ -479,7 +478,7 @@ namespace SaikoroBattle {
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
 
-            let attackMe = this.gameStatus.attackMe;
+            let attackMe = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.attackPalette[attackMe];
 
             this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
@@ -498,7 +497,7 @@ namespace SaikoroBattle {
         }
 
         private callback = (me: number) => {
-            this.gameStatus.defenseMe = me;
+            this.gameStatus.defender.saikoroMe = me;
         }
 
         private rollingFunc = (me: number) => {
@@ -519,7 +518,7 @@ namespace SaikoroBattle {
     }
 
     class Attack3GameMode implements GameMode {
-        public readonly name: string = 'Attack1GameMode';
+        public readonly name: string = 'Attack3GameMode';
         public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
@@ -529,10 +528,10 @@ namespace SaikoroBattle {
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
 
-            let attackMe = this.gameStatus.attackMe;
+            let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.attackPalette[attackMe];
 
-            let defenseMe = this.gameStatus.defenseMe;
+            let defenseMe: number = this.gameStatus.defender.saikoroMe;
             let defenseAction: DefenseAction = this.gameStatus.defender.defensePalette[defenseMe];
 
             this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name));

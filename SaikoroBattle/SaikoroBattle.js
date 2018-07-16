@@ -22,7 +22,6 @@ var SaikoroBattle;
             this.players = new Array();
             this.attacker = NullCharacter;
             this.defender = NullCharacter;
-            this.defenseMe = -1;
         }
         return GameStatus;
     }());
@@ -147,6 +146,7 @@ var SaikoroBattle;
     var Character = (function () {
         function Character(type, name) {
             var _this = this;
+            this.saikoroMe = 1;
             this.attackBoxList = new Array();
             this.defenseBoxList = new Array();
             this.setAttackPalette = function (palette) {
@@ -340,7 +340,7 @@ var SaikoroBattle;
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
             this.callback = function (me) {
-                _this.gameStatus.attackMe = me;
+                _this.gameStatus.attacker.saikoroMe = me;
             };
             this.rollingFunc = function (me) {
                 _this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
@@ -371,11 +371,11 @@ var SaikoroBattle;
     var Attack2GameMode = (function () {
         function Attack2GameMode(gameStatus) {
             var _this = this;
-            this.name = 'Attack1GameMode';
+            this.name = 'Attack2GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
             this.callback = function (me) {
-                _this.gameStatus.defenseMe = me;
+                _this.gameStatus.defender.saikoroMe = me;
             };
             this.rollingFunc = function (me) {
                 _this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
@@ -386,7 +386,7 @@ var SaikoroBattle;
                 _this.gameStatus.gameMode.do();
             };
             this.gameStatus = gameStatus;
-            var attackMe = this.gameStatus.attackMe;
+            var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.attackPalette[attackMe];
             this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
             this.tasks.add(new Task.FunctionTask(actionSelect, { actionBoxList: this.gameStatus.attacker.attackBoxList, me: attackMe, className: 'selected_attack' }));
@@ -407,7 +407,7 @@ var SaikoroBattle;
     var Attack3GameMode = (function () {
         function Attack3GameMode(gameStatus) {
             var _this = this;
-            this.name = 'Attack1GameMode';
+            this.name = 'Attack3GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
             this.finish = function () {
@@ -423,9 +423,9 @@ var SaikoroBattle;
                 }
             };
             this.gameStatus = gameStatus;
-            var attackMe = this.gameStatus.attackMe;
+            var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.attackPalette[attackMe];
-            var defenseMe = this.gameStatus.defenseMe;
+            var defenseMe = this.gameStatus.defender.saikoroMe;
             var defenseAction = this.gameStatus.defender.defensePalette[defenseMe];
             this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name));
             this.tasks.add(new Task.FunctionTask(actionSelect, { actionBoxList: this.gameStatus.defender.defenseBoxList, me: defenseMe, className: 'selected_defense' }));
