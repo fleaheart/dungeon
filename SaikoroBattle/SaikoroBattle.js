@@ -66,6 +66,11 @@ var SaikoroBattle;
                 charactor.charactorBoard.appendChild(span);
                 charactor.hitPointElement = span;
             }
+            {
+                var saikoro_1 = charactor.saikoroElement;
+                saikoro_1.className = 'saikoro';
+                charactor.charactorBoard.appendChild(saikoro_1);
+            }
             createActonBoard(charactor, 1);
             createActonBoard(charactor, 2);
             mainBoard.appendChild(charactor.charactorBoard);
@@ -73,20 +78,15 @@ var SaikoroBattle;
     }
     function createActonBoard(charactor, attackDefense) {
         var actionBoard;
-        var saikoro;
         var actionBoxList;
         if (attackDefense == 1) {
             actionBoard = charactor.attackActionBoard;
-            saikoro = charactor.attackSaikoro;
             actionBoxList = charactor.attackBoxList;
         }
         else {
             actionBoard = charactor.defenseActionBoard;
-            saikoro = charactor.defenseSaikoro;
             actionBoxList = charactor.defenseBoxList;
         }
-        saikoro.className = 'saikoro';
-        actionBoard.appendChild(saikoro);
         actionBoard.className = 'actionBoard';
         for (var i = 0; i < 6; i++) {
             var actionBox = document.createElement('DIV');
@@ -165,12 +165,11 @@ var SaikoroBattle;
             this.hitPoint = 0;
             this.charactorBoard = document.createElement('DIV');
             this.hitPointElement = document.createElement('SPAN');
+            this.saikoroElement = document.createElement('DIV');
             this.attackPalette = new Array();
             this.attackActionBoard = document.createElement('DIV');
-            this.attackSaikoro = document.createElement('DIV');
             this.defensePalette = new Array();
             this.defenseActionBoard = document.createElement('DIV');
-            this.defenseSaikoro = document.createElement('DIV');
         }
         return Charactor;
     }());
@@ -269,7 +268,6 @@ var SaikoroBattle;
         };
         ActionSetTask.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            dbg('finish');
         };
         return ActionSetTask;
     }());
@@ -341,7 +339,7 @@ var SaikoroBattle;
                 _this.gameStatus.attackMe = me;
             };
             this.rollingFunc = function (me) {
-                _this.gameStatus.attacker.attackSaikoro.innerHTML = SaikoroTask.saikoroHTML(me);
+                _this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
             };
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
@@ -376,7 +374,7 @@ var SaikoroBattle;
                 _this.gameStatus.defenseMe = me;
             };
             this.rollingFunc = function (me) {
-                _this.gameStatus.defender.defenseSaikoro.innerHTML = SaikoroTask.saikoroHTML(me);
+                _this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
             };
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);

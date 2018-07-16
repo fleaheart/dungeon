@@ -74,6 +74,12 @@ namespace SaikoroBattle {
                 charactor.hitPointElement = span;
             }
 
+            {
+                let saikoro:HTMLDivElement = charactor.saikoroElement;
+                saikoro.className = 'saikoro';
+                charactor.charactorBoard.appendChild(saikoro);
+            }
+
             createActonBoard(charactor, 1);
             createActonBoard(charactor, 2);
 
@@ -84,21 +90,16 @@ namespace SaikoroBattle {
     function createActonBoard(charactor: Charactor, attackDefense: number) {
 
         let actionBoard: HTMLDivElement;
-        let saikoro: HTMLDivElement;
         let actionBoxList: Array<HTMLDivElement>;
 
         if (attackDefense == 1) {
             actionBoard = charactor.attackActionBoard;
-            saikoro = charactor.attackSaikoro;
             actionBoxList = charactor.attackBoxList;
         } else {
             actionBoard = charactor.defenseActionBoard;
-            saikoro = charactor.defenseSaikoro;
             actionBoxList = charactor.defenseBoxList;
         }
 
-        saikoro.className = 'saikoro';
-        actionBoard.appendChild(saikoro);
 
         actionBoard.className = 'actionBoard';
         for (let i = 0; i < 6; i++) {
@@ -189,13 +190,12 @@ namespace SaikoroBattle {
 
         charactorBoard: HTMLDivElement;
         hitPointElement: HTMLSpanElement;
+        saikoroElement: HTMLDivElement;
         attackPalette: Array<AttackAction>;
         attackActionBoard: HTMLDivElement;
-        attackSaikoro: HTMLDivElement;
         attackBoxList: Array<HTMLDivElement> = new Array<HTMLDivElement>();
         defensePalette: Array<DefenseAction>;
         defenseActionBoard: HTMLDivElement;
-        defenseSaikoro: HTMLDivElement;
         defenseBoxList: Array<HTMLDivElement> = new Array<HTMLDivElement>();
 
         constructor(type: string, name: string) {
@@ -205,12 +205,11 @@ namespace SaikoroBattle {
 
             this.charactorBoard = <HTMLDivElement>document.createElement('DIV');
             this.hitPointElement = <HTMLSpanElement>document.createElement('SPAN');
+            this.saikoroElement = <HTMLDivElement>document.createElement('DIV');
             this.attackPalette = new Array<AttackAction>();
             this.attackActionBoard = <HTMLDivElement>document.createElement('DIV');
-            this.attackSaikoro = <HTMLDivElement>document.createElement('DIV');
             this.defensePalette = new Array<DefenseAction>();
             this.defenseActionBoard = <HTMLDivElement>document.createElement('DIV');
-            this.defenseSaikoro = <HTMLDivElement>document.createElement('DIV');
         }
 
         setAttackPalette = (palette: Array<AttackAction>) => {
@@ -346,7 +345,6 @@ namespace SaikoroBattle {
 
         public finish(): void {
             Task.TaskCtrl.finish(this);
-            dbg('finish')
         }
     }
 
@@ -443,7 +441,7 @@ namespace SaikoroBattle {
         }
 
         private rollingFunc = (me: number) => {
-            this.gameStatus.attacker.attackSaikoro.innerHTML = SaikoroTask.saikoroHTML(me);
+            this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         }
 
         public do(): void {
@@ -502,7 +500,7 @@ namespace SaikoroBattle {
         }
 
         private rollingFunc = (me: number) => {
-            this.gameStatus.defender.defenseSaikoro.innerHTML = SaikoroTask.saikoroHTML(me);
+            this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         }
 
         public asap(): void {
