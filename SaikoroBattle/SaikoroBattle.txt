@@ -1,0 +1,12 @@
+101	Attack	punch	パンチ	20
+102	Attack	kick	キック	30
+103	Attack	goushouha	張り手	40
+201	Defense	yokei2	かなり喰らう	-10
+202	Defense	yokei1	余計に喰らう	-5
+203	Defense	futsu	普通に喰らう	0
+204	Defense	guard1	ちょっとガード	5
+205	Defense	guard2	だいぶガード	10
+206	Defense	kawasu	完全にかわす	0	through
+
+301	Player	iriya	イリヤ	100	101,101,102,102,103,103	201,202,203,204,205,206
+401	Enemy	zako	ザコ	60	101,101,101,102,102,102	201,202,203,204,205,206
