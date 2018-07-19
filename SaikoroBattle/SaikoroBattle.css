@@ -1,10 +1,11 @@
 .actionBoard {
     display: flex;
+    display: -webkit-box;
     border: 1px dashed black;
 }
 
 .actionBox {
-    width: 80px;
+    width: 68px;
     height: 40px;
     border: 1px dashed black;
     padding: 3px;
