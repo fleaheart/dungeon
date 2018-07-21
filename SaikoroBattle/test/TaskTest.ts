@@ -25,7 +25,7 @@ namespace TaskTest {
 		public count: number = 0;
 		public gameMode: GameMode | null = null;
 		public me: number = -1;
-		public meList: number[] = [-1, -1, -1, -1];
+		public players: Array<any> = [-1, -1, -1, -1, -1, -1, -1];
 	}
 
 	let _gameStatus = new GameStatus();
@@ -249,21 +249,37 @@ namespace TaskTest {
 
 		private tasks = new Task.Tasks();
 
+		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
+		private order: Array<number> = new Array<number>();
+
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
 
-			for (let i = 0, len = 4; i < len; i++) {
-				((playerIdx: number): void => {
-					this.tasks.add(new SaikoroBattle.SaikoroTask(
-						(me: number): void => { this.callback(playerIdx, me); },
-						(me: number): void => { this.rollingFunc(playerIdx, me); }
-					));
-				})(i);
+			this.order.length = 0;
+			this.orderEntryList.length = 0;
+			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
+				this.orderEntryList.push({ entry: true, me: -1 });
+			}
+
+			this.orderEntry();
+		}
+
+		private orderEntry() {
+			this.tasks.tasks.length = 0;
+			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
+				if (this.orderEntryList[i].entry) {
+					((playerIdx: number): void => {
+						this.tasks.add(new SaikoroBattle.SaikoroTask(
+							(me: number): void => { this.callback(playerIdx, me); },
+							(me: number): void => { this.rollingFunc(playerIdx, me); }
+						));
+					})(i);
+				}
 			}
 		}
 
 		private callback = (playerIdx: number, me: number) => {
-			this.gameStatus.meList[playerIdx] = me;
+			this.orderEntryList[playerIdx].me = me;
 		}
 
 		private rollingFunc = (playerIdx: number, me: number) => {
@@ -286,33 +302,94 @@ namespace TaskTest {
 		private check = (): void => {
 			dbg('check');
 
+			let existsKaburi: boolean = false;
+			let meList: Array<{ playerIdx: number, me: number, kaburi: boolean }> = new Array();
+			for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+				if (this.orderEntryList[i].entry) {
+					let me = this.orderEntryList[i].me
+					let kaburi = ((me: number): boolean => {
+						let kaburi = false;
+						for (let i = 0, len: number = meList.length; i < len; i++) {
+							if (this.orderEntryList[meList[i].playerIdx].entry) {
+								if (meList[i].me == me) {
+									kaburi = true;
+									meList[i].kaburi = true;
+								}
+							}
+						}
+						return kaburi;
+					})(me);
+					meList.push({ playerIdx: i, me: me, kaburi: kaburi });
+					if (kaburi) {
+						existsKaburi = true;
+					}
+				}
+			}
+
+			meList.sort((m1, m2): number => {
+				if (m1.kaburi && !m2.kaburi) {
+					return 1;
+				}
+				if (!m1.kaburi && m2.kaburi) {
+					return -1;
+				}
+				if (m1.me == m2.me) {
+					return 0;
+				}
+				return m1.me < m2.me ? 1 : -1;
+			});
+
+			for (let i = 0, len: number = meList.length; i < len; i++) {
+				dbg(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+
+				if (meList[i].kaburi) {
+					this.orderEntryList[meList[i].playerIdx].entry = true;
+				} else {
+					this.orderEntryList[meList[i].playerIdx].entry = false;
+					this.order.push(meList[i].playerIdx);
+				}
+			}
+
+			let orderText = '';
+			for (let i = 0, len: number = this.order.length; i < len; i++) {
+				orderText += ' -> ' + String(this.order[i]);
+			}
+			dbg(orderText);
+
+			if (existsKaburi) {
+				this.mode = Task.TaskCtrl.DEFAULT_MODE;
+				this.orderEntry();
+				return;
+			}
+
 			this.finish();
 		}
 
 		public finish = (): void => {
 			Task.TaskCtrl.finish(this);
-		}
 
+			dbg('finish');
+		}
 	}
 
 	function susumeruGame2() {
 		if (_gameStatus.gameMode == null) {
 			_gameStatus.gameMode = new IdleGameMode();
 		}
-		dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+		dbg('susumeruGame1 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
 
 		if (_gameStatus.gameMode instanceof IdleGameMode) {
 			_gameStatus.gameMode = new KougekiJunjoHandanMode(_gameStatus);
 		}
-		dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+		dbg('susumeruGame2 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
 
 		if (_gameStatus.gameMode.mode == 'running') {
 			_gameStatus.gameMode.asap();
-			dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+			dbg('susumeruGame3a :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
 			return;
 		} else if (_gameStatus.gameMode.mode == 'idle') {
 			_gameStatus.gameMode.do();
-			dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+			dbg('susumeruGame3b :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
 		}
 	}
 }

@@ -24,7 +24,7 @@ var TaskTest;
             this.count = 0;
             this.gameMode = null;
             this.me = -1;
-            this.meList = [-1, -1, -1, -1];
+            this.players = [-1, -1, -1, -1, -1, -1, -1];
         }
         return GameStatus;
     }());
@@ -188,8 +188,10 @@ var TaskTest;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
+            this.orderEntryList = new Array();
+            this.order = new Array();
             this.callback = function (playerIdx, me) {
-                _this.gameStatus.meList[playerIdx] = me;
+                _this.orderEntryList[playerIdx].me = me;
             };
             this.rollingFunc = function (playerIdx, me) {
                 var elm = getElementById('s' + String(playerIdx));
@@ -197,18 +199,86 @@ var TaskTest;
             };
             this.check = function () {
                 dbg('check');
+                var existsKaburi = false;
+                var meList = new Array();
+                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
+                    if (_this.orderEntryList[i].entry) {
+                        var me = _this.orderEntryList[i].me;
+                        var kaburi = (function (me) {
+                            var kaburi = false;
+                            for (var i_1 = 0, len_1 = meList.length; i_1 < len_1; i_1++) {
+                                if (_this.orderEntryList[meList[i_1].playerIdx].entry) {
+                                    if (meList[i_1].me == me) {
+                                        kaburi = true;
+                                        meList[i_1].kaburi = true;
+                                    }
+                                }
+                            }
+                            return kaburi;
+                        })(me);
+                        meList.push({ playerIdx: i, me: me, kaburi: kaburi });
+                        if (kaburi) {
+                            existsKaburi = true;
+                        }
+                    }
+                }
+                meList.sort(function (m1, m2) {
+                    if (m1.kaburi && !m2.kaburi) {
+                        return 1;
+                    }
+                    if (!m1.kaburi && m2.kaburi) {
+                        return -1;
+                    }
+                    if (m1.me == m2.me) {
+                        return 0;
+                    }
+                    return m1.me < m2.me ? 1 : -1;
+                });
+                for (var i = 0, len = meList.length; i < len; i++) {
+                    dbg(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+                    if (meList[i].kaburi) {
+                        _this.orderEntryList[meList[i].playerIdx].entry = true;
+                    }
+                    else {
+                        _this.orderEntryList[meList[i].playerIdx].entry = false;
+                        _this.order.push(meList[i].playerIdx);
+                    }
+                }
+                var orderText = '';
+                for (var i = 0, len = _this.order.length; i < len; i++) {
+                    orderText += ' -> ' + String(_this.order[i]);
+                }
+                dbg(orderText);
+                if (existsKaburi) {
+                    _this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                    _this.orderEntry();
+                    return;
+                }
                 _this.finish();
             };
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
+                dbg('finish');
             };
             this.gameStatus = gameStatus;
-            for (var i = 0, len = 4; i < len; i++) {
-                (function (playerIdx) {
-                    _this.tasks.add(new SaikoroBattle.SaikoroTask(function (me) { _this.callback(playerIdx, me); }, function (me) { _this.rollingFunc(playerIdx, me); }));
-                })(i);
+            this.order.length = 0;
+            this.orderEntryList.length = 0;
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                this.orderEntryList.push({ entry: true, me: -1 });
             }
+            this.orderEntry();
         }
+        KougekiJunjoHandanMode.prototype.orderEntry = function () {
+            var _this = this;
+            this.tasks.tasks.length = 0;
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                if (this.orderEntryList[i].entry) {
+                    (function (playerIdx) {
+                        _this.tasks.add(new SaikoroBattle.SaikoroTask(function (me) { _this.callback(playerIdx, me); }, function (me) { _this.rollingFunc(playerIdx, me); }));
+                    })(i);
+                }
+            }
+        };
         KougekiJunjoHandanMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
@@ -225,19 +295,19 @@ var TaskTest;
         if (_gameStatus.gameMode == null) {
             _gameStatus.gameMode = new IdleGameMode();
         }
-        dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+        dbg('susumeruGame1 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
         if (_gameStatus.gameMode instanceof IdleGameMode) {
             _gameStatus.gameMode = new KougekiJunjoHandanMode(_gameStatus);
         }
-        dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+        dbg('susumeruGame2 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
         if (_gameStatus.gameMode.mode == 'running') {
             _gameStatus.gameMode.asap();
-            dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+            dbg('susumeruGame3a :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
             return;
         }
         else if (_gameStatus.gameMode.mode == 'idle') {
             _gameStatus.gameMode.do();
-            dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+            dbg('susumeruGame3b :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
         }
     }
 })(TaskTest || (TaskTest = {}));
