@@ -92,7 +92,7 @@ namespace SaikoroBattle {
 
 			let id: number = +columns[0];
 			let type: string = columns[1];
-			let alphanumericName: string = columns[2];
+			//	let alphanumericName: string = columns[2];
 			let name: string = columns[3];
 
 			if (type == 'Attack') {
@@ -458,7 +458,7 @@ namespace SaikoroBattle {
 		}
 	}
 
-	class SaikoroTask implements Task.Task {
+	export class SaikoroTask implements Task.Task {
 		public name: string = 'SaikoroTask';
 		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 

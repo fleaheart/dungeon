@@ -80,7 +80,6 @@ var SaikoroBattle;
             }
             var id = +columns[0];
             var type = columns[1];
-            var alphanumericName = columns[2];
             var name_1 = columns[3];
             if (type == 'Attack') {
                 var action = new AttackAction(id, name_1, +columns[4]);
@@ -418,6 +417,7 @@ var SaikoroBattle;
         };
         return SaikoroTask;
     }());
+    SaikoroBattle.SaikoroTask = SaikoroTask;
     var KougekiJunjoHandanMode = (function () {
         function KougekiJunjoHandanMode(gameStatus) {
             var _this = this;
