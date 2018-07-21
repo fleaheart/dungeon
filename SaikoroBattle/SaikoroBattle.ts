@@ -535,21 +535,25 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private taskArray: Array<Task.Task> = new Array<Task.Task>();
+		private tasks: Task.Tasks = new Task.Tasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
 
-			for (let i = 0, len = gameStatus.players.length; i < len; i++) {
+			this.orderEntry();
+		}
+
+		private orderEntry(){
+			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
 				((playerIdx: number): void => {
-					this.taskArray.push(new SaikoroTask(
+					this.tasks.add(new SaikoroTask(
 						(me: number): void => { this.callback(playerIdx, me); },
 						(me: number): void => { this.rollingFunc(playerIdx, me); }
 					));
 				})(i);
 			}
-		}
 
+		}
 		private callback = (playerIdx: number, me: number) => {
 			this.gameStatus.players[playerIdx].saikoroMe = me;
 		}
@@ -571,20 +575,15 @@ namespace SaikoroBattle {
 				tasks.do();
 			});
 
-			for (let i = 0, len = this.taskArray.length; i < len; i++) {
-				this.taskArray[i].mode = Task.TaskCtrl.DEFAULT_MODE;
-				window.setTimeout((): void => { this.taskArray[i].do(); });
-			}
+			this.tasks.parallel();
 
-			this.wait(this.taskArray, this.check);
+			Task.TaskCtrl.parallelWait(this.tasks, (): void => { this.check(); });
 		}
 
 		public asap(): void {
 			Task.TaskCtrl.asap(this);
 
-			for (let i = 0, len = this.taskArray.length; i < len; i++) {
-				this.taskArray[i].asap();
-			}
+			this.tasks.asap();
 		}
 
 		public wait(taskArray: Array<Task.Task>, callback: Function): void {
@@ -616,6 +615,7 @@ namespace SaikoroBattle {
 
 				// もう一回
 				this.mode = Task.TaskCtrl.DEFAULT_MODE;
+				this.orderEntry();
 				return;
 			}
 
