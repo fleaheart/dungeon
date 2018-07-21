@@ -19,6 +19,20 @@ var Task;
             }
             window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
         };
+        TaskCtrl.parallelWait = function (tasks, callback) {
+            var finish = true;
+            for (var i = 0, len = tasks.tasks.length; i < len; i++) {
+                if (tasks.tasks[i].mode != 'finish') {
+                    finish = false;
+                    break;
+                }
+            }
+            if (finish) {
+                callback();
+                return;
+            }
+            window.setTimeout(function () { TaskCtrl.parallelWait(tasks, callback); }, 100);
+        };
         TaskCtrl.debug = function (task, text) {
             if (this.debugBoard == null) {
                 return;
@@ -61,6 +75,19 @@ var Task;
             var task = this.tasks[this.step];
             task.do();
             TaskCtrl.wait(task, function () { _this.next(); });
+        };
+        Tasks.prototype.parallel = function () {
+            var _this = this;
+            TaskCtrl.do(this);
+            var _loop_1 = function (i, len) {
+                this_1.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+                window.setTimeout(function () { _this.tasks[i].do(); });
+            };
+            var this_1 = this;
+            for (var i = 0, len = this.tasks.length; i < len; i++) {
+                _loop_1(i, len);
+            }
+            TaskCtrl.parallelWait(this, function () { _this.finish(); });
         };
         Tasks.prototype.asap = function () {
             if (this.step == -1) {

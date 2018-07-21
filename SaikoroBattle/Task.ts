@@ -1,164 +1,191 @@
 namespace Task {
 
-    export type ModeType = 'idle' | 'running' | 'asap' | 'finish';
+	export type ModeType = 'idle' | 'running' | 'asap' | 'finish';
 
-    export interface Task {
-        name: string;
-        mode: ModeType;
-        do: Function;
-        asap: Function;
-        finish: Function;
-    }
+	export interface Task {
+		name: string;
+		mode: ModeType;
+		do: Function;
+		asap: Function;
+		finish: Function;
+	}
 
-    export class TaskCtrl {
-        static readonly DEFAULT_MODE: ModeType = 'idle';
-        static debugBoard: HTMLDivElement | null = null;
+	export class TaskCtrl {
+		static readonly DEFAULT_MODE: ModeType = 'idle';
+		static debugBoard: HTMLDivElement | null = null;
 
-        static do(task: Task): void {
-            task.mode = 'running';
-        }
+		static do(task: Task): void {
+			task.mode = 'running';
+		}
 
-        static asap(task: Task): void {
-            task.mode = 'asap';
-        }
+		static asap(task: Task): void {
+			task.mode = 'asap';
+		}
 
-        static finish(task: Task): void {
-            task.mode = 'finish';
-        }
+		static finish(task: Task): void {
+			task.mode = 'finish';
+		}
 
-        static wait(task: Task, callback: Function): void {
-            if (task.mode == 'finish') {
-                callback();
-                return;
-            }
-            window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
-        }
+		static wait(task: Task, callback: Function): void {
+			if (task.mode == 'finish') {
+				callback();
+				return;
+			}
+			window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
+		}
 
-        static debug(task: Task, text: string): void {
-            if (this.debugBoard == null) {
-                return;
-            }
-            let dbg: HTMLDivElement = this.debugBoard;
-            let h = dbg.innerHTML;
-            h += '[' + task.name + ']' + text + '<br>';
-            dbg.innerHTML = h;
-        }
-    }
+		static parallelWait(tasks: Tasks, callback: Function): void {
+			let finish: boolean = true;
+			for (let i = 0, len: number = tasks.tasks.length; i < len; i++) {
+				if (tasks.tasks[i].mode != 'finish') {
+					finish = false;
+					break;
+				}
+			}
+			if (finish) {
+				callback();
+				return;
+			}
 
-    export class Tasks implements Task {
-        public readonly name: string = 'Tasks';
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public tasks: Array<Task> = new Array<Task>();
+			window.setTimeout((): void => { TaskCtrl.parallelWait(tasks, callback); }, 100);
+		}
 
-        private step: number = -1;
+		static debug(task: Task, text: string): void {
+			if (this.debugBoard == null) {
+				return;
+			}
+			let dbg: HTMLDivElement = this.debugBoard;
+			let h = dbg.innerHTML;
+			h += '[' + task.name + ']' + text + '<br>';
+			dbg.innerHTML = h;
+		}
+	}
 
-        public add(task: Task): void {
-            this.tasks.push(task);
-        }
+	export class Tasks implements Task {
+		public readonly name: string = 'Tasks';
+		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		public tasks: Array<Task> = new Array<Task>();
 
-        public do(): void {
-            TaskCtrl.do(this);
-            this.step = -1;
-            this.next();
-        }
+		private step: number = -1;
 
-        public next(): void {
-            if (this.mode != 'running') {
-                return;
-            }
+		public add(task: Task): void {
+			this.tasks.push(task);
+		}
 
-            this.step++;
-            if (this.tasks.length <= this.step) {
-                this.finish();
-                return;
-            }
+		public do(): void {
+			TaskCtrl.do(this);
+			this.step = -1;
+			this.next();
+		}
 
-            let task = this.tasks[this.step];
+		public next(): void {
+			if (this.mode != 'running') {
+				return;
+			}
 
-            task.do();
+			this.step++;
+			if (this.tasks.length <= this.step) {
+				this.finish();
+				return;
+			}
 
-            TaskCtrl.wait(task, (): void => { this.next(); });
-        }
+			let task = this.tasks[this.step];
 
-        public asap() {
-            if (this.step == -1) {
-                this.step = 0;
-            }
-            while (this.step < this.tasks.length) {
-                let task = this.tasks[this.step];
-                if (!(task instanceof WaitTask)) {
-                    task.asap();
-                }
-                this.step++;
-            }
+			task.do();
 
-            this.finish();
-        }
+			TaskCtrl.wait(task, (): void => { this.next(); });
+		}
 
-        public finish(): void {
-            TaskCtrl.finish(this);
-            this.tasks.length = 0;
-            this.step = -1;
-        }
-    }
+		public parallel() {
+			TaskCtrl.do(this);
 
-    export class FunctionTask implements Task {
-        public readonly name: string = 'FunctionTask';
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public func: Function;
-        public param: any;
+			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
+				this.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+				window.setTimeout((): void => { this.tasks[i].do(); });
+			}
 
-        constructor(func: Function, param: any) {
-            this.func = func;
-            this.param = param;
-        }
+			TaskCtrl.parallelWait(this, (): void => { this.finish(); });
+		}
 
-        public do(): void {
-            TaskCtrl.do(this);
+		public asap() {
+			if (this.step == -1) {
+				this.step = 0;
+			}
+			while (this.step < this.tasks.length) {
+				let task = this.tasks[this.step];
+				if (!(task instanceof WaitTask)) {
+					task.asap();
+				}
+				this.step++;
+			}
 
-            this.func(this.param);
+			this.finish();
+		}
 
-            this.finish();
-        }
+		public finish(): void {
+			TaskCtrl.finish(this);
+			this.tasks.length = 0;
+			this.step = -1;
+		}
+	}
 
-        public asap() {
-            TaskCtrl.asap(this);
-            this.do();
-        }
+	export class FunctionTask implements Task {
+		public readonly name: string = 'FunctionTask';
+		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		public func: Function;
+		public param: any;
 
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-    }
+		constructor(func: Function, param: any) {
+			this.func = func;
+			this.param = param;
+		}
 
-    export type WaitInterval = 0 | 100 | 300 | 700;
+		public do(): void {
+			TaskCtrl.do(this);
 
-    export class WaitTask implements Task {
-        public readonly name: string = 'WaitTask';
+			this.func(this.param);
 
-        static FAST: WaitInterval = 100;
-        static NORMAL: WaitInterval = 300;
-        static SLOW: WaitInterval = 700;
+			this.finish();
+		}
 
-        public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        public millisec: WaitInterval;
+		public asap() {
+			TaskCtrl.asap(this);
+			this.do();
+		}
 
-        constructor(millisec: WaitInterval) {
-            this.millisec = millisec;
-        }
+		public finish(): void {
+			TaskCtrl.finish(this);
+		}
+	}
 
-        public do(): void {
-            TaskCtrl.do(this);
-            window.setTimeout((): void => { this.finish(); }, this.millisec);
-        }
+	export type WaitInterval = 0 | 100 | 300 | 700;
 
-        public asap() {
-            TaskCtrl.asap(this);
-        }
+	export class WaitTask implements Task {
+		public readonly name: string = 'WaitTask';
 
-        public finish(): void {
-            TaskCtrl.finish(this);
-        }
-    }
+		static FAST: WaitInterval = 100;
+		static NORMAL: WaitInterval = 300;
+		static SLOW: WaitInterval = 700;
+
+		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		public millisec: WaitInterval;
+
+		constructor(millisec: WaitInterval) {
+			this.millisec = millisec;
+		}
+
+		public do(): void {
+			TaskCtrl.do(this);
+			window.setTimeout((): void => { this.finish(); }, this.millisec);
+		}
+
+		public asap() {
+			TaskCtrl.asap(this);
+		}
+
+		public finish(): void {
+			TaskCtrl.finish(this);
+		}
+	}
 
 }

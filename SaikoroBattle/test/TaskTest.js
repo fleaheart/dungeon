@@ -16,6 +16,7 @@ var TaskTest;
     TaskTest.dbg = dbg;
     function init() {
         getElementById('btn').addEventListener('click', susumeruGame);
+        getElementById('btn2').addEventListener('click', susumeruGame2);
     }
     TaskTest.init = init;
     var GameStatus = (function () {
@@ -23,6 +24,7 @@ var TaskTest;
             this.count = 0;
             this.gameMode = null;
             this.me = -1;
+            this.meList = [-1, -1, -1, -1];
         }
         return GameStatus;
     }());
@@ -178,6 +180,64 @@ var TaskTest;
         }
         else if (_gameStatus.gameMode.mode == 'idle') {
             _gameStatus.gameMode.do();
+        }
+    }
+    var KougekiJunjoHandanMode = (function () {
+        function KougekiJunjoHandanMode(gameStatus) {
+            var _this = this;
+            this.name = 'KougekiJunjoHandanMode';
+            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Task.Tasks();
+            this.callback = function (playerIdx, me) {
+                _this.gameStatus.meList[playerIdx] = me;
+            };
+            this.rollingFunc = function (playerIdx, me) {
+                var elm = getElementById('s' + String(playerIdx));
+                elm.textContent = String(me);
+            };
+            this.check = function () {
+                dbg('check');
+                _this.finish();
+            };
+            this.finish = function () {
+                Task.TaskCtrl.finish(_this);
+            };
+            this.gameStatus = gameStatus;
+            for (var i = 0, len = 4; i < len; i++) {
+                (function (playerIdx) {
+                    _this.tasks.add(new SaikoroBattle.SaikoroTask(function (me) { _this.callback(playerIdx, me); }, function (me) { _this.rollingFunc(playerIdx, me); }));
+                })(i);
+            }
+        }
+        KougekiJunjoHandanMode.prototype.do = function () {
+            var _this = this;
+            Task.TaskCtrl.do(this);
+            this.tasks.parallel();
+            Task.TaskCtrl.parallelWait(this.tasks, function () { _this.check(); });
+        };
+        KougekiJunjoHandanMode.prototype.asap = function () {
+            Task.TaskCtrl.asap(this);
+            this.tasks.asap();
+        };
+        return KougekiJunjoHandanMode;
+    }());
+    function susumeruGame2() {
+        if (_gameStatus.gameMode == null) {
+            _gameStatus.gameMode = new IdleGameMode();
+        }
+        dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+        if (_gameStatus.gameMode instanceof IdleGameMode) {
+            _gameStatus.gameMode = new KougekiJunjoHandanMode(_gameStatus);
+        }
+        dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+        if (_gameStatus.gameMode.mode == 'running') {
+            _gameStatus.gameMode.asap();
+            dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
+            return;
+        }
+        else if (_gameStatus.gameMode.mode == 'idle') {
+            _gameStatus.gameMode.do();
+            dbg('susumeruGame :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');
         }
     }
 })(TaskTest || (TaskTest = {}));
