@@ -1,0 +1,241 @@
+namespace TaskTest {
+
+    function getElementById(elementId: string): HTMLElement {
+        let elm: HTMLElement | null = document.getElementById(elementId);
+        if (elm == null) {
+            throw elementId + ' is not found.';
+        }
+        return elm;
+    }
+
+    export function dbg(text: string) {
+        let dbg = getElementById('debugBoard2');
+        let h = dbg.innerHTML;
+        h += '&nbsp;&nbsp;&nbsp;&nbsp;' + text + '<br>';
+        dbg.innerHTML = h;
+    }
+
+    export function init() {
+        getElementById('btn').addEventListener('click', susumeruGame);
+    }
+
+    class GameStatus {
+        public count: number = 0;
+        public gameMode: GameMode | null = null;
+        public me: number = -1;
+    }
+
+    let _gameStatus = new GameStatus();
+
+    interface GameMode extends Task.Task {
+        gameStatus: GameStatus;
+    }
+
+    class IdleGameMode implements GameMode {
+        public readonly name: string = 'IdleGameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus = new GameStatus();
+
+        public do() {
+            Task.TaskCtrl.do(this);
+        }
+
+        public asap() {
+            Task.TaskCtrl.asap(this);
+        }
+
+        public finish() {
+            Task.TaskCtrl.finish(this);
+        }
+
+    }
+
+    class InitGameMode implements GameMode {
+        public readonly name: string = 'InitGameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            this.tasks.add(new Task.FunctionTask(dbg, 'init 1'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+            this.tasks.add(new Task.FunctionTask(dbg, 'init 2'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+            this.tasks.add(new NaibuTasks());
+            this.tasks.add(new Task.FunctionTask(dbg, 'init 3'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            this.gameStatus.count += 1;
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.gameStatus.count += 2;
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.count += 4;
+
+            this.gameStatus.gameMode = new SaikoroFurumadeGameMode(this.gameStatus);
+        }
+
+    }
+
+    class SaikoroFurumadeGameMode implements GameMode {
+        public readonly name: string = 'SaikoroFurumadeGameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            this.tasks.add(new Task.FunctionTask(dbg, 'saikoromae'));
+            this.tasks.add(new SaikoroBattle.SaikoroTask(this.callback, this.rollingFunc));
+        }
+
+        private callback = (me: number) => {
+            let result = <HTMLSpanElement>getElementById('result');
+            result.innerHTML = String(me);
+            dbg('saikoro:' + me);
+
+            this.gameStatus.me = me;
+        }
+
+        private rollingFunc(me: number) {
+            let result = <HTMLSpanElement>getElementById('rolling');
+            result.innerHTML = String(me);
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new HanteiGameMode(this.gameStatus);
+        }
+
+    }
+
+    class HanteiGameMode implements GameMode {
+        public readonly name: string = 'HanteiGameMode';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        public gameStatus: GameStatus;
+
+        private tasks = new Task.Tasks();
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+
+            let me = gameStatus.me;
+
+            this.tasks.add(new Task.FunctionTask(dbg, 'uketotta me:' + me));
+        }
+
+        public do(): void {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap(): void {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = (): void => {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = null;
+        }
+
+    }
+
+    class NaibuTasks implements Task.Task {
+        public readonly name: string = 'NaibuTasks';
+        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        private tasks = new Task.Tasks();
+
+        constructor() {
+            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 1'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 2'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 3'));
+            this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
+        }
+
+        public do() {
+            Task.TaskCtrl.do(this);
+
+            this.tasks.do();
+
+            Task.TaskCtrl.wait(this.tasks, this.finish);
+        }
+
+        public asap() {
+            Task.TaskCtrl.asap(this);
+
+            this.tasks.asap();
+        }
+
+        public finish = () => {
+            Task.TaskCtrl.finish(this);
+
+        }
+    }
+
+    function susumeruGame() {
+        if (_gameStatus.gameMode == null) {
+            _gameStatus.gameMode = new IdleGameMode();
+        }
+        dbg('susumeruGame :' + _gameStatus.gameMode.name);
+
+        if (_gameStatus.gameMode instanceof IdleGameMode) {
+            _gameStatus.gameMode = new InitGameMode(_gameStatus);
+        }
+
+        if (_gameStatus.gameMode.mode == 'running') {
+            _gameStatus.gameMode.asap();
+            return;
+        } else if (_gameStatus.gameMode.mode == 'idle') {
+            _gameStatus.gameMode.do();
+        }
+    }
+
+}
