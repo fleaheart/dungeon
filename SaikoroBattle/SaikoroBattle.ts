@@ -48,8 +48,6 @@ namespace SaikoroBattle {
 		return res;
 	};
 
-	type OmoteUraType = 'OMOTE' | 'URA';
-
 	class GameDeifine {
 		public attackActionList: Array<AttackAction> = new Array<AttackAction>();
 		public defenseActionList: Array<DefenseAction> = new Array<DefenseAction>();
@@ -62,7 +60,7 @@ namespace SaikoroBattle {
 	class GameStatus {
 		public gameMode: GameMode | null = null;
 		public players: Array<Player> = new Array<Player>();
-		public omoteUra: OmoteUraType = 'OMOTE'
+		public actionStack: Array<number> = new Array<number>();
 		public attacker: Player = NullCharacter;
 		public defender: Player = NullCharacter;
 	}
@@ -75,6 +73,7 @@ namespace SaikoroBattle {
 
 		_gameStatus.players.push(new Player(_gameDeifine.playerList[0]));
 		_gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
+		//	_gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
 
 		initMainBoard(_gameStatus);
 	};
@@ -537,23 +536,34 @@ namespace SaikoroBattle {
 
 		private tasks: Task.Tasks = new Task.Tasks();
 
+		private order: Array<number> = new Array<number>();
+		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
+
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
+
+			this.order.length = 0;
+			this.orderEntryList.length = 0;
+			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
+				this.orderEntryList.push({ entry: true, me: -1 });
+			}
 
 			this.orderEntry();
 		}
 
-		private orderEntry(){
+		private orderEntry() {
 			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
-				((playerIdx: number): void => {
-					this.tasks.add(new SaikoroTask(
-						(me: number): void => { this.callback(playerIdx, me); },
-						(me: number): void => { this.rollingFunc(playerIdx, me); }
-					));
-				})(i);
+				if (this.orderEntryList[i].entry) {
+					((playerIdx: number): void => {
+						this.tasks.add(new SaikoroTask(
+							(me: number): void => { this.callback(playerIdx, me); },
+							(me: number): void => { this.rollingFunc(playerIdx, me); }
+						));
+					})(i);
+				}
 			}
-
 		}
+
 		private callback = (playerIdx: number, me: number) => {
 			this.gameStatus.players[playerIdx].saikoroMe = me;
 		}
@@ -586,57 +596,70 @@ namespace SaikoroBattle {
 			this.tasks.asap();
 		}
 
-		public wait(taskArray: Array<Task.Task>, callback: Function): void {
-			let finish: boolean = true;
-			for (let i = 0, len: number = taskArray.length; i < len; i++) {
-				if (taskArray[i].mode != 'finish') {
-					finish = false;
-					break;
+		private check = (): void => {
+			let existsKaburi: boolean = false;
+			let meList: Array<{ playerIdx: number, me: number, kaburi: boolean }> = new Array();
+			for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+				if (this.orderEntryList[i].entry) {
+					let me = this.gameStatus.players[i].saikoroMe;
+					let kaburi = ((me: number): boolean => {
+						let kaburi = false;
+						for (let i = 0, len: number = meList.length; i < len; i++) {
+							if (this.orderEntryList[meList[i].playerIdx].entry) {
+								if (meList[i].me == me) {
+									kaburi = true;
+									meList[i].kaburi = true;
+								}
+							}
+						}
+						return kaburi;
+					})(me);
+					meList.push({ playerIdx: i, me: me, kaburi: kaburi });
+					if (kaburi) {
+						existsKaburi = true;
+					}
 				}
 			}
-			if (finish) {
-				callback();
-				return;
+
+			meList.sort((m1, m2): number => {
+				if (m1.kaburi && !m2.kaburi) {
+					return 1;
+				}
+				if (!m1.kaburi && m2.kaburi) {
+					return -1;
+				}
+				if (m1.me == m2.me) {
+					return 0;
+				}
+				return m1.me < m2.me ? 1 : -1;
+			});
+
+			for (let i = 0, len: number = meList.length; i < len; i++) {
+				debug(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+				if (meList[i].kaburi) {
+					this.orderEntryList[meList[i].playerIdx].entry = true;
+				} else {
+					this.orderEntryList[meList[i].playerIdx].entry = false;
+					this.order.push(meList[i].playerIdx);
+				}
 			}
 
-			window.setTimeout((): void => { this.wait(taskArray, callback); }, 100);
-		}
-
-		private check = (): void => {
-			let tasks: Task.Tasks = new Task.Tasks();
-
-			let saikoroP0: number = this.gameStatus.players[0].saikoroMe;
-			let saikoroP1: number = this.gameStatus.players[1].saikoroMe;
-
-			tasks.add(new Task.FunctionTask(debug, '[' + (saikoroP0 + 1) + '] : [' + (saikoroP1 + 1) + ']'));
-
-			if (saikoroP0 == saikoroP1) {
-				tasks.do();
-
-				// もう一回
+			if (existsKaburi) {
 				this.mode = Task.TaskCtrl.DEFAULT_MODE;
 				this.orderEntry();
 				return;
 			}
-
-			if (saikoroP0 < saikoroP1) {
-				this.gameStatus.attacker = this.gameStatus.players[1];
-				this.gameStatus.defender = this.gameStatus.players[0];
-			} else {
-				this.gameStatus.attacker = this.gameStatus.players[0];
-				this.gameStatus.defender = this.gameStatus.players[1];
-			}
-
-			tasks.add(new Task.FunctionTask(debug, this.gameStatus.attacker.character.name + 'の攻撃から'));
-			tasks.do();
-
-			this.gameStatus.omoteUra = 'OMOTE';
 
 			this.finish();
 		}
 
 		public finish = (): void => {
 			Task.TaskCtrl.finish(this);
+
+			this.gameStatus.actionStack.length = 0;
+			for (let i = 0, len: number = this.order.length; i < len; i++) {
+				this.gameStatus.actionStack.push(this.order[i]);
+			}
 
 			this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
 		}
@@ -652,6 +675,17 @@ namespace SaikoroBattle {
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
+			let attackerIdx: number | undefined = this.gameStatus.actionStack.shift();
+			if (attackerIdx == undefined) {
+				throw 'no stack';
+			}
+			if (attackerIdx == 0) {
+				gameStatus.attacker = this.gameStatus.players[0];
+				gameStatus.defender = this.gameStatus.players[1];
+			} else {
+				gameStatus.attacker = this.gameStatus.players[attackerIdx];
+				gameStatus.defender = this.gameStatus.players[0];
+			}
 
 			this.tasks.add(new Task.FunctionTask(debugClear, null));
 			this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.attacker));
@@ -804,12 +838,7 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.finish(this);
 
 			if (0 < this.gameStatus.defender.hitPoint) {
-				if (this.gameStatus.omoteUra == 'OMOTE') {
-					this.gameStatus.omoteUra = 'URA';
-					let swap: Player = this.gameStatus.attacker;
-					this.gameStatus.attacker = this.gameStatus.defender;
-					this.gameStatus.defender = swap;
-
+				if (0 < this.gameStatus.actionStack.length) {
 					this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
 				} else {
 					this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);

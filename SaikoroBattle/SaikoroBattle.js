@@ -54,7 +54,7 @@ var SaikoroBattle;
         function GameStatus() {
             this.gameMode = null;
             this.players = new Array();
-            this.omoteUra = 'OMOTE';
+            this.actionStack = new Array();
             this.attacker = NullCharacter;
             this.defender = NullCharacter;
         }
@@ -424,6 +424,8 @@ var SaikoroBattle;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.Tasks();
+            this.order = new Array();
+            this.orderEntryList = new Array();
             this.callback = function (playerIdx, me) {
                 _this.gameStatus.players[playerIdx].saikoroMe = me;
             };
@@ -431,42 +433,82 @@ var SaikoroBattle;
                 _this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
             };
             this.check = function () {
-                var tasks = new Task.Tasks();
-                var saikoroP0 = _this.gameStatus.players[0].saikoroMe;
-                var saikoroP1 = _this.gameStatus.players[1].saikoroMe;
-                tasks.add(new Task.FunctionTask(debug, '[' + (saikoroP0 + 1) + '] : [' + (saikoroP1 + 1) + ']'));
-                if (saikoroP0 == saikoroP1) {
-                    tasks.do();
+                var existsKaburi = false;
+                var meList = new Array();
+                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
+                    if (_this.orderEntryList[i].entry) {
+                        var me = _this.gameStatus.players[i].saikoroMe;
+                        var kaburi = (function (me) {
+                            var kaburi = false;
+                            for (var i_1 = 0, len_1 = meList.length; i_1 < len_1; i_1++) {
+                                if (_this.orderEntryList[meList[i_1].playerIdx].entry) {
+                                    if (meList[i_1].me == me) {
+                                        kaburi = true;
+                                        meList[i_1].kaburi = true;
+                                    }
+                                }
+                            }
+                            return kaburi;
+                        })(me);
+                        meList.push({ playerIdx: i, me: me, kaburi: kaburi });
+                        if (kaburi) {
+                            existsKaburi = true;
+                        }
+                    }
+                }
+                meList.sort(function (m1, m2) {
+                    if (m1.kaburi && !m2.kaburi) {
+                        return 1;
+                    }
+                    if (!m1.kaburi && m2.kaburi) {
+                        return -1;
+                    }
+                    if (m1.me == m2.me) {
+                        return 0;
+                    }
+                    return m1.me < m2.me ? 1 : -1;
+                });
+                for (var i = 0, len = meList.length; i < len; i++) {
+                    debug(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+                    if (meList[i].kaburi) {
+                        _this.orderEntryList[meList[i].playerIdx].entry = true;
+                    }
+                    else {
+                        _this.orderEntryList[meList[i].playerIdx].entry = false;
+                        _this.order.push(meList[i].playerIdx);
+                    }
+                }
+                if (existsKaburi) {
                     _this.mode = Task.TaskCtrl.DEFAULT_MODE;
                     _this.orderEntry();
                     return;
                 }
-                if (saikoroP0 < saikoroP1) {
-                    _this.gameStatus.attacker = _this.gameStatus.players[1];
-                    _this.gameStatus.defender = _this.gameStatus.players[0];
-                }
-                else {
-                    _this.gameStatus.attacker = _this.gameStatus.players[0];
-                    _this.gameStatus.defender = _this.gameStatus.players[1];
-                }
-                tasks.add(new Task.FunctionTask(debug, _this.gameStatus.attacker.character.name + 'の攻撃から'));
-                tasks.do();
-                _this.gameStatus.omoteUra = 'OMOTE';
                 _this.finish();
             };
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
+                _this.gameStatus.actionStack.length = 0;
+                for (var i = 0, len = _this.order.length; i < len; i++) {
+                    _this.gameStatus.actionStack.push(_this.order[i]);
+                }
                 _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
+            this.order.length = 0;
+            this.orderEntryList.length = 0;
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                this.orderEntryList.push({ entry: true, me: -1 });
+            }
             this.orderEntry();
         }
         KougekiJunjoHandanMode.prototype.orderEntry = function () {
             var _this = this;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
-                (function (playerIdx) {
-                    _this.tasks.add(new SaikoroTask(function (me) { _this.callback(playerIdx, me); }, function (me) { _this.rollingFunc(playerIdx, me); }));
-                })(i);
+                if (this.orderEntryList[i].entry) {
+                    (function (playerIdx) {
+                        _this.tasks.add(new SaikoroTask(function (me) { _this.callback(playerIdx, me); }, function (me) { _this.rollingFunc(playerIdx, me); }));
+                    })(i);
+                }
             }
         };
         KougekiJunjoHandanMode.prototype.do = function () {
@@ -488,21 +530,6 @@ var SaikoroBattle;
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
         };
-        KougekiJunjoHandanMode.prototype.wait = function (taskArray, callback) {
-            var _this = this;
-            var finish = true;
-            for (var i = 0, len = taskArray.length; i < len; i++) {
-                if (taskArray[i].mode != 'finish') {
-                    finish = false;
-                    break;
-                }
-            }
-            if (finish) {
-                callback();
-                return;
-            }
-            window.setTimeout(function () { _this.wait(taskArray, callback); }, 100);
-        };
         return KougekiJunjoHandanMode;
     }());
     var Attack1GameMode = (function () {
@@ -523,6 +550,18 @@ var SaikoroBattle;
                 _this.gameStatus.gameMode.do();
             };
             this.gameStatus = gameStatus;
+            var attackerIdx = this.gameStatus.actionStack.shift();
+            if (attackerIdx == undefined) {
+                throw 'no stack';
+            }
+            if (attackerIdx == 0) {
+                gameStatus.attacker = this.gameStatus.players[0];
+                gameStatus.defender = this.gameStatus.players[1];
+            }
+            else {
+                gameStatus.attacker = this.gameStatus.players[attackerIdx];
+                gameStatus.defender = this.gameStatus.players[0];
+            }
             this.tasks.add(new Task.FunctionTask(debugClear, null));
             this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.attacker));
             this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.defender));
@@ -585,11 +624,7 @@ var SaikoroBattle;
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
                 if (0 < _this.gameStatus.defender.hitPoint) {
-                    if (_this.gameStatus.omoteUra == 'OMOTE') {
-                        _this.gameStatus.omoteUra = 'URA';
-                        var swap = _this.gameStatus.attacker;
-                        _this.gameStatus.attacker = _this.gameStatus.defender;
-                        _this.gameStatus.defender = swap;
+                    if (0 < _this.gameStatus.actionStack.length) {
                         _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
                     }
                     else {
