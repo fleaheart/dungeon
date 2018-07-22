@@ -318,24 +318,17 @@ namespace Aao {
 				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
 			}
 
+			let muki: Muki = createMuki(<MukiType>$hensu.muki);
 			$hensu.frame++;
-			if ($hensu.muki == 'n') {
-				_gameBoard.next.backGround.style.top = (-480 + 16 * $hensu.frame) + 'px';
-				_gameBoard.current.backGround.style.top = (0 + 16 * $hensu.frame) + 'px';
-				$pc.moveBy(0, 15);
-			} else if ($hensu.muki == 'e') {
-				_gameBoard.next.backGround.style.left = (640 - 16 * $hensu.frame) + 'px';
-				_gameBoard.current.backGround.style.left = (0 - 16 * $hensu.frame) + 'px';
-				$pc.moveBy(-15.2, 0);
-			} else if ($hensu.muki == 's') {
-				_gameBoard.next.backGround.style.top = (480 - 16 * $hensu.frame) + 'px';
-				_gameBoard.current.backGround.style.top = (0 - 16 * $hensu.frame) + 'px';
-				$pc.moveBy(0, -15);
-			} else if ($hensu.muki == 'w') {
-				_gameBoard.next.backGround.style.left = (-640 + 16 * $hensu.frame) + 'px';
-				_gameBoard.current.backGround.style.left = (0 + 16 * $hensu.frame) + 'px';
-				$pc.moveBy(15.2, 0);
-			}
+
+			let scrollAmount: ScrollAmount = muki.scroll($hensu.frame);
+
+			_gameBoard.current.backGround.style.top = scrollAmount.current.top + 'px';
+			_gameBoard.current.backGround.style.left = scrollAmount.current.left + 'px';
+			_gameBoard.next.backGround.style.top = scrollAmount.next.top + 'px';
+			_gameBoard.next.backGround.style.left = scrollAmount.next.left + 'px';
+
+			$pc.moveBy(scrollAmount.pc.x, scrollAmount.pc.y);
 
 			if ($hensu.frameend <= $hensu.frame) {
 				_gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
@@ -343,15 +336,7 @@ namespace Aao {
 				_gameBoard.current.backGround.style.left = '0px';
 				_gameBoard.next.backGround.style.display = 'none';
 
-				if ($hensu.muki == 'n') {
-					$pc.moveTo($pc.x, 480 - 32);
-				} else if ($hensu.muki == 'e') {
-					$pc.moveTo(0, $pc.y);
-				} else if ($hensu.muki == 's') {
-					$pc.moveTo($pc.x, 0);
-				} else if ($hensu.muki == 'w') {
-					$pc.moveTo(640 - 32, $pc.y);
-				}
+				muki.scrollEndAdgust($pc);
 
 				for (let i = 0; i < _gameBoard.current.field.length; i++) {
 					_gameBoard.current.field[i] = _gameBoard.next.field[i];
@@ -395,6 +380,111 @@ namespace Aao {
 				$pc.muki = hougaku;
 			}
 		}
+	}
+
+	type MukiType = 'n' | 'e' | 's' | 'w';
+
+	interface Muki {
+		muki: MukiType;
+		scroll(frame: number): ScrollAmount;
+		scrollEndAdgust(pc: Character): void;
+	}
+
+	interface Position {
+		top: number;
+		left: number;
+	}
+
+	interface XY {
+		x: number;
+		y: number;
+	}
+
+	interface ScrollAmount {
+		current: Position;
+		next: Position;
+		pc: XY;
+	}
+
+	class Muki_N implements Muki {
+		muki: MukiType = 'n';
+
+		scroll(frame: number): ScrollAmount {
+			let current: Position = { top: 0 + 16 * frame, left: 0 };
+			let next: Position = { top: -480 + 16 * frame, left: 0 };
+			let pc: XY = { x: 0, y: 15 };
+
+			return { current: current, next: next, pc: pc }
+		}
+
+		scrollEndAdgust(pc: Character): void {
+			pc.moveTo(pc.x, 480 - 32);
+		}
+	}
+	let muki_n = new Muki_N();
+
+	class Muki_E implements Muki {
+		muki: MukiType = 'e';
+
+		scroll(frame: number): ScrollAmount {
+			let current: Position = { top: 0, left: 0 - 16 * frame };
+			let next: Position = { top: 0, left: 640 - 16 * frame };
+			let pc: XY = { x: -15.2, y: 0 };
+
+			return { current: current, next: next, pc: pc }
+		}
+
+		scrollEndAdgust(pc: Character): void {
+			pc.moveTo(0, pc.y);
+		}
+	}
+	let muki_e = new Muki_E();
+
+	class Muki_S implements Muki {
+		muki: MukiType = 's';
+
+		scroll(frame: number): ScrollAmount {
+			let current: Position = { top: 0 - 16 * frame, left: 0 };
+			let next: Position = { top: 480 - 16 * frame, left: 0 };
+			let pc: XY = { x: 0, y: -15 };
+
+			return { current: current, next: next, pc: pc }
+		}
+
+		scrollEndAdgust(pc: Character): void {
+			pc.moveTo(pc.x, 0);
+		}
+	}
+	let muki_s = new Muki_S();
+
+	class Muki_W implements Muki {
+		muki: MukiType = 'w';
+
+		scroll(frame: number): ScrollAmount {
+			let current: Position = { top: 0, left: 0 + 16 * frame };
+			let next: Position = { top: 0, left: -640 + 16 * frame };
+			let pc: XY = { x: 15.2, y: 0 };
+
+			return { current: current, next: next, pc: pc }
+		}
+
+		scrollEndAdgust(pc: Character): void {
+			pc.moveTo(640 - 32, pc.y);
+		}
+	}
+	let muki_w = new Muki_W();
+
+	function createMuki(muki: MukiType): Muki {
+		if (muki == 'n') {
+			return muki_n;
+		} else if (muki == 'e') {
+			return muki_e;
+		} else if (muki == 's') {
+			return muki_s;
+		} else if (muki == 'w') {
+			return muki_w;
+		}
+		throw muki + ' is illigal argument';
 	}
 
 	window.addEventListener('load', (): void => {
