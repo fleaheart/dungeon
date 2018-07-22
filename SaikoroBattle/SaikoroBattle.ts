@@ -1,22 +1,5 @@
 namespace SaikoroBattle {
 
-	let _debugBoard: HTMLDivElement;
-	function debug(text: string) {
-		let html = _debugBoard.innerHTML;
-		html += text + '<br>';
-		_debugBoard.innerHTML = html;
-	}
-	function debugClear(): void {
-		_debugBoard.innerHTML = '';
-	}
-
-	export function dbg(text: string) {
-		let dbg = getElementById('debugBoard2');
-		let h = dbg.innerHTML;
-		h += text + ' / ';
-		dbg.innerHTML = h;
-	}
-
 	function getElementById(elementId: string): HTMLElement {
 		let elm: HTMLElement | null = document.getElementById(elementId);
 		if (elm == null) {
@@ -24,6 +7,32 @@ namespace SaikoroBattle {
 		}
 		return elm;
 	}
+
+	class Message {
+		board: HTMLDivElement | null = null;
+
+		set(board: HTMLDivElement) {
+			this.board = board;
+		}
+
+		clear = (): void => {
+			if (this.board == null) {
+				return;
+			}
+			this.board.innerHTML = '';
+		}
+
+		write = (text: string): void => {
+			if (this.board == null) {
+				return;
+			}
+			let html = this.board.innerHTML;
+			html += text + '<br>';
+			this.board.innerHTML = html;
+		}
+	}
+	let _message = new Message();
+	let _debug = new Message();
 
 	function load(url: string): string {
 		let res = '';
@@ -67,7 +76,8 @@ namespace SaikoroBattle {
 	let _gameStatus = new GameStatus();
 
 	export function init(): void {
-		_debugBoard = <HTMLDivElement>getElementById('debugBoard');
+		_message.set(<HTMLDivElement>getElementById('messageBoard'));
+		_debug.set(<HTMLDivElement>getElementById('messageBoard'));
 
 		initDefine();
 
@@ -374,9 +384,9 @@ namespace SaikoroBattle {
 
 			this.tasks.add(new Task.FunctionTask(nokoriHpHyouji, gameStatus));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-			this.tasks.add(new Task.FunctionTask(debugClear, null));
+			this.tasks.add(new Task.FunctionTask(_message.clear, null));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
-			this.tasks.add(new Task.FunctionTask(debug, 'start'));
+			this.tasks.add(new Task.FunctionTask(_message.write, 'start'));
 		}
 
 		do(): void {
@@ -580,9 +590,9 @@ namespace SaikoroBattle {
 
 			window.setTimeout(() => {
 				let tasks: Task.ParallelTasks = new Task.ParallelTasks();
-				tasks.add(new Task.FunctionTask(debugClear, null));
+				tasks.add(new Task.FunctionTask(_message.clear, null));
 				tasks.add(new Task.FunctionTask(actionSelectReset, this.gameStatus.players));
-				tasks.add(new Task.FunctionTask(debug, '攻撃順判定'));
+				tasks.add(new Task.FunctionTask(_message.write, '攻撃順判定'));
 				tasks.do();
 			});
 
@@ -636,7 +646,7 @@ namespace SaikoroBattle {
 			});
 
 			for (let i = 0, len: number = meList.length; i < len; i++) {
-				debug(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+				_debug.write(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
 				if (meList[i].kaburi) {
 					this.orderEntryList[meList[i].playerIdx].entry = true;
 				} else {
@@ -688,9 +698,9 @@ namespace SaikoroBattle {
 				gameStatus.defender = this.gameStatus.players[0];
 			}
 
-			this.tasks.add(new Task.FunctionTask(debugClear, null));
+			this.tasks.add(new Task.FunctionTask(_message.clear, null));
 			this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.players));
-			this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.attacker.character.name + 'の攻撃'));
+			this.tasks.add(new Task.FunctionTask(_message.write, this.gameStatus.attacker.character.name + 'の攻撃'));
 			this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
 		}
 
@@ -738,10 +748,10 @@ namespace SaikoroBattle {
 			let attackMe = this.gameStatus.attacker.saikoroMe;
 			let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
 
-			this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
+			this.tasks.add(new Task.FunctionTask(_message.write, 'さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name));
 			this.tasks.add(new Task.FunctionTask(actionSelect, { actionBoxList: this.gameStatus.attacker.attackBoxList, me: attackMe, className: 'selected_attack' }));
 
-			this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.character.name + 'の防御'));
+			this.tasks.add(new Task.FunctionTask(_message.write, this.gameStatus.defender.character.name + 'の防御'));
 			this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
 		}
 
@@ -791,7 +801,7 @@ namespace SaikoroBattle {
 			let defenseMe: number = this.gameStatus.defender.saikoroMe;
 			let defenseAction: DefenseAction = this.gameStatus.defender.character.defensePalette[defenseMe];
 
-			this.tasks.add(new Task.FunctionTask(debug, 'さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name));
+			this.tasks.add(new Task.FunctionTask(_message.write, 'さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name));
 			this.tasks.add(new Task.FunctionTask(actionSelect, { actionBoxList: this.gameStatus.defender.defenseBoxList, me: defenseMe, className: 'selected_defense' }));
 
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
@@ -802,7 +812,7 @@ namespace SaikoroBattle {
 				if (damage < 0) {
 					damage = 0;
 				}
-				this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.character.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
+				this.tasks.add(new Task.FunctionTask(_message.write, this.gameStatus.defender.character.name + 'は ' + damage + 'ポイントのダメージを喰らった'));
 				this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 			}
 
@@ -815,7 +825,7 @@ namespace SaikoroBattle {
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
 			if (this.gameStatus.defender.hitPoint <= 0) {
-				this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.defender.character.name + 'は、倒れた'));
+				this.tasks.add(new Task.FunctionTask(_message.write, this.gameStatus.defender.character.name + 'は、倒れた'));
 				this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 			}
 		}
