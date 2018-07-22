@@ -49,20 +49,20 @@ namespace SaikoroBattle {
 	};
 
 	class GameDeifine {
-		public attackActionList: Array<AttackAction> = new Array<AttackAction>();
-		public defenseActionList: Array<DefenseAction> = new Array<DefenseAction>();
+		attackActionList: Array<AttackAction> = new Array<AttackAction>();
+		defenseActionList: Array<DefenseAction> = new Array<DefenseAction>();
 
-		public playerList: Array<Character> = new Array<Character>();
-		public enemyList: Array<Character> = new Array<Character>();
+		playerList: Array<Character> = new Array<Character>();
+		enemyList: Array<Character> = new Array<Character>();
 	}
 	let _gameDeifine = new GameDeifine();
 
 	class GameStatus {
-		public gameMode: GameMode | null = null;
-		public players: Array<Player> = new Array<Player>();
-		public actionStack: Array<number> = new Array<number>();
-		public attacker: Player = NullCharacter;
-		public defender: Player = NullCharacter;
+		gameMode: GameMode | null = null;
+		players: Array<Player> = new Array<Player>();
+		actionStack: Array<number> = new Array<number>();
+		attacker: Player = NullCharacter;
+		defender: Player = NullCharacter;
 	}
 	let _gameStatus = new GameStatus();
 
@@ -240,7 +240,7 @@ namespace SaikoroBattle {
 			}
 		}
 
-		public clone(): AttackAction {
+		clone(): AttackAction {
 			let action = new AttackAction(this.id, this.name, this.power, this.detail);
 
 			return action;
@@ -266,7 +266,7 @@ namespace SaikoroBattle {
 			}
 		}
 
-		public clone(): DefenseAction {
+		clone(): DefenseAction {
 			let action = new DefenseAction(this.id, this.name, this.power, this.detail);
 			action.through = this.through;
 			action.nigashiPoint = this.nigashiPoint;
@@ -355,10 +355,10 @@ namespace SaikoroBattle {
 	}
 
 	class InitGameMode implements GameMode {
-		public readonly name: string = 'InitGameMode';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'InitGameMode';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		public gameStatus: GameStatus;
+		gameStatus: GameStatus;
 
 		private tasks = new Task.SequentialTasks();
 
@@ -379,7 +379,7 @@ namespace SaikoroBattle {
 			this.tasks.add(new Task.FunctionTask(debug, 'start'));
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -387,13 +387,13 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.wait(this.tasks, this.finish);
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
 		}
 
-		public finish = (): void => {
+		finish = (): void => {
 			Task.TaskCtrl.finish(this);
 
 			this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
@@ -401,8 +401,8 @@ namespace SaikoroBattle {
 	}
 
 	class ActionSetTask implements Task.Task {
-		public readonly name: string = 'ActionSetTask';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'ActionSetTask';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
 		private actionList: Array<Action>;
 		private tasks = new Task.ParallelTasks();
@@ -437,11 +437,11 @@ namespace SaikoroBattle {
 			this.tasks.add(tasks);
 		}
 
-		public setBox(box: HTMLDivElement, action: Action) {
+		setBox(box: HTMLDivElement, action: Action) {
 			box.innerHTML = action.name;
 		}
 
-		public do() {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -449,19 +449,19 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.wait(this.tasks, (): void => { this.finish(); });
 		}
 
-		public asap() {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 			this.tasks.asap();
 		}
 
-		public finish(): void {
+		finish(): void {
 			Task.TaskCtrl.finish(this);
 		}
 	}
 
 	export class SaikoroTask implements Task.Task {
-		public name: string = 'SaikoroTask';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		name: string = 'SaikoroTask';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
 		private callback: Function;
 		private rollingFunc: Function;
@@ -478,13 +478,13 @@ namespace SaikoroBattle {
 			}
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 			this.rollingCount = 0;
 			this.rolling();
 		}
 
-		public rolling() {
+		rolling(): void {
 			if (this.mode != 'running' && this.mode != 'asap') {
 				return;
 			}
@@ -505,7 +505,7 @@ namespace SaikoroBattle {
 			}
 		}
 
-		public static saikoroHTML(me: number): string {
+		static saikoroHTML(me: number): string {
 			return [
 				'　　　<br>　<span style="color:red">●</span>　<br>　　　<br>',
 				'●　　<br>　　　<br>　　●<br>',
@@ -516,13 +516,13 @@ namespace SaikoroBattle {
 			][me];
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.rolling();
 		}
 
-		public finish(): void {
+		finish(): void {
 			Task.TaskCtrl.finish(this);
 
 			this.callback(this.me);
@@ -531,10 +531,10 @@ namespace SaikoroBattle {
 
 	// 攻撃順序判断
 	class KougekiJunjoHandanMode implements GameMode {
-		public readonly name: string = 'KougekiJunjoHandanMode';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'KougekiJunjoHandanMode';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		public gameStatus: GameStatus;
+		gameStatus: GameStatus;
 
 		private tasks: Task.ParallelTasks = new Task.ParallelTasks();
 
@@ -575,7 +575,7 @@ namespace SaikoroBattle {
 			this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			window.setTimeout(() => {
@@ -591,7 +591,7 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.wait(this.tasks, (): void => { this.check(); });
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
@@ -654,7 +654,7 @@ namespace SaikoroBattle {
 			this.finish();
 		}
 
-		public finish = (): void => {
+		finish = (): void => {
 			Task.TaskCtrl.finish(this);
 
 			this.gameStatus.actionStack.length = 0;
@@ -667,10 +667,10 @@ namespace SaikoroBattle {
 	}
 
 	class Attack1GameMode implements GameMode {
-		public readonly name: string = 'Attack1GameMode';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'Attack1GameMode';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		public gameStatus: GameStatus;
+		gameStatus: GameStatus;
 
 		private tasks = new Task.SequentialTasks();
 
@@ -702,7 +702,7 @@ namespace SaikoroBattle {
 			this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -710,13 +710,13 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.wait(this.tasks, this.finish);
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
 		}
 
-		public finish = (): void => {
+		finish = (): void => {
 			Task.TaskCtrl.finish(this);
 
 			this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
@@ -725,10 +725,10 @@ namespace SaikoroBattle {
 	}
 
 	class Attack2GameMode implements GameMode {
-		public readonly name: string = 'Attack2GameMode';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'Attack2GameMode';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		public gameStatus: GameStatus;
+		gameStatus: GameStatus;
 
 		private tasks = new Task.SequentialTasks();
 
@@ -745,7 +745,7 @@ namespace SaikoroBattle {
 			this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -761,13 +761,13 @@ namespace SaikoroBattle {
 			this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
 		}
 
-		public finish = (): void => {
+		finish = (): void => {
 			Task.TaskCtrl.finish(this);
 			this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
 			this.gameStatus.gameMode.do();
@@ -775,10 +775,10 @@ namespace SaikoroBattle {
 	}
 
 	class Attack3GameMode implements GameMode {
-		public readonly name: string = 'Attack3GameMode';
-		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+		readonly name: string = 'Attack3GameMode';
+		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		public gameStatus: GameStatus;
+		gameStatus: GameStatus;
 
 		private tasks = new Task.SequentialTasks();
 
@@ -820,7 +820,7 @@ namespace SaikoroBattle {
 			}
 		}
 
-		public do(): void {
+		do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -828,13 +828,13 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.wait(this.tasks, this.finish);
 		}
 
-		public asap(): void {
+		asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
 		}
 
-		public finish = (): void => {
+		finish = (): void => {
 			Task.TaskCtrl.finish(this);
 
 			if (0 < this.gameStatus.defender.hitPoint) {
