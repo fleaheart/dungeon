@@ -196,23 +196,28 @@ namespace Aao {
 		}
 	}
 
-	function frameCheck(): void {
-		$frameCount++;
+	class GameStatus {
+		gameMode: GameMode | null = null;
 
-		if (_gameBoard.debug != null) {
-			_gameBoard.debug.innerHTML =
-				$mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
-				+ '<br>' + $pc.x + ',' + $pc.y
-				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
-				+ '<br>[' + $dbg + ']'
-				;
+	}
+	let _gameStatus: GameStatus = new GameStatus();
+
+	interface GameMode {
+
+		gameStatus: GameStatus;
+
+		do: Function;
+	}
+
+	class FreeGameMode implements GameMode {
+
+		gameStatus: GameStatus;
+
+		constructor(gameStatus: GameStatus) {
+			this.gameStatus = gameStatus;
 		}
 
-		if ($lastKeyCode == 27) {
-			return;
-		}
-
-		if ($mode == 'free') {
+		do() {
 			if ($frameCount % 2 == 0) {
 
 				if (0 < $koudouArray.length) {
@@ -237,7 +242,7 @@ namespace Aao {
 
 							_gameBoard.next.backGround.style.display = '';
 
-							$mode = 'scrl';
+							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
 						}
 						if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
 							_gameBoard.next.backGround.src = 'map3.png';
@@ -254,7 +259,7 @@ namespace Aao {
 
 							_gameBoard.next.backGround.style.display = '';
 
-							$mode = 'scrl';
+							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
 						}
 						if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
 							_gameBoard.next.backGround.src = 'map1.png';
@@ -270,7 +275,7 @@ namespace Aao {
 
 							_gameBoard.next.backGround.style.display = '';
 
-							$mode = 'scrl';
+							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
 						}
 						if ($pc.muki == 'w' && $pc.x <= 0) {
 							_gameBoard.next.backGround.src = 'map2.png';
@@ -287,7 +292,7 @@ namespace Aao {
 
 							_gameBoard.next.backGround.style.display = '';
 
-							$mode = 'scrl';
+							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
 						}
 					}
 					if (koudou.type == 'jump') {
@@ -313,7 +318,18 @@ namespace Aao {
 					}
 				}
 			}
-		} else if ($mode == 'scrl') {
+		}
+	}
+
+	class ScrollGameMode implements GameMode {
+
+		gameStatus: GameStatus;
+
+		constructor(gameStatus: GameStatus) {
+			this.gameStatus = gameStatus;
+		}
+
+		do() {
 			if ($hensu.frame == 0) {
 				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
 			}
@@ -343,9 +359,32 @@ namespace Aao {
 				}
 				display();
 
-				$mode = 'free';
+				this.gameStatus.gameMode = new FreeGameMode(_gameStatus);
 			}
 		}
+	}
+
+	function frameCheck(): void {
+		$frameCount++;
+
+		if (_gameBoard.debug != null) {
+			_gameBoard.debug.innerHTML =
+				$mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
+				+ '<br>' + $pc.x + ',' + $pc.y
+				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
+				+ '<br>[' + $dbg + ']'
+				;
+		}
+
+		if ($lastKeyCode == 27) {
+			return;
+		}
+
+		if (_gameStatus.gameMode == null) {
+			_gameStatus.gameMode = new FreeGameMode(_gameStatus);
+		}
+
+		_gameStatus.gameMode.do();
 
 		setTimeout(arguments.callee, $frameTiming);
 	}

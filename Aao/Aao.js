@@ -161,19 +161,18 @@ var Aao;
             _gameBoard.objectAscii.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
         }
     }
-    function frameCheck() {
-        $frameCount++;
-        if (_gameBoard.debug != null) {
-            _gameBoard.debug.innerHTML =
-                $mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
-                    + '<br>' + $pc.x + ',' + $pc.y
-                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
-                    + '<br>[' + $dbg + ']';
+    var GameStatus = (function () {
+        function GameStatus() {
+            this.gameMode = null;
         }
-        if ($lastKeyCode == 27) {
-            return;
+        return GameStatus;
+    }());
+    var _gameStatus = new GameStatus();
+    var FreeGameMode = (function () {
+        function FreeGameMode(gameStatus) {
+            this.gameStatus = gameStatus;
         }
-        if ($mode == 'free') {
+        FreeGameMode.prototype.do = function () {
             if ($frameCount % 2 == 0) {
                 if (0 < $koudouArray.length) {
                     var koudou = $koudouArray.shift();
@@ -189,7 +188,7 @@ var Aao;
                             _gameBoard.next.field = $field2;
                             $hensu = { muki: 'n', frame: 0, frameend: 30 };
                             _gameBoard.next.backGround.style.display = '';
-                            $mode = 'scrl';
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
                         }
                         if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
                             _gameBoard.next.backGround.src = 'map3.png';
@@ -201,7 +200,7 @@ var Aao;
                             _gameBoard.next.field = $field3;
                             $hensu = { muki: 'e', frame: 0, frameend: 40 };
                             _gameBoard.next.backGround.style.display = '';
-                            $mode = 'scrl';
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
                         }
                         if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
                             _gameBoard.next.backGround.src = 'map1.png';
@@ -212,7 +211,7 @@ var Aao;
                             _gameBoard.next.field = $field1;
                             $hensu = { muki: 's', frame: 0, frameend: 30 };
                             _gameBoard.next.backGround.style.display = '';
-                            $mode = 'scrl';
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
                         }
                         if ($pc.muki == 'w' && $pc.x <= 0) {
                             _gameBoard.next.backGround.src = 'map2.png';
@@ -224,7 +223,7 @@ var Aao;
                             _gameBoard.next.field = $field2;
                             $hensu = { muki: 'w', frame: 0, frameend: 40 };
                             _gameBoard.next.backGround.style.display = '';
-                            $mode = 'scrl';
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
                         }
                     }
                     if (koudou.type == 'jump') {
@@ -248,8 +247,14 @@ var Aao;
                     }
                 }
             }
+        };
+        return FreeGameMode;
+    }());
+    var ScrollGameMode = (function () {
+        function ScrollGameMode(gameStatus) {
+            this.gameStatus = gameStatus;
         }
-        else if ($mode == 'scrl') {
+        ScrollGameMode.prototype.do = function () {
             if ($hensu.frame == 0) {
                 putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
@@ -271,9 +276,27 @@ var Aao;
                     _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
                 display();
-                $mode = 'free';
+                this.gameStatus.gameMode = new FreeGameMode(_gameStatus);
             }
+        };
+        return ScrollGameMode;
+    }());
+    function frameCheck() {
+        $frameCount++;
+        if (_gameBoard.debug != null) {
+            _gameBoard.debug.innerHTML =
+                $mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
+                    + '<br>' + $pc.x + ',' + $pc.y
+                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
+                    + '<br>[' + $dbg + ']';
         }
+        if ($lastKeyCode == 27) {
+            return;
+        }
+        if (_gameStatus.gameMode == null) {
+            _gameStatus.gameMode = new FreeGameMode(_gameStatus);
+        }
+        _gameStatus.gameMode.do();
         setTimeout(arguments.callee, $frameTiming);
     }
     function move_tate(hougaku) {
