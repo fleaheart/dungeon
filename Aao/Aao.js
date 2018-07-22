@@ -65,6 +65,20 @@ var Aao;
         return GameBoard;
     }());
     var _gameBoard = new GameBoard();
+    var GameFieldGamen = (function () {
+        function GameFieldGamen(name, field, imgsrc, over_n, over_e, over_s, over_w) {
+            this.over = {};
+            this.name = name;
+            this.field = field;
+            this.imgsrc = imgsrc;
+            this.over['n'] = over_n;
+            this.over['e'] = over_e;
+            this.over['s'] = over_s;
+            this.over['w'] = over_w;
+        }
+        return GameFieldGamen;
+    }());
+    var NullGameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
     var $field1 = new Array();
     var $field2 = new Array();
     var $field3 = new Array();
@@ -124,6 +138,16 @@ var Aao;
     for (var i = 0; i < _gameBoard.current.field.length; i++) {
         $asciiPosition.push('                                        ');
     }
+    var _GameFieldGamenList = new Array();
+    function getGameFieldGamen(name) {
+        for (var i = 0, len = _GameFieldGamenList.length; i < len; i++) {
+            var item = _GameFieldGamenList[i];
+            if (item.name == name) {
+                return item;
+            }
+        }
+        throw name + ' is not found';
+    }
     var $hougaku = {
         n: { x: 0, y: -1 }, e: { x: 1, y: 0 }, s: { x: 0, y: 1 }, w: { x: -1, y: 0 }
     };
@@ -156,7 +180,9 @@ var Aao;
         function GameStatus() {
             this.gameMode = null;
             this.player = new Character('');
+            this.gameFieldGamen = NullGameFieldGamen;
             this.frameCount = 0;
+            this.lastKey = '';
         }
         return GameStatus;
     }());
@@ -167,90 +193,61 @@ var Aao;
             this.gameStatus = gameStatus;
         }
         FreeGameMode.prototype.do = function () {
-            if (this.gameStatus.frameCount % 2 == 0) {
-                if (0 < $koudouArray.length) {
-                    var koudou = $koudouArray.shift();
-                    if (koudou.type == 'idou') {
-                        $pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
-                        if ($pc.muki == 'n' && $pc.y <= 0) {
-                            _gameBoard.next.backGround.src = 'map2.png';
-                            _gameBoard.next.backGround.style.position = 'absolute';
-                            _gameBoard.next.backGround.style.top = '-480px';
-                            _gameBoard.next.backGround.style.left = '0px';
-                            _gameBoard.current.backGround.style.top = '0px';
-                            _gameBoard.current.backGround.style.left = '0px';
-                            _gameBoard.next.field = $field2;
-                            _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
-                            return;
-                        }
-                        if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
-                            _gameBoard.next.backGround.src = 'map3.png';
-                            _gameBoard.next.backGround.style.position = 'absolute';
-                            _gameBoard.next.backGround.style.top = '0px';
-                            _gameBoard.next.backGround.style.left = '640px';
-                            _gameBoard.current.backGround.style.top = '0px';
-                            _gameBoard.current.backGround.style.left = '0px';
-                            _gameBoard.next.field = $field3;
-                            _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
-                            return;
-                        }
-                        if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
-                            _gameBoard.next.backGround.src = 'map1.png';
-                            _gameBoard.next.backGround.style.top = '480px';
-                            _gameBoard.next.backGround.style.left = '0px';
-                            _gameBoard.current.backGround.style.top = '0px';
-                            _gameBoard.current.backGround.style.left = '0px';
-                            _gameBoard.next.field = $field1;
-                            _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
-                            return;
-                        }
-                        if ($pc.muki == 'w' && $pc.x <= 0) {
-                            _gameBoard.next.backGround.src = 'map2.png';
-                            _gameBoard.next.backGround.style.position = 'absolute';
-                            _gameBoard.next.backGround.style.top = '0px';
-                            _gameBoard.next.backGround.style.left = '-640px';
-                            _gameBoard.current.backGround.style.top = '0px';
-                            _gameBoard.current.backGround.style.left = '0px';
-                            _gameBoard.next.field = $field2;
-                            _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
+            if (this.gameStatus.frameCount % 2 != 0) {
+                return;
+            }
+            if (0 < $koudouArray.length) {
+                var koudou = $koudouArray.shift();
+                if (koudou.type == 'idou') {
+                    $pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
+                    var muki = createMuki($pc.muki);
+                    if (muki.over($pc)) {
+                        var nextName = _gameStatus.gameFieldGamen.over[muki.muki];
+                        if (nextName != null) {
+                            var nextGameFieldGamen = getGameFieldGamen(nextName);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
                             return;
                         }
                     }
-                    if (koudou.type == 'jump') {
-                        $pc.moveBy(0, koudou.value);
-                    }
                 }
-                put($pc);
-                display();
-                if ($lastKeyCode == KEY_UP) {
-                    move_tate('n');
+                if (koudou.type == 'jump') {
+                    $pc.moveBy(0, koudou.value);
                 }
-                if ($lastKeyCode == KEY_RIGHT) {
-                    move_yoko('e');
-                }
-                if ($lastKeyCode == KEY_DOWN) {
-                    move_tate('s');
-                }
-                if ($lastKeyCode == KEY_LEFT) {
-                    move_yoko('w');
-                }
+            }
+            put($pc);
+            display();
+            if ($lastKeyCode == KEY_UP) {
+                move_tate('n');
+            }
+            if ($lastKeyCode == KEY_RIGHT) {
+                move_yoko('e');
+            }
+            if ($lastKeyCode == KEY_DOWN) {
+                move_tate('s');
+            }
+            if ($lastKeyCode == KEY_LEFT) {
+                move_yoko('w');
             }
         };
         return FreeGameMode;
     }());
     var ScrollGameMode = (function () {
-        function ScrollGameMode(gameStatus, mukiType) {
+        function ScrollGameMode(gameStatus, mukiType, nextGameFieldGamen) {
             this.name = 'scrl';
             this.gameStatus = gameStatus;
             this.muki = createMuki(mukiType);
+            this.nextGameFieldGamen = nextGameFieldGamen;
             this.frame = 0;
         }
         ScrollGameMode.prototype.do = function () {
             if (this.frame == 0) {
+                _gameBoard.next.field = this.nextGameFieldGamen.field;
+                _gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
+                _gameBoard.next.backGround.style.top = this.muki.nextPosition + 'px';
+                _gameBoard.next.backGround.style.left = '0px';
+                _gameBoard.current.backGround.style.top = '0px';
+                _gameBoard.current.backGround.style.left = '0px';
+                _gameBoard.next.backGround.style.display = '';
                 putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
             this.frame++;
@@ -270,6 +267,7 @@ var Aao;
                     _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
                 display();
+                this.gameStatus.gameFieldGamen = this.nextGameFieldGamen;
                 this.gameStatus.gameMode = new FreeGameMode(this.gameStatus);
             }
         };
@@ -283,7 +281,11 @@ var Aao;
         }
         if (_gameBoard.debug != null) {
             _gameBoard.debug.innerHTML =
-                gameStatus.gameMode.name + '<br>' + gameStatus.frameCount + '<br>' + $lastKeyCode
+                gameStatus.gameMode.name
+                    + '<br>' + gameStatus.frameCount
+                    + '<br>' + gameStatus.lastKey
+                    + ' / ' + $lastKeyCode
+                    + '<br>' + gameStatus.gameFieldGamen.name
                     + '<br>' + $pc.x + ',' + $pc.y
                     + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY();
         }
@@ -323,7 +325,11 @@ var Aao;
         function Muki_N() {
             this.muki = 'n';
             this.frameEnd = 30;
+            this.nextPosition = { top: -480, left: 0 };
         }
+        Muki_N.prototype.over = function (pc) {
+            return pc.y <= 0;
+        };
         Muki_N.prototype.scroll = function (frame) {
             var current = { top: 0 + 16 * frame, left: 0 };
             var next = { top: -480 + 16 * frame, left: 0 };
@@ -340,7 +346,11 @@ var Aao;
         function Muki_E() {
             this.muki = 'e';
             this.frameEnd = 40;
+            this.nextPosition = { top: 0, left: 640 };
         }
+        Muki_E.prototype.over = function (pc) {
+            return 640 - 32 <= pc.x;
+        };
         Muki_E.prototype.scroll = function (frame) {
             var current = { top: 0, left: 0 - 16 * frame };
             var next = { top: 0, left: 640 - 16 * frame };
@@ -357,7 +367,11 @@ var Aao;
         function Muki_S() {
             this.muki = 's';
             this.frameEnd = 30;
+            this.nextPosition = { top: 480, left: 0 };
         }
+        Muki_S.prototype.over = function (pc) {
+            return 480 - 32 <= pc.y;
+        };
         Muki_S.prototype.scroll = function (frame) {
             var current = { top: 0 - 16 * frame, left: 0 };
             var next = { top: 480 - 16 * frame, left: 0 };
@@ -374,7 +388,11 @@ var Aao;
         function Muki_W() {
             this.muki = 'w';
             this.frameEnd = 40;
+            this.nextPosition = { top: 0, left: -640 };
         }
+        Muki_W.prototype.over = function (pc) {
+            return pc.x <= 0;
+        };
         Muki_W.prototype.scroll = function (frame) {
             var current = { top: 0, left: 0 + 16 * frame };
             var next = { top: 0, left: -640 + 16 * frame };
@@ -406,16 +424,21 @@ var Aao;
         initMainBoard();
         document.addEventListener('keydown', function (e) {
             $lastKeyCode = e.keyCode;
+            _gameStatus.lastKey = e.key;
         });
         document.addEventListener('keyup', function (e) {
             if (e.keyCode == $lastKeyCode) {
                 $lastKeyCode = -1;
             }
         });
+        _GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));
+        _GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
+        _GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
         $pc = new Character('A');
         $pc.moveTo(18 * 16, 2 * 32);
         _gameBoard.fieldGraph.appendChild($pc.img);
         _gameStatus.player = $pc;
+        _gameStatus.gameFieldGamen = getGameFieldGamen('field1');
         put($pc);
         display();
         setTimeout(frameCheck, FRAME_TIMING);
