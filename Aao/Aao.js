@@ -72,15 +72,8 @@ var Aao;
     var $lastKeyCode;
     var $frameTiming = 16;
     var $frameCount = 0;
-    var $mode;
     var $dbg = '';
     var $pc;
-    var Hensu = (function () {
-        function Hensu() {
-        }
-        return Hensu;
-    }());
-    var $hensu = new Hensu();
     $field1.push('**************************      ********');
     $field1.push('*        **                            *');
     $field1.push('*       **    **      ***      ****    *');
@@ -164,12 +157,14 @@ var Aao;
     var GameStatus = (function () {
         function GameStatus() {
             this.gameMode = null;
+            this.player = new Character('');
         }
         return GameStatus;
     }());
     var _gameStatus = new GameStatus();
     var FreeGameMode = (function () {
         function FreeGameMode(gameStatus) {
+            this.name = 'free';
             this.gameStatus = gameStatus;
         }
         FreeGameMode.prototype.do = function () {
@@ -186,9 +181,9 @@ var Aao;
                             _gameBoard.current.backGround.style.top = '0px';
                             _gameBoard.current.backGround.style.left = '0px';
                             _gameBoard.next.field = $field2;
-                            $hensu = { muki: 'n', frame: 0, frameend: 30 };
                             _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
+                            return;
                         }
                         if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
                             _gameBoard.next.backGround.src = 'map3.png';
@@ -198,9 +193,9 @@ var Aao;
                             _gameBoard.current.backGround.style.top = '0px';
                             _gameBoard.current.backGround.style.left = '0px';
                             _gameBoard.next.field = $field3;
-                            $hensu = { muki: 'e', frame: 0, frameend: 40 };
                             _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
+                            return;
                         }
                         if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
                             _gameBoard.next.backGround.src = 'map1.png';
@@ -209,9 +204,9 @@ var Aao;
                             _gameBoard.current.backGround.style.top = '0px';
                             _gameBoard.current.backGround.style.left = '0px';
                             _gameBoard.next.field = $field1;
-                            $hensu = { muki: 's', frame: 0, frameend: 30 };
                             _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
+                            return;
                         }
                         if ($pc.muki == 'w' && $pc.x <= 0) {
                             _gameBoard.next.backGround.src = 'map2.png';
@@ -221,9 +216,9 @@ var Aao;
                             _gameBoard.current.backGround.style.top = '0px';
                             _gameBoard.current.backGround.style.left = '0px';
                             _gameBoard.next.field = $field2;
-                            $hensu = { muki: 'w', frame: 0, frameend: 40 };
                             _gameBoard.next.backGround.style.display = '';
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki);
+                            return;
                         }
                     }
                     if (koudou.type == 'jump') {
@@ -232,46 +227,46 @@ var Aao;
                 }
                 put($pc);
                 display();
-                if ($mode != 'scrl') {
-                    if ($lastKeyCode == KEY_UP) {
-                        move_tate('n');
-                    }
-                    if ($lastKeyCode == KEY_RIGHT) {
-                        move_yoko('e');
-                    }
-                    if ($lastKeyCode == KEY_DOWN) {
-                        move_tate('s');
-                    }
-                    if ($lastKeyCode == KEY_LEFT) {
-                        move_yoko('w');
-                    }
+                if ($lastKeyCode == KEY_UP) {
+                    move_tate('n');
+                }
+                if ($lastKeyCode == KEY_RIGHT) {
+                    move_yoko('e');
+                }
+                if ($lastKeyCode == KEY_DOWN) {
+                    move_tate('s');
+                }
+                if ($lastKeyCode == KEY_LEFT) {
+                    move_yoko('w');
                 }
             }
         };
         return FreeGameMode;
     }());
     var ScrollGameMode = (function () {
-        function ScrollGameMode(gameStatus) {
+        function ScrollGameMode(gameStatus, mukiType) {
+            this.name = 'scrl';
             this.gameStatus = gameStatus;
+            this.muki = createMuki(mukiType);
+            this.frame = 0;
         }
         ScrollGameMode.prototype.do = function () {
-            if ($hensu.frame == 0) {
+            if (this.frame == 0) {
                 putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
-            var muki = createMuki($hensu.muki);
-            $hensu.frame++;
-            var scrollAmount = muki.scroll($hensu.frame);
+            this.frame++;
+            var scrollAmount = this.muki.scroll(this.frame);
             _gameBoard.current.backGround.style.top = scrollAmount.current.top + 'px';
             _gameBoard.current.backGround.style.left = scrollAmount.current.left + 'px';
             _gameBoard.next.backGround.style.top = scrollAmount.next.top + 'px';
             _gameBoard.next.backGround.style.left = scrollAmount.next.left + 'px';
             $pc.moveBy(scrollAmount.pc.x, scrollAmount.pc.y);
-            if ($hensu.frameend <= $hensu.frame) {
+            if (this.muki.frameEnd <= this.frame) {
                 _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
                 _gameBoard.current.backGround.style.top = '0px';
                 _gameBoard.current.backGround.style.left = '0px';
                 _gameBoard.next.backGround.style.display = 'none';
-                muki.scrollEndAdgust($pc);
+                this.muki.scrollEndAdgust($pc);
                 for (var i = 0; i < _gameBoard.current.field.length; i++) {
                     _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
@@ -283,18 +278,18 @@ var Aao;
     }());
     function frameCheck() {
         $frameCount++;
+        if (_gameStatus.gameMode == null) {
+            _gameStatus.gameMode = new FreeGameMode(_gameStatus);
+        }
         if (_gameBoard.debug != null) {
             _gameBoard.debug.innerHTML =
-                $mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
+                _gameStatus.gameMode.name + '<br>' + $frameCount + '<br>' + $lastKeyCode
                     + '<br>' + $pc.x + ',' + $pc.y
                     + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
                     + '<br>[' + $dbg + ']';
         }
         if ($lastKeyCode == 27) {
             return;
-        }
-        if (_gameStatus.gameMode == null) {
-            _gameStatus.gameMode = new FreeGameMode(_gameStatus);
         }
         _gameStatus.gameMode.do();
         setTimeout(arguments.callee, $frameTiming);
@@ -328,6 +323,7 @@ var Aao;
     var Muki_N = (function () {
         function Muki_N() {
             this.muki = 'n';
+            this.frameEnd = 30;
         }
         Muki_N.prototype.scroll = function (frame) {
             var current = { top: 0 + 16 * frame, left: 0 };
@@ -344,6 +340,7 @@ var Aao;
     var Muki_E = (function () {
         function Muki_E() {
             this.muki = 'e';
+            this.frameEnd = 40;
         }
         Muki_E.prototype.scroll = function (frame) {
             var current = { top: 0, left: 0 - 16 * frame };
@@ -360,6 +357,7 @@ var Aao;
     var Muki_S = (function () {
         function Muki_S() {
             this.muki = 's';
+            this.frameEnd = 30;
         }
         Muki_S.prototype.scroll = function (frame) {
             var current = { top: 0 - 16 * frame, left: 0 };
@@ -376,6 +374,7 @@ var Aao;
     var Muki_W = (function () {
         function Muki_W() {
             this.muki = 'w';
+            this.frameEnd = 40;
         }
         Muki_W.prototype.scroll = function (frame) {
             var current = { top: 0, left: 0 + 16 * frame };
@@ -389,20 +388,20 @@ var Aao;
         return Muki_W;
     }());
     var muki_w = new Muki_W();
-    function createMuki(muki) {
-        if (muki == 'n') {
+    function createMuki(mukiType) {
+        if (mukiType == 'n') {
             return muki_n;
         }
-        else if (muki == 'e') {
+        else if (mukiType == 'e') {
             return muki_e;
         }
-        else if (muki == 's') {
+        else if (mukiType == 's') {
             return muki_s;
         }
-        else if (muki == 'w') {
+        else if (mukiType == 'w') {
             return muki_w;
         }
-        throw muki + ' is illigal argument';
+        throw mukiType + ' is illigal argument';
     }
     window.addEventListener('load', function () {
         initMainBoard();
@@ -417,9 +416,9 @@ var Aao;
         $pc = new Character('A');
         $pc.moveTo(18 * 16, 2 * 32);
         _gameBoard.fieldGraph.appendChild($pc.img);
+        _gameStatus.player = $pc;
         put($pc);
         display();
-        $mode = 'free';
         $frameCount = 0;
         setTimeout(frameCheck, $frameTiming);
     });
