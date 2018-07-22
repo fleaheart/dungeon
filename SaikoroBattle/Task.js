@@ -33,17 +33,7 @@ var Task;
             }
             window.setTimeout(function () { TaskCtrl.parallelWait(tasks, callback); }, 100);
         };
-        TaskCtrl.debug = function (task, text) {
-            if (this.debugBoard == null) {
-                return;
-            }
-            var dbg = this.debugBoard;
-            var h = dbg.innerHTML;
-            h += '[' + task.name + ']' + text + '<br>';
-            dbg.innerHTML = h;
-        };
         TaskCtrl.DEFAULT_MODE = 'idle';
-        TaskCtrl.debugBoard = null;
         return TaskCtrl;
     }());
     Task.TaskCtrl = TaskCtrl;
@@ -110,6 +100,47 @@ var Task;
         return Tasks;
     }());
     Task.Tasks = Tasks;
+    var ParallelTasks = (function () {
+        function ParallelTasks() {
+            this.name = 'Tasks';
+            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.tasks = new Array();
+        }
+        ParallelTasks.prototype.add = function (task) {
+            this.tasks.push(task);
+        };
+        ParallelTasks.prototype.do = function () {
+            var _this = this;
+            TaskCtrl.do(this);
+            var _loop_2 = function (i, len) {
+                this_2.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+                window.setTimeout(function () { _this.tasks[i].do(); });
+            };
+            var this_2 = this;
+            for (var i = 0, len = this.tasks.length; i < len; i++) {
+                _loop_2(i, len);
+            }
+            TaskCtrl.parallelWait(this, function () { _this.finish(); });
+        };
+        ParallelTasks.prototype.asap = function () {
+            var _this = this;
+            var _loop_3 = function (i, len) {
+                if (this_3.tasks[i].mode == 'running') {
+                    window.setTimeout(function () { _this.tasks[i].asap(); });
+                }
+            };
+            var this_3 = this;
+            for (var i = 0, len = this.tasks.length; i < len; i++) {
+                _loop_3(i, len);
+            }
+        };
+        ParallelTasks.prototype.finish = function () {
+            TaskCtrl.finish(this);
+            this.tasks.length = 0;
+        };
+        return ParallelTasks;
+    }());
+    Task.ParallelTasks = ParallelTasks;
     var FunctionTask = (function () {
         function FunctionTask(func, param) {
             this.name = 'FunctionTask';

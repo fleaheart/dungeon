@@ -247,7 +247,7 @@ namespace TaskTest {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.ParallelTasks();
 
 		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
 		private order: Array<number> = new Array<number>();
@@ -289,7 +289,7 @@ namespace TaskTest {
 
 		public do(): void {
 			Task.TaskCtrl.do(this);
-			this.tasks.parallel();
+			this.tasks.do();
 			Task.TaskCtrl.parallelWait(this.tasks, (): void => { this.check(); });
 		}
 

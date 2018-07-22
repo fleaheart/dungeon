@@ -187,7 +187,7 @@ var TaskTest;
             var _this = this;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.ParallelTasks();
             this.orderEntryList = new Array();
             this.order = new Array();
             this.callback = function (playerIdx, me) {
@@ -282,7 +282,7 @@ var TaskTest;
         KougekiJunjoHandanMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
-            this.tasks.parallel();
+            this.tasks.do();
             Task.TaskCtrl.parallelWait(this.tasks, function () { _this.check(); });
         };
         KougekiJunjoHandanMode.prototype.asap = function () {

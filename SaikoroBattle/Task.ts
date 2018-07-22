@@ -12,8 +12,6 @@ namespace Task {
 
 	export class TaskCtrl {
 		static readonly DEFAULT_MODE: ModeType = 'idle';
-		static debugBoard: HTMLDivElement | null = null;
-
 		static do(task: Task): void {
 			task.mode = 'running';
 		}
@@ -34,7 +32,7 @@ namespace Task {
 			window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
 		}
 
-		static parallelWait(tasks: Tasks, callback: Function): void {
+		static parallelWait(tasks: Tasks | ParallelTasks, callback: Function): void {
 			let finish: boolean = true;
 			for (let i = 0, len: number = tasks.tasks.length; i < len; i++) {
 				if (tasks.tasks[i].mode != 'finish') {
@@ -48,16 +46,6 @@ namespace Task {
 			}
 
 			window.setTimeout((): void => { TaskCtrl.parallelWait(tasks, callback); }, 100);
-		}
-
-		static debug(task: Task, text: string): void {
-			if (this.debugBoard == null) {
-				return;
-			}
-			let dbg: HTMLDivElement = this.debugBoard;
-			let h = dbg.innerHTML;
-			h += '[' + task.name + ']' + text + '<br>';
-			dbg.innerHTML = h;
 		}
 	}
 
@@ -126,6 +114,40 @@ namespace Task {
 			TaskCtrl.finish(this);
 			this.tasks.length = 0;
 			this.step = -1;
+		}
+	}
+
+	export class ParallelTasks implements Task {
+		public readonly name: string = 'Tasks';
+		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		public tasks: Array<Task> = new Array<Task>();
+
+		public add(task: Task): void {
+			this.tasks.push(task);
+		}
+
+		public do(): void {
+			TaskCtrl.do(this);
+
+			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
+				this.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+				window.setTimeout((): void => { this.tasks[i].do(); });
+			}
+
+			TaskCtrl.parallelWait(this, (): void => { this.finish(); });
+		}
+
+		public asap(): void {
+			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
+				if (this.tasks[i].mode == 'running') {
+					window.setTimeout((): void => { this.tasks[i].asap(); });
+				}
+			}
+		}
+
+		public finish(): void {
+			TaskCtrl.finish(this);
+			this.tasks.length = 0;
 		}
 	}
 
