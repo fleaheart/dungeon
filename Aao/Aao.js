@@ -46,14 +46,21 @@ var Aao;
         };
         return Character;
     }());
+    var GameField = (function () {
+        function GameField() {
+            this.backGround = document.createElement('IMG');
+            this.field = new Array();
+        }
+        return GameField;
+    }());
     var GameBoard = (function () {
         function GameBoard() {
             this.fieldAscii = null;
             this.objectAscii = null;
             this.debug = null;
             this.fieldGraph = document.createElement('DIV');
-            this.backGround = document.createElement('IMG');
-            this.nextBackGround = document.createElement('IMG');
+            this.current = new GameField();
+            this.next = new GameField();
         }
         return GameBoard;
     }());
@@ -61,8 +68,6 @@ var Aao;
     var $field1 = new Array();
     var $field2 = new Array();
     var $field3 = new Array();
-    var $field = new Array();
-    var $nextField = new Array();
     var $koudouArray = new Array();
     var $lastKeyCode;
     var $frameTiming = 16;
@@ -122,10 +127,10 @@ var Aao;
     $field3.push('*                                      *');
     $field3.push('****************************************');
     for (var i = 0; i < $field1.length; i++) {
-        $field.push($field1[i]);
+        _gameBoard.current.field.push($field1[i]);
     }
     var $asciiPosition = new Array();
-    for (var i = 0; i < $field.length; i++) {
+    for (var i = 0; i < _gameBoard.current.field.length; i++) {
         $asciiPosition.push('                                        ');
     }
     var $hougaku = {
@@ -140,17 +145,17 @@ var Aao;
         $asciiPosition[y] = swp;
     }
     function get(x, y) {
-        if (y < 0 || $field.length <= y) {
+        if (y < 0 || _gameBoard.current.field.length <= y) {
             return '';
         }
-        if (x < 0 || $field[y].length <= x) {
+        if (x < 0 || _gameBoard.current.field[y].length <= x) {
             return '';
         }
-        return $field[y].charAt(x);
+        return _gameBoard.current.field[y].charAt(x);
     }
     function display() {
         if (_gameBoard.fieldAscii != null) {
-            _gameBoard.fieldAscii.innerHTML = $field.join('<br>').replace(/ /g, '&nbsp;');
+            _gameBoard.fieldAscii.innerHTML = _gameBoard.current.field.join('<br>').replace(/ /g, '&nbsp;');
         }
         if (_gameBoard.objectAscii != null) {
             _gameBoard.objectAscii.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
@@ -175,50 +180,50 @@ var Aao;
                     if (koudou.type == 'idou') {
                         $pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
                         if ($pc.muki == 'n' && $pc.y <= 0) {
-                            _gameBoard.nextBackGround.src = 'map2.png';
-                            _gameBoard.nextBackGround.style.position = 'absolute';
-                            _gameBoard.nextBackGround.style.top = '-480px';
-                            _gameBoard.nextBackGround.style.left = '0px';
-                            _gameBoard.backGround.style.top = '0px';
-                            _gameBoard.backGround.style.left = '0px';
-                            $nextField = $field2;
+                            _gameBoard.next.backGround.src = 'map2.png';
+                            _gameBoard.next.backGround.style.position = 'absolute';
+                            _gameBoard.next.backGround.style.top = '-480px';
+                            _gameBoard.next.backGround.style.left = '0px';
+                            _gameBoard.current.backGround.style.top = '0px';
+                            _gameBoard.current.backGround.style.left = '0px';
+                            _gameBoard.next.field = $field2;
                             $hensu = { muki: 'n', frame: 0, frameend: 30 };
-                            _gameBoard.nextBackGround.style.display = '';
+                            _gameBoard.next.backGround.style.display = '';
                             $mode = 'scrl';
                         }
                         if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
-                            _gameBoard.nextBackGround.src = 'map3.png';
-                            _gameBoard.nextBackGround.style.position = 'absolute';
-                            _gameBoard.nextBackGround.style.top = '0px';
-                            _gameBoard.nextBackGround.style.left = '640px';
-                            _gameBoard.backGround.style.top = '0px';
-                            _gameBoard.backGround.style.left = '0px';
-                            $nextField = $field3;
+                            _gameBoard.next.backGround.src = 'map3.png';
+                            _gameBoard.next.backGround.style.position = 'absolute';
+                            _gameBoard.next.backGround.style.top = '0px';
+                            _gameBoard.next.backGround.style.left = '640px';
+                            _gameBoard.current.backGround.style.top = '0px';
+                            _gameBoard.current.backGround.style.left = '0px';
+                            _gameBoard.next.field = $field3;
                             $hensu = { muki: 'e', frame: 0, frameend: 40 };
-                            _gameBoard.nextBackGround.style.display = '';
+                            _gameBoard.next.backGround.style.display = '';
                             $mode = 'scrl';
                         }
                         if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
-                            _gameBoard.nextBackGround.src = 'map1.png';
-                            _gameBoard.nextBackGround.style.top = '480px';
-                            _gameBoard.nextBackGround.style.left = '0px';
-                            _gameBoard.backGround.style.top = '0px';
-                            _gameBoard.backGround.style.left = '0px';
-                            $nextField = $field1;
+                            _gameBoard.next.backGround.src = 'map1.png';
+                            _gameBoard.next.backGround.style.top = '480px';
+                            _gameBoard.next.backGround.style.left = '0px';
+                            _gameBoard.current.backGround.style.top = '0px';
+                            _gameBoard.current.backGround.style.left = '0px';
+                            _gameBoard.next.field = $field1;
                             $hensu = { muki: 's', frame: 0, frameend: 30 };
-                            _gameBoard.nextBackGround.style.display = '';
+                            _gameBoard.next.backGround.style.display = '';
                             $mode = 'scrl';
                         }
                         if ($pc.muki == 'w' && $pc.x <= 0) {
-                            _gameBoard.nextBackGround.src = 'map2.png';
-                            _gameBoard.nextBackGround.style.position = 'absolute';
-                            _gameBoard.nextBackGround.style.top = '0px';
-                            _gameBoard.nextBackGround.style.left = '-640px';
-                            _gameBoard.backGround.style.top = '0px';
-                            _gameBoard.backGround.style.left = '0px';
-                            $nextField = $field2;
+                            _gameBoard.next.backGround.src = 'map2.png';
+                            _gameBoard.next.backGround.style.position = 'absolute';
+                            _gameBoard.next.backGround.style.top = '0px';
+                            _gameBoard.next.backGround.style.left = '-640px';
+                            _gameBoard.current.backGround.style.top = '0px';
+                            _gameBoard.current.backGround.style.left = '0px';
+                            _gameBoard.next.field = $field2;
                             $hensu = { muki: 'w', frame: 0, frameend: 40 };
-                            _gameBoard.nextBackGround.style.display = '';
+                            _gameBoard.next.backGround.style.display = '';
                             $mode = 'scrl';
                         }
                     }
@@ -250,30 +255,30 @@ var Aao;
             }
             $hensu.frame++;
             if ($hensu.muki == 'n') {
-                _gameBoard.nextBackGround.style.top = (-480 + 16 * $hensu.frame) + 'px';
-                _gameBoard.backGround.style.top = (0 + 16 * $hensu.frame) + 'px';
+                _gameBoard.next.backGround.style.top = (-480 + 16 * $hensu.frame) + 'px';
+                _gameBoard.current.backGround.style.top = (0 + 16 * $hensu.frame) + 'px';
                 $pc.moveBy(0, 15);
             }
             else if ($hensu.muki == 'e') {
-                _gameBoard.nextBackGround.style.left = (640 - 16 * $hensu.frame) + 'px';
-                _gameBoard.backGround.style.left = (0 - 16 * $hensu.frame) + 'px';
+                _gameBoard.next.backGround.style.left = (640 - 16 * $hensu.frame) + 'px';
+                _gameBoard.current.backGround.style.left = (0 - 16 * $hensu.frame) + 'px';
                 $pc.moveBy(-15.2, 0);
             }
             else if ($hensu.muki == 's') {
-                _gameBoard.nextBackGround.style.top = (480 - 16 * $hensu.frame) + 'px';
-                _gameBoard.backGround.style.top = (0 - 16 * $hensu.frame) + 'px';
+                _gameBoard.next.backGround.style.top = (480 - 16 * $hensu.frame) + 'px';
+                _gameBoard.current.backGround.style.top = (0 - 16 * $hensu.frame) + 'px';
                 $pc.moveBy(0, -15);
             }
             else if ($hensu.muki == 'w') {
-                _gameBoard.nextBackGround.style.left = (-640 + 16 * $hensu.frame) + 'px';
-                _gameBoard.backGround.style.left = (0 + 16 * $hensu.frame) + 'px';
+                _gameBoard.next.backGround.style.left = (-640 + 16 * $hensu.frame) + 'px';
+                _gameBoard.current.backGround.style.left = (0 + 16 * $hensu.frame) + 'px';
                 $pc.moveBy(15.2, 0);
             }
             if ($hensu.frameend <= $hensu.frame) {
-                _gameBoard.backGround.src = _gameBoard.nextBackGround.src;
-                _gameBoard.backGround.style.top = '0px';
-                _gameBoard.backGround.style.left = '0px';
-                _gameBoard.nextBackGround.style.display = 'none';
+                _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
+                _gameBoard.current.backGround.style.top = '0px';
+                _gameBoard.current.backGround.style.left = '0px';
+                _gameBoard.next.backGround.style.display = 'none';
                 if ($hensu.muki == 'n') {
                     $pc.moveTo($pc.x, 480 - 32);
                 }
@@ -286,8 +291,8 @@ var Aao;
                 else if ($hensu.muki == 'w') {
                     $pc.moveTo(640 - 32, $pc.y);
                 }
-                for (var i = 0; i < $field.length; i++) {
-                    $field[i] = $nextField[i];
+                for (var i = 0; i < _gameBoard.current.field.length; i++) {
+                    _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
                 display();
                 $mode = 'free';
@@ -345,12 +350,12 @@ var Aao;
         {
             var elm = _gameBoard.fieldGraph;
             elm.className = 'fieldGraph';
-            _gameBoard.backGround.src = 'map1.png';
-            _gameBoard.backGround.style.position = 'absolute';
-            _gameBoard.nextBackGround.style.position = 'absolute';
-            _gameBoard.nextBackGround.style.display = 'none';
-            elm.appendChild(_gameBoard.backGround);
-            elm.appendChild(_gameBoard.nextBackGround);
+            _gameBoard.current.backGround.src = 'map1.png';
+            _gameBoard.current.backGround.style.position = 'absolute';
+            _gameBoard.next.backGround.style.position = 'absolute';
+            _gameBoard.next.backGround.style.display = 'none';
+            elm.appendChild(_gameBoard.current.backGround);
+            elm.appendChild(_gameBoard.next.backGround);
             mainBoard.appendChild(elm);
         }
         {
