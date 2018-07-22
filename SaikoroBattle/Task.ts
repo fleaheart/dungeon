@@ -34,7 +34,7 @@ namespace Task {
 		}
 	}
 
-	export class Tasks implements Task {
+	export class SequentialTasks implements Task {
 		readonly name: string = 'Tasks';
 		mode: ModeType = TaskCtrl.DEFAULT_MODE;
 		tasks: Array<Task> = new Array<Task>();

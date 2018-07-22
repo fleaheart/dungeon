@@ -360,7 +360,7 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -405,7 +405,7 @@ namespace SaikoroBattle {
 		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
 		private actionList: Array<Action>;
-		private tasks = new Task.Tasks();
+		private tasks = new Task.ParallelTasks();
 
 		constructor(gameStatus: GameStatus) {
 			for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
@@ -415,6 +415,7 @@ namespace SaikoroBattle {
 		}
 
 		private setActionBox(player: Player) {
+			let tasks = new Task.SequentialTasks();
 			for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
 				let actionBoxList: Array<HTMLDivElement>;
 				if (attackDefense == 1) {
@@ -429,10 +430,11 @@ namespace SaikoroBattle {
 					let box = actionBoxList[i];
 					let action: Action = this.actionList[i];
 
-					this.tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
-					this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
+					tasks.add(new Task.FunctionTask(() => { this.setBox(box, action); }, null));
+					tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
 				}
 			}
+			this.tasks.add(tasks);
 		}
 
 		public setBox(box: HTMLDivElement, action: Action) {
@@ -579,9 +581,7 @@ namespace SaikoroBattle {
 			window.setTimeout(() => {
 				let tasks: Task.ParallelTasks = new Task.ParallelTasks();
 				tasks.add(new Task.FunctionTask(debugClear, null));
-				for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
-					tasks.add(new Task.FunctionTask(actionSelectReset, this.gameStatus.players[i]));
-				}
+				tasks.add(new Task.FunctionTask(actionSelectReset, this.gameStatus.players));
 				tasks.add(new Task.FunctionTask(debug, '攻撃順判定'));
 				tasks.do();
 			});
@@ -672,7 +672,7 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -689,8 +689,7 @@ namespace SaikoroBattle {
 			}
 
 			this.tasks.add(new Task.FunctionTask(debugClear, null));
-			this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.attacker));
-			this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.defender));
+			this.tasks.add(new Task.FunctionTask(actionSelectReset, gameStatus.players));
 			this.tasks.add(new Task.FunctionTask(debug, this.gameStatus.attacker.character.name + 'の攻撃'));
 			this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
 		}
@@ -731,7 +730,7 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -781,7 +780,7 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -871,19 +870,22 @@ namespace SaikoroBattle {
 		}
 	}
 
-	function actionSelectReset(player: Player) {
-		for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
-			let actionBoxList: Array<HTMLDivElement>;
-			if (attackDefense == 1) {
-				actionBoxList = player.attackBoxList;
-			} else {
-				actionBoxList = player.defenseBoxList;
-			}
-			for (let i = 0; i < 6; i++) {
-				let box = actionBoxList[i];
+	function actionSelectReset(players: Array<Player>) {
+		for (let i = 0, len: number = players.length; i < len; i++) {
+			let player: Player = players[i];
+			for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
+				let actionBoxList: Array<HTMLDivElement>;
+				if (attackDefense == 1) {
+					actionBoxList = player.attackBoxList;
+				} else {
+					actionBoxList = player.defenseBoxList;
+				}
+				for (let i = 0; i < 6; i++) {
+					let box = actionBoxList[i];
 
-				box.classList.remove('selected_attack');
-				box.classList.remove('selected_defense');
+					box.classList.remove('selected_attack');
+					box.classList.remove('selected_defense');
+				}
 			}
 		}
 	}

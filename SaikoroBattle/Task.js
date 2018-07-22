@@ -23,22 +23,22 @@ var Task;
         return TaskCtrl;
     }());
     Task.TaskCtrl = TaskCtrl;
-    var Tasks = (function () {
-        function Tasks() {
+    var SequentialTasks = (function () {
+        function SequentialTasks() {
             this.name = 'Tasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
             this.step = -1;
         }
-        Tasks.prototype.add = function (task) {
+        SequentialTasks.prototype.add = function (task) {
             this.tasks.push(task);
         };
-        Tasks.prototype.do = function () {
+        SequentialTasks.prototype.do = function () {
             TaskCtrl.do(this);
             this.step = -1;
             this.next();
         };
-        Tasks.prototype.next = function () {
+        SequentialTasks.prototype.next = function () {
             var _this = this;
             if (this.mode != 'running') {
                 return;
@@ -52,7 +52,7 @@ var Task;
             task.do();
             TaskCtrl.wait(task, function () { _this.next(); });
         };
-        Tasks.prototype.asap = function () {
+        SequentialTasks.prototype.asap = function () {
             if (this.step == -1) {
                 this.step = 0;
             }
@@ -65,14 +65,14 @@ var Task;
             }
             this.finish();
         };
-        Tasks.prototype.finish = function () {
+        SequentialTasks.prototype.finish = function () {
             TaskCtrl.finish(this);
             this.tasks.length = 0;
             this.step = -1;
         };
-        return Tasks;
+        return SequentialTasks;
     }());
-    Task.Tasks = Tasks;
+    Task.SequentialTasks = SequentialTasks;
     var ParallelTasks = (function () {
         function ParallelTasks() {
             this.name = 'Tasks';

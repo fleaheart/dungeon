@@ -60,7 +60,7 @@ namespace TaskTest {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -108,7 +108,7 @@ namespace TaskTest {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -157,7 +157,7 @@ namespace TaskTest {
 
 		public gameStatus: GameStatus;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -192,7 +192,7 @@ namespace TaskTest {
 		public readonly name: string = 'NaibuTasks';
 		public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		private tasks = new Task.Tasks();
+		private tasks = new Task.SequentialTasks();
 
 		constructor() {
 			this.tasks.add(new Task.FunctionTask(dbg, 'naibu 1'));

@@ -51,7 +51,7 @@ var TaskTest;
             var _this = this;
             this.name = 'InitGameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
                 _this.gameStatus.count += 4;
@@ -84,7 +84,7 @@ var TaskTest;
             var _this = this;
             this.name = 'SaikoroFurumadeGameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.SequentialTasks();
             this.callback = function (me) {
                 var result = getElementById('result');
                 result.innerHTML = String(me);
@@ -119,7 +119,7 @@ var TaskTest;
             var _this = this;
             this.name = 'HanteiGameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
                 _this.gameStatus.gameMode = null;
@@ -144,7 +144,7 @@ var TaskTest;
             var _this = this;
             this.name = 'NaibuTasks';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
             };
