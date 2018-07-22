@@ -210,7 +210,7 @@ namespace Aao {
 		}
 
 		do() {
-			if (_gameStatus.frameCount % 2 == 0) {
+			if (this.gameStatus.frameCount % 2 == 0) {
 
 				if (0 < $koudouArray.length) {
 
@@ -350,21 +350,23 @@ namespace Aao {
 				}
 				display();
 
-				this.gameStatus.gameMode = new FreeGameMode(_gameStatus);
+				this.gameStatus.gameMode = new FreeGameMode(this.gameStatus);
 			}
 		}
 	}
 
 	function frameCheck(): void {
-		_gameStatus.frameCount++;
+		let gameStatus: GameStatus = _gameStatus;
 
-		if (_gameStatus.gameMode == null) {
-			_gameStatus.gameMode = new FreeGameMode(_gameStatus);
+		gameStatus.frameCount++;
+
+		if (gameStatus.gameMode == null) {
+			gameStatus.gameMode = new FreeGameMode(gameStatus);
 		}
 
 		if (_gameBoard.debug != null) {
 			_gameBoard.debug.innerHTML =
-				_gameStatus.gameMode.name + '<br>' + _gameStatus.frameCount + '<br>' + $lastKeyCode
+				gameStatus.gameMode.name + '<br>' + gameStatus.frameCount + '<br>' + $lastKeyCode
 				+ '<br>' + $pc.x + ',' + $pc.y
 				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
 				;
@@ -374,7 +376,7 @@ namespace Aao {
 			return;
 		}
 
-		_gameStatus.gameMode.do();
+		gameStatus.gameMode.do();
 
 		setTimeout(frameCheck, FRAME_TIMING);
 	}

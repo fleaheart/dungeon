@@ -167,7 +167,7 @@ var Aao;
             this.gameStatus = gameStatus;
         }
         FreeGameMode.prototype.do = function () {
-            if (_gameStatus.frameCount % 2 == 0) {
+            if (this.gameStatus.frameCount % 2 == 0) {
                 if (0 < $koudouArray.length) {
                     var koudou = $koudouArray.shift();
                     if (koudou.type == 'idou') {
@@ -270,26 +270,27 @@ var Aao;
                     _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
                 display();
-                this.gameStatus.gameMode = new FreeGameMode(_gameStatus);
+                this.gameStatus.gameMode = new FreeGameMode(this.gameStatus);
             }
         };
         return ScrollGameMode;
     }());
     function frameCheck() {
-        _gameStatus.frameCount++;
-        if (_gameStatus.gameMode == null) {
-            _gameStatus.gameMode = new FreeGameMode(_gameStatus);
+        var gameStatus = _gameStatus;
+        gameStatus.frameCount++;
+        if (gameStatus.gameMode == null) {
+            gameStatus.gameMode = new FreeGameMode(gameStatus);
         }
         if (_gameBoard.debug != null) {
             _gameBoard.debug.innerHTML =
-                _gameStatus.gameMode.name + '<br>' + _gameStatus.frameCount + '<br>' + $lastKeyCode
+                gameStatus.gameMode.name + '<br>' + gameStatus.frameCount + '<br>' + $lastKeyCode
                     + '<br>' + $pc.x + ',' + $pc.y
                     + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY();
         }
         if ($lastKeyCode == 27) {
             return;
         }
-        _gameStatus.gameMode.do();
+        gameStatus.gameMode.do();
         setTimeout(frameCheck, FRAME_TIMING);
     }
     function move_tate(hougaku) {
