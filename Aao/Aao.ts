@@ -92,9 +92,8 @@ namespace Aao {
 
 	let $koudouArray = new Array();
 	let $lastKeyCode: number;
-	let $frameTiming: number = 16;
-	let $frameCount: number = 0;
-	let $dbg: string = '';
+
+	const FRAME_TIMING: number = 16;
 
 	let $pc: Character;
 
@@ -191,6 +190,7 @@ namespace Aao {
 		gameMode: GameMode | null = null;
 		player: Character = new Character('');
 
+		frameCount: number = 0;
 	}
 	let _gameStatus: GameStatus = new GameStatus();
 
@@ -210,7 +210,7 @@ namespace Aao {
 		}
 
 		do() {
-			if ($frameCount % 2 == 0) {
+			if (_gameStatus.frameCount % 2 == 0) {
 
 				if (0 < $koudouArray.length) {
 
@@ -356,7 +356,7 @@ namespace Aao {
 	}
 
 	function frameCheck(): void {
-		$frameCount++;
+		_gameStatus.frameCount++;
 
 		if (_gameStatus.gameMode == null) {
 			_gameStatus.gameMode = new FreeGameMode(_gameStatus);
@@ -364,10 +364,9 @@ namespace Aao {
 
 		if (_gameBoard.debug != null) {
 			_gameBoard.debug.innerHTML =
-				_gameStatus.gameMode.name + '<br>' + $frameCount + '<br>' + $lastKeyCode
+				_gameStatus.gameMode.name + '<br>' + _gameStatus.frameCount + '<br>' + $lastKeyCode
 				+ '<br>' + $pc.x + ',' + $pc.y
 				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
-				+ '<br>[' + $dbg + ']'
 				;
 		}
 
@@ -377,7 +376,7 @@ namespace Aao {
 
 		_gameStatus.gameMode.do();
 
-		setTimeout(arguments.callee, $frameTiming);
+		setTimeout(frameCheck, FRAME_TIMING);
 	}
 
 	function move_tate(hougaku: MukiType): void {
@@ -545,8 +544,7 @@ namespace Aao {
 
 		display();
 
-		$frameCount = 0;
-		setTimeout(frameCheck, $frameTiming);
+		setTimeout(frameCheck, FRAME_TIMING);
 	});
 
 	function initMainBoard(): void {

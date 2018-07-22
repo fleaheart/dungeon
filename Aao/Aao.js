@@ -70,9 +70,7 @@ var Aao;
     var $field3 = new Array();
     var $koudouArray = new Array();
     var $lastKeyCode;
-    var $frameTiming = 16;
-    var $frameCount = 0;
-    var $dbg = '';
+    var FRAME_TIMING = 16;
     var $pc;
     $field1.push('**************************      ********');
     $field1.push('*        **                            *');
@@ -158,6 +156,7 @@ var Aao;
         function GameStatus() {
             this.gameMode = null;
             this.player = new Character('');
+            this.frameCount = 0;
         }
         return GameStatus;
     }());
@@ -168,7 +167,7 @@ var Aao;
             this.gameStatus = gameStatus;
         }
         FreeGameMode.prototype.do = function () {
-            if ($frameCount % 2 == 0) {
+            if (_gameStatus.frameCount % 2 == 0) {
                 if (0 < $koudouArray.length) {
                     var koudou = $koudouArray.shift();
                     if (koudou.type == 'idou') {
@@ -277,22 +276,21 @@ var Aao;
         return ScrollGameMode;
     }());
     function frameCheck() {
-        $frameCount++;
+        _gameStatus.frameCount++;
         if (_gameStatus.gameMode == null) {
             _gameStatus.gameMode = new FreeGameMode(_gameStatus);
         }
         if (_gameBoard.debug != null) {
             _gameBoard.debug.innerHTML =
-                _gameStatus.gameMode.name + '<br>' + $frameCount + '<br>' + $lastKeyCode
+                _gameStatus.gameMode.name + '<br>' + _gameStatus.frameCount + '<br>' + $lastKeyCode
                     + '<br>' + $pc.x + ',' + $pc.y
-                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
-                    + '<br>[' + $dbg + ']';
+                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY();
         }
         if ($lastKeyCode == 27) {
             return;
         }
         _gameStatus.gameMode.do();
-        setTimeout(arguments.callee, $frameTiming);
+        setTimeout(frameCheck, FRAME_TIMING);
     }
     function move_tate(hougaku) {
         var check_ascii_x = Math.floor(($pc.x + 0) / 16);
@@ -419,8 +417,7 @@ var Aao;
         _gameStatus.player = $pc;
         put($pc);
         display();
-        $frameCount = 0;
-        setTimeout(frameCheck, $frameTiming);
+        setTimeout(frameCheck, FRAME_TIMING);
     });
     function initMainBoard() {
         var mainBoard = Kyoutsu.getElementById('mainBoard');
