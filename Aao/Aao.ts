@@ -1,7 +1,7 @@
 namespace Aao {
 	let KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
 
-	class Charactor {
+	class Character {
 		chr: string;
 		img: HTMLImageElement;
 		x: number;
@@ -17,7 +17,7 @@ namespace Aao {
 			this.muki = 'e'
 		}
 
-		public moveTo(x: number, y: number): void {
+		moveTo(x: number, y: number): void {
 			let dx: number = x - this.x;
 			let dy: number = y - this.y;
 			this.moveBy(dx, dy);
@@ -25,7 +25,7 @@ namespace Aao {
 			this.y = y;
 		}
 
-		public moveBy(dx: number, dy: number): void {
+		moveBy(dx: number, dy: number): void {
 			if (dx < 0) {
 				this.img.src = 'player3.png';
 			}
@@ -43,11 +43,11 @@ namespace Aao {
 			this.refrectStyle();
 		}
 
-		public asciiPosX(): number {
+		asciiPosX(): number {
 			return Math.floor((this.x) / 16);
 		}
 
-		public asciiPosY(): number {
+		asciiPosY(): number {
 			return Math.floor((this.y) / 32);
 		}
 
@@ -58,10 +58,23 @@ namespace Aao {
 
 	}
 
-	let $debugElm: HTMLElement | null = null;
-	let $fieldAsciiElm: HTMLElement | null = null;
-	let $objectAsciiElm: HTMLElement | null = null;
-	let $fieldGraphElm: HTMLElement | null = null;
+	class GameBoard {
+		fieldGraph: HTMLDivElement;
+		fieldAscii: HTMLDivElement | null = null;
+		objectAscii: HTMLDivElement | null = null;
+		debug: HTMLDivElement | null = null;
+
+		backGround: HTMLImageElement;
+		nextBackGround: HTMLImageElement;
+
+		constructor() {
+			this.fieldGraph = <HTMLDivElement>document.createElement('DIV');
+
+			this.backGround = <HTMLImageElement>document.createElement('IMG');
+			this.nextBackGround = <HTMLImageElement>document.createElement('IMG');
+		}
+	}
+	let _gameBoard: GameBoard = new GameBoard();
 
 	let $field1: string[] = new Array();
 	let $field2: string[] = new Array();
@@ -70,9 +83,6 @@ namespace Aao {
 	let $field: string[] = new Array();
 	let $nextField: string[] = new Array();
 
-	let $backGround: HTMLImageElement = <HTMLImageElement>document.createElement('IMG');
-	let $nextBackGround: HTMLImageElement = <HTMLImageElement>document.createElement('IMG');
-
 	let $koudouArray = new Array();
 	let $lastKeyCode: number;
 	let $frameTiming: number = 16;
@@ -80,7 +90,7 @@ namespace Aao {
 	let $mode: string;
 	let $dbg: string = '';
 
-	let $pc: Charactor;
+	let $pc: Character;
 
 	class Hensu {
 		muki: string;
@@ -150,7 +160,7 @@ namespace Aao {
 		n: { x: 0, y: -1 }, e: { x: 1, y: 0 }, s: { x: 0, y: 1 }, w: { x: -1, y: 0 }
 	}
 
-	function put(obj: Charactor): void {
+	function put(obj: Character): void {
 		putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
 	}
 
@@ -171,19 +181,19 @@ namespace Aao {
 	}
 
 	function display(): void {
-		if ($fieldAsciiElm != null) {
-			$fieldAsciiElm.innerHTML = $field.join('<br>').replace(/ /g, '&nbsp;');
+		if (_gameBoard.fieldAscii != null) {
+			_gameBoard.fieldAscii.innerHTML = $field.join('<br>').replace(/ /g, '&nbsp;');
 		}
-		if ($objectAsciiElm != null) {
-			$objectAsciiElm.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
+		if (_gameBoard.objectAscii != null) {
+			_gameBoard.objectAscii.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
 		}
 	}
 
 	function frameCheck(): void {
 		$frameCount++;
 
-		if ($debugElm != null) {
-			$debugElm.innerHTML =
+		if (_gameBoard.debug != null) {
+			_gameBoard.debug.innerHTML =
 				$mode + '<br>' + $frameCount + '<br>' + $lastKeyCode
 				+ '<br>' + $pc.x + ',' + $pc.y
 				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
@@ -206,69 +216,69 @@ namespace Aao {
 						$pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
 
 						if ($pc.muki == 'n' && $pc.y <= 0) {
-							$nextBackGround.src = 'map2.png';
-							$nextBackGround.style.position = 'absolute';
-							$nextBackGround.style.top = '-480px';
-							$nextBackGround.style.left = '0px';
+							_gameBoard.nextBackGround.src = 'map2.png';
+							_gameBoard.nextBackGround.style.position = 'absolute';
+							_gameBoard.nextBackGround.style.top = '-480px';
+							_gameBoard.nextBackGround.style.left = '0px';
 
-							$backGround.style.top = '0px';
-							$backGround.style.left = '0px';
+							_gameBoard.backGround.style.top = '0px';
+							_gameBoard.backGround.style.left = '0px';
 
 							$nextField = $field2;
 
 							$hensu = { muki: 'n', frame: 0, frameend: 30 };
 
-							$nextBackGround.style.display = '';
+							_gameBoard.nextBackGround.style.display = '';
 
 							$mode = 'scrl';
 						}
 						if ($pc.muki == 'e' && 640 - 32 <= $pc.x) {
-							$nextBackGround.src = 'map3.png';
-							$nextBackGround.style.position = 'absolute';
-							$nextBackGround.style.top = '0px';
-							$nextBackGround.style.left = '640px';
+							_gameBoard.nextBackGround.src = 'map3.png';
+							_gameBoard.nextBackGround.style.position = 'absolute';
+							_gameBoard.nextBackGround.style.top = '0px';
+							_gameBoard.nextBackGround.style.left = '640px';
 
-							$backGround.style.top = '0px';
-							$backGround.style.left = '0px';
+							_gameBoard.backGround.style.top = '0px';
+							_gameBoard.backGround.style.left = '0px';
 
 							$nextField = $field3;
 
 							$hensu = { muki: 'e', frame: 0, frameend: 40 };
 
-							$nextBackGround.style.display = '';
+							_gameBoard.nextBackGround.style.display = '';
 
 							$mode = 'scrl';
 						}
 						if ($pc.muki == 's' && 480 - 32 <= $pc.y) {
-							$nextBackGround.src = 'map1.png';
-							$nextBackGround.style.top = '480px';
-							$nextBackGround.style.left = '0px';
+							_gameBoard.nextBackGround.src = 'map1.png';
+							_gameBoard.nextBackGround.style.top = '480px';
+							_gameBoard.nextBackGround.style.left = '0px';
 
-							$backGround.style.top = '0px';
-							$backGround.style.left = '0px';
+							_gameBoard.backGround.style.top = '0px';
+							_gameBoard.backGround.style.left = '0px';
 
 							$nextField = $field1;
 
 							$hensu = { muki: 's', frame: 0, frameend: 30 };
 
-							$nextBackGround.style.display = '';
+							_gameBoard.nextBackGround.style.display = '';
 
 							$mode = 'scrl';
 						}
 						if ($pc.muki == 'w' && $pc.x <= 0) {
-							$nextBackGround.src = 'map2.png';
-							$nextBackGround.style.position = 'absolute';
-							$nextBackGround.style.top = '0px';
-							$nextBackGround.style.left = '-640px';
+							_gameBoard.nextBackGround.src = 'map2.png';
+							_gameBoard.nextBackGround.style.position = 'absolute';
+							_gameBoard.nextBackGround.style.top = '0px';
+							_gameBoard.nextBackGround.style.left = '-640px';
 
-							$backGround.style.top = '0px';
-							$backGround.style.left = '0px';
+							_gameBoard.backGround.style.top = '0px';
+							_gameBoard.backGround.style.left = '0px';
 
 							$nextField = $field2;
 
 							$hensu = { muki: 'w', frame: 0, frameend: 40 };
 
-							$nextBackGround.style.display = '';
+							_gameBoard.nextBackGround.style.display = '';
 
 							$mode = 'scrl';
 						}
@@ -303,28 +313,28 @@ namespace Aao {
 
 			$hensu.frame++;
 			if ($hensu.muki == 'n') {
-				$nextBackGround.style.top = (-480 + 16 * $hensu.frame) + 'px';
-				$backGround.style.top = (0 + 16 * $hensu.frame) + 'px';
+				_gameBoard.nextBackGround.style.top = (-480 + 16 * $hensu.frame) + 'px';
+				_gameBoard.backGround.style.top = (0 + 16 * $hensu.frame) + 'px';
 				$pc.moveBy(0, 15);
 			} else if ($hensu.muki == 'e') {
-				$nextBackGround.style.left = (640 - 16 * $hensu.frame) + 'px';
-				$backGround.style.left = (0 - 16 * $hensu.frame) + 'px';
+				_gameBoard.nextBackGround.style.left = (640 - 16 * $hensu.frame) + 'px';
+				_gameBoard.backGround.style.left = (0 - 16 * $hensu.frame) + 'px';
 				$pc.moveBy(-15.2, 0);
 			} else if ($hensu.muki == 's') {
-				$nextBackGround.style.top = (480 - 16 * $hensu.frame) + 'px';
-				$backGround.style.top = (0 - 16 * $hensu.frame) + 'px';
+				_gameBoard.nextBackGround.style.top = (480 - 16 * $hensu.frame) + 'px';
+				_gameBoard.backGround.style.top = (0 - 16 * $hensu.frame) + 'px';
 				$pc.moveBy(0, -15);
 			} else if ($hensu.muki == 'w') {
-				$nextBackGround.style.left = (-640 + 16 * $hensu.frame) + 'px';
-				$backGround.style.left = (0 + 16 * $hensu.frame) + 'px';
+				_gameBoard.nextBackGround.style.left = (-640 + 16 * $hensu.frame) + 'px';
+				_gameBoard.backGround.style.left = (0 + 16 * $hensu.frame) + 'px';
 				$pc.moveBy(15.2, 0);
 			}
 
 			if ($hensu.frameend <= $hensu.frame) {
-				$backGround.src = $nextBackGround.src;
-				$backGround.style.top = '0px';
-				$backGround.style.left = '0px';
-				$nextBackGround.style.display = 'none';
+				_gameBoard.backGround.src = _gameBoard.nextBackGround.src;
+				_gameBoard.backGround.style.top = '0px';
+				_gameBoard.backGround.style.left = '0px';
+				_gameBoard.nextBackGround.style.display = 'none';
 
 				if ($hensu.muki == 'n') {
 					$pc.moveTo($pc.x, 480 - 32);
@@ -381,29 +391,7 @@ namespace Aao {
 	}
 
 	window.addEventListener('load', (): void => {
-		let koukoku: HTMLElement | null = document.getElementById('y_gc_div_uadcntr');
-		if (koukoku != null) {
-			koukoku.style.zIndex = '0';
-			koukoku.style.position = 'absolute';
-			koukoku.style.top = '600px';
-		}
-
-		$debugElm = document.getElementById('debug');
-		if ($debugElm != null) {
-			$debugElm.style.position = 'absolute';
-			$debugElm.style.top = '180px';
-			$debugElm.style.left = '660px';
-		}
-
-		$fieldAsciiElm = document.getElementById('divFieldAscii');
-		if ($fieldAsciiElm != null) {
-			$fieldAsciiElm.style.left = '660px'
-		}
-
-		$objectAsciiElm = document.getElementById('divObjectAscii');
-		if ($objectAsciiElm != null) {
-			$objectAsciiElm.style.left = '660px'
-		}
+		initMainBoard();
 
 		document.addEventListener('keydown', (e: KeyboardEvent): void => {
 			$lastKeyCode = e.keyCode;
@@ -415,22 +403,9 @@ namespace Aao {
 			}
 		});
 
-		$backGround.src = 'map1.png';
-		$backGround.style.position = 'absolute';
-
-		$nextBackGround.style.position = 'absolute';
-		$nextBackGround.style.display = 'none';
-
-		$fieldGraphElm = document.getElementById('divFieldGraph');
-		if ($fieldGraphElm == null) {
-			throw new Error();
-		}
-		$fieldGraphElm.appendChild($backGround);
-		$fieldGraphElm.appendChild($nextBackGround);
-
-		$pc = new Charactor('A');
+		$pc = new Character('A');
 		$pc.moveTo(18 * 16, 2 * 32);
-		$fieldGraphElm.appendChild($pc.img);
+		_gameBoard.fieldGraph.appendChild($pc.img);
 
 		put($pc);
 
@@ -441,4 +416,53 @@ namespace Aao {
 		setTimeout(frameCheck, $frameTiming);
 	});
 
+	function initMainBoard(): void {
+		let mainBoard: HTMLElement = Kyoutsu.getElementById('mainBoard');
+
+		{
+			let elm: HTMLDivElement = _gameBoard.fieldGraph;
+			elm.className = 'fieldGraph';
+
+			_gameBoard.backGround.src = 'map1.png';
+			_gameBoard.backGround.style.position = 'absolute';
+
+			_gameBoard.nextBackGround.style.position = 'absolute';
+			_gameBoard.nextBackGround.style.display = 'none';
+
+			elm.appendChild(_gameBoard.backGround);
+			elm.appendChild(_gameBoard.nextBackGround);
+
+			mainBoard.appendChild(elm);
+		}
+
+		{
+			let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+			elm.className = 'fieldAscii';
+			elm.style.left = '660px'
+
+			_gameBoard.fieldAscii = elm;
+
+			mainBoard.appendChild(elm);
+		}
+		{
+			let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+			elm.className = 'fieldAscii';
+			elm.style.left = '660px'
+			elm.style.color = 'red';
+
+			_gameBoard.objectAscii = elm;
+
+			mainBoard.appendChild(elm);
+		}
+		{
+			let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+			elm.style.position = 'absolute';
+			elm.style.top = '180px';
+			elm.style.left = '660px';
+
+			_gameBoard.debug = elm;
+
+			mainBoard.appendChild(elm);
+		}
+	}
 }
