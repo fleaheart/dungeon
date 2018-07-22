@@ -423,7 +423,7 @@ var SaikoroBattle;
             var _this = this;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Task.Tasks();
+            this.tasks = new Task.ParallelTasks();
             this.order = new Array();
             this.orderEntryList = new Array();
             this.callback = function (playerIdx, me) {
@@ -503,6 +503,7 @@ var SaikoroBattle;
         }
         KougekiJunjoHandanMode.prototype.orderEntry = function () {
             var _this = this;
+            this.tasks.tasks.length = 0;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 if (this.orderEntryList[i].entry) {
                     (function (playerIdx) {
@@ -515,7 +516,7 @@ var SaikoroBattle;
             var _this = this;
             Task.TaskCtrl.do(this);
             window.setTimeout(function () {
-                var tasks = new Task.Tasks();
+                var tasks = new Task.ParallelTasks();
                 tasks.add(new Task.FunctionTask(debugClear, null));
                 for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
                     tasks.add(new Task.FunctionTask(actionSelectReset, _this.gameStatus.players[i]));
@@ -523,8 +524,8 @@ var SaikoroBattle;
                 tasks.add(new Task.FunctionTask(debug, '攻撃順判定'));
                 tasks.do();
             });
-            this.tasks.parallel();
-            Task.TaskCtrl.parallelWait(this.tasks, function () { _this.check(); });
+            this.tasks.do();
+            Task.TaskCtrl.wait(this.tasks, function () { _this.check(); });
         };
         KougekiJunjoHandanMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);

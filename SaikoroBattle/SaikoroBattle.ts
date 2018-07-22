@@ -534,7 +534,7 @@ namespace SaikoroBattle {
 
 		public gameStatus: GameStatus;
 
-		private tasks: Task.Tasks = new Task.Tasks();
+		private tasks: Task.ParallelTasks = new Task.ParallelTasks();
 
 		private order: Array<number> = new Array<number>();
 		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
@@ -552,6 +552,7 @@ namespace SaikoroBattle {
 		}
 
 		private orderEntry() {
+			this.tasks.tasks.length = 0;
 			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
 				if (this.orderEntryList[i].entry) {
 					((playerIdx: number): void => {
@@ -576,7 +577,7 @@ namespace SaikoroBattle {
 			Task.TaskCtrl.do(this);
 
 			window.setTimeout(() => {
-				let tasks: Task.Tasks = new Task.Tasks();
+				let tasks: Task.ParallelTasks = new Task.ParallelTasks();
 				tasks.add(new Task.FunctionTask(debugClear, null));
 				for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
 					tasks.add(new Task.FunctionTask(actionSelectReset, this.gameStatus.players[i]));
@@ -585,9 +586,9 @@ namespace SaikoroBattle {
 				tasks.do();
 			});
 
-			this.tasks.parallel();
+			this.tasks.do();
 
-			Task.TaskCtrl.parallelWait(this.tasks, (): void => { this.check(); });
+			Task.TaskCtrl.wait(this.tasks, (): void => { this.check(); });
 		}
 
 		public asap(): void {

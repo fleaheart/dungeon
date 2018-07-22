@@ -31,22 +31,6 @@ namespace Task {
 			}
 			window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
 		}
-
-		static parallelWait(tasks: Tasks | ParallelTasks, callback: Function): void {
-			let finish: boolean = true;
-			for (let i = 0, len: number = tasks.tasks.length; i < len; i++) {
-				if (tasks.tasks[i].mode != 'finish') {
-					finish = false;
-					break;
-				}
-			}
-			if (finish) {
-				callback();
-				return;
-			}
-
-			window.setTimeout((): void => { TaskCtrl.parallelWait(tasks, callback); }, 100);
-		}
 	}
 
 	export class Tasks implements Task {
@@ -84,18 +68,7 @@ namespace Task {
 			TaskCtrl.wait(task, (): void => { this.next(); });
 		}
 
-		public parallel() {
-			TaskCtrl.do(this);
-
-			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
-				this.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
-				window.setTimeout((): void => { this.tasks[i].do(); });
-			}
-
-			TaskCtrl.parallelWait(this, (): void => { this.finish(); });
-		}
-
-		public asap() {
+		public asap(): void {
 			if (this.step == -1) {
 				this.step = 0;
 			}
@@ -134,7 +107,7 @@ namespace Task {
 				window.setTimeout((): void => { this.tasks[i].do(); });
 			}
 
-			TaskCtrl.parallelWait(this, (): void => { this.finish(); });
+			this.wait();
 		}
 
 		public asap(): void {
@@ -143,6 +116,22 @@ namespace Task {
 					window.setTimeout((): void => { this.tasks[i].asap(); });
 				}
 			}
+		}
+
+		public wait() {
+			let finish: boolean = true;
+			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
+				if (this.tasks[i].mode != 'finish') {
+					finish = false;
+					break;
+				}
+			}
+			if (finish) {
+				this.finish();
+				return;
+			}
+
+			window.setTimeout((): void => { this.wait(); }, 100);
 		}
 
 		public finish(): void {

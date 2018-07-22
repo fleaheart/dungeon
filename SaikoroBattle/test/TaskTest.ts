@@ -249,8 +249,8 @@ namespace TaskTest {
 
 		private tasks = new Task.ParallelTasks();
 
-		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
 		private order: Array<number> = new Array<number>();
+		private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
 
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
@@ -289,8 +289,10 @@ namespace TaskTest {
 
 		public do(): void {
 			Task.TaskCtrl.do(this);
+
 			this.tasks.do();
-			Task.TaskCtrl.parallelWait(this.tasks, (): void => { this.check(); });
+
+			Task.TaskCtrl.wait(this.tasks, (): void => { this.check(); });
 		}
 
 		public asap(): void {

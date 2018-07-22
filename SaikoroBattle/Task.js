@@ -19,20 +19,6 @@ var Task;
             }
             window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
         };
-        TaskCtrl.parallelWait = function (tasks, callback) {
-            var finish = true;
-            for (var i = 0, len = tasks.tasks.length; i < len; i++) {
-                if (tasks.tasks[i].mode != 'finish') {
-                    finish = false;
-                    break;
-                }
-            }
-            if (finish) {
-                callback();
-                return;
-            }
-            window.setTimeout(function () { TaskCtrl.parallelWait(tasks, callback); }, 100);
-        };
         TaskCtrl.DEFAULT_MODE = 'idle';
         return TaskCtrl;
     }());
@@ -65,19 +51,6 @@ var Task;
             var task = this.tasks[this.step];
             task.do();
             TaskCtrl.wait(task, function () { _this.next(); });
-        };
-        Tasks.prototype.parallel = function () {
-            var _this = this;
-            TaskCtrl.do(this);
-            var _loop_1 = function (i, len) {
-                this_1.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
-                window.setTimeout(function () { _this.tasks[i].do(); });
-            };
-            var this_1 = this;
-            for (var i = 0, len = this.tasks.length; i < len; i++) {
-                _loop_1(i, len);
-            }
-            TaskCtrl.parallelWait(this, function () { _this.finish(); });
         };
         Tasks.prototype.asap = function () {
             if (this.step == -1) {
@@ -112,27 +85,42 @@ var Task;
         ParallelTasks.prototype.do = function () {
             var _this = this;
             TaskCtrl.do(this);
-            var _loop_2 = function (i, len) {
-                this_2.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+            var _loop_1 = function (i, len) {
+                this_1.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
                 window.setTimeout(function () { _this.tasks[i].do(); });
+            };
+            var this_1 = this;
+            for (var i = 0, len = this.tasks.length; i < len; i++) {
+                _loop_1(i, len);
+            }
+            this.wait();
+        };
+        ParallelTasks.prototype.asap = function () {
+            var _this = this;
+            var _loop_2 = function (i, len) {
+                if (this_2.tasks[i].mode == 'running') {
+                    window.setTimeout(function () { _this.tasks[i].asap(); });
+                }
             };
             var this_2 = this;
             for (var i = 0, len = this.tasks.length; i < len; i++) {
                 _loop_2(i, len);
             }
-            TaskCtrl.parallelWait(this, function () { _this.finish(); });
         };
-        ParallelTasks.prototype.asap = function () {
+        ParallelTasks.prototype.wait = function () {
             var _this = this;
-            var _loop_3 = function (i, len) {
-                if (this_3.tasks[i].mode == 'running') {
-                    window.setTimeout(function () { _this.tasks[i].asap(); });
-                }
-            };
-            var this_3 = this;
+            var finish = true;
             for (var i = 0, len = this.tasks.length; i < len; i++) {
-                _loop_3(i, len);
+                if (this.tasks[i].mode != 'finish') {
+                    finish = false;
+                    break;
+                }
             }
+            if (finish) {
+                this.finish();
+                return;
+            }
+            window.setTimeout(function () { _this.wait(); }, 100);
         };
         ParallelTasks.prototype.finish = function () {
             TaskCtrl.finish(this);
