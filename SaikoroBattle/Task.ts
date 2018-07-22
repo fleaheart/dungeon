@@ -29,28 +29,29 @@ namespace Task {
 				callback();
 				return;
 			}
+
 			window.setTimeout((): void => { TaskCtrl.wait(task, callback); }, 100);
 		}
 	}
 
 	export class Tasks implements Task {
-		public readonly name: string = 'Tasks';
-		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-		public tasks: Array<Task> = new Array<Task>();
+		readonly name: string = 'Tasks';
+		mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		tasks: Array<Task> = new Array<Task>();
 
 		private step: number = -1;
 
-		public add(task: Task): void {
+		add(task: Task): void {
 			this.tasks.push(task);
 		}
 
-		public do(): void {
+		do(): void {
 			TaskCtrl.do(this);
 			this.step = -1;
 			this.next();
 		}
 
-		public next(): void {
+		next(): void {
 			if (this.mode != 'running') {
 				return;
 			}
@@ -68,7 +69,7 @@ namespace Task {
 			TaskCtrl.wait(task, (): void => { this.next(); });
 		}
 
-		public asap(): void {
+		asap(): void {
 			if (this.step == -1) {
 				this.step = 0;
 			}
@@ -83,7 +84,7 @@ namespace Task {
 			this.finish();
 		}
 
-		public finish(): void {
+		finish(): void {
 			TaskCtrl.finish(this);
 			this.tasks.length = 0;
 			this.step = -1;
@@ -91,15 +92,15 @@ namespace Task {
 	}
 
 	export class ParallelTasks implements Task {
-		public readonly name: string = 'Tasks';
-		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-		public tasks: Array<Task> = new Array<Task>();
+		readonly name: string = 'Tasks';
+		mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		tasks: Array<Task> = new Array<Task>();
 
-		public add(task: Task): void {
+		add(task: Task): void {
 			this.tasks.push(task);
 		}
 
-		public do(): void {
+		do(): void {
 			TaskCtrl.do(this);
 
 			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
@@ -110,7 +111,7 @@ namespace Task {
 			this.wait();
 		}
 
-		public asap(): void {
+		asap(): void {
 			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
 				if (this.tasks[i].mode == 'running') {
 					window.setTimeout((): void => { this.tasks[i].asap(); });
@@ -118,7 +119,7 @@ namespace Task {
 			}
 		}
 
-		public wait() {
+		wait(): void {
 			let finish: boolean = true;
 			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
 				if (this.tasks[i].mode != 'finish') {
@@ -134,24 +135,24 @@ namespace Task {
 			window.setTimeout((): void => { this.wait(); }, 100);
 		}
 
-		public finish(): void {
+		finish(): void {
 			TaskCtrl.finish(this);
 			this.tasks.length = 0;
 		}
 	}
 
 	export class FunctionTask implements Task {
-		public readonly name: string = 'FunctionTask';
-		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-		public func: Function;
-		public param: any;
+		readonly name: string = 'FunctionTask';
+		mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		func: Function;
+		param: any;
 
 		constructor(func: Function, param: any) {
 			this.func = func;
 			this.param = param;
 		}
 
-		public do(): void {
+		do(): void {
 			TaskCtrl.do(this);
 
 			this.func(this.param);
@@ -159,12 +160,12 @@ namespace Task {
 			this.finish();
 		}
 
-		public asap() {
+		asap(): void {
 			TaskCtrl.asap(this);
 			this.do();
 		}
 
-		public finish(): void {
+		finish(): void {
 			TaskCtrl.finish(this);
 		}
 	}
@@ -172,29 +173,29 @@ namespace Task {
 	export type WaitInterval = 0 | 100 | 300 | 700;
 
 	export class WaitTask implements Task {
-		public readonly name: string = 'WaitTask';
+		readonly name: string = 'WaitTask';
 
 		static FAST: WaitInterval = 100;
 		static NORMAL: WaitInterval = 300;
 		static SLOW: WaitInterval = 700;
 
-		public mode: ModeType = TaskCtrl.DEFAULT_MODE;
-		public millisec: WaitInterval;
+		mode: ModeType = TaskCtrl.DEFAULT_MODE;
+		millisec: WaitInterval;
 
 		constructor(millisec: WaitInterval) {
 			this.millisec = millisec;
 		}
 
-		public do(): void {
+		do(): void {
 			TaskCtrl.do(this);
 			window.setTimeout((): void => { this.finish(); }, this.millisec);
 		}
 
-		public asap() {
+		asap(): void {
 			TaskCtrl.asap(this);
 		}
 
-		public finish(): void {
+		finish(): void {
 			TaskCtrl.finish(this);
 		}
 	}
