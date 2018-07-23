@@ -148,9 +148,6 @@ var Aao;
         }
         throw name + ' is not found';
     }
-    var $hougaku = {
-        n: { x: 0, y: -1 }, e: { x: 1, y: 0 }, s: { x: 0, y: 1 }, w: { x: -1, y: 0 }
-    };
     function put(obj) {
         putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
     }
@@ -217,16 +214,16 @@ var Aao;
             put($pc);
             display();
             if ($lastKeyCode == KEY_UP) {
-                move_tate('n');
+                muki_n.move();
             }
             if ($lastKeyCode == KEY_RIGHT) {
-                move_yoko('e');
+                muki_e.move();
             }
             if ($lastKeyCode == KEY_DOWN) {
-                move_tate('s');
+                muki_s.move();
             }
             if ($lastKeyCode == KEY_LEFT) {
-                move_yoko('w');
+                muki_w.move();
             }
         };
         return FreeGameMode;
@@ -295,38 +292,29 @@ var Aao;
         gameStatus.gameMode.do();
         setTimeout(frameCheck, FRAME_TIMING);
     }
-    function move_tate(hougaku) {
-        var check_ascii_x = Math.floor(($pc.x + 0) / 16);
-        var check_ascii_y = hougaku == 's' ? Math.floor(($pc.y + 32) / 32) : Math.floor($pc.y / 32) - (($pc.y % 32 == 0) ? 1 : 0);
-        var check_c1 = get(check_ascii_x, check_ascii_y);
-        var check_c2 = get(check_ascii_x + 1, check_ascii_y);
-        var check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
-        move_check(hougaku, check_c1, check_c2, check_offet);
-    }
-    function move_yoko(hougaku) {
-        var check_ascii_x = hougaku == 'e' ? Math.floor(($pc.x + 32) / 16) : Math.floor($pc.x / 16) - (($pc.x % 16 == 0) ? 1 : 0);
-        var check_ascii_y = Math.floor(($pc.y + 0) / 32);
-        var check_c = get(check_ascii_x, check_ascii_y);
-        var check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
-        move_check(hougaku, check_c, ' ', check_offet);
-    }
-    function move_check(hougaku, c1, c2, c3) {
-        if (c1 == ' ' && c2 == ' ' && c3 == ' ') {
-            if ($pc.muki == hougaku) {
-                putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-                $koudouArray.push({ type: 'idou', value: $hougaku[hougaku] });
-            }
-            else {
-                $pc.muki = hougaku;
-            }
-        }
-    }
     var Muki_N = (function () {
         function Muki_N() {
             this.muki = 'n';
+            this.nextXY = { x: 0, y: -1 };
             this.frameEnd = 30;
             this.nextPosition = { top: -480, left: 0 };
         }
+        Muki_N.prototype.move = function () {
+            var check_ascii_x = Math.floor(($pc.x + 0) / 16);
+            var check_ascii_y = Math.floor($pc.y / 32) - (($pc.y % 32 == 0) ? 1 : 0);
+            var check_c1 = get(check_ascii_x, check_ascii_y);
+            var check_c2 = get(check_ascii_x + 1, check_ascii_y);
+            var check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
+            if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+                if ($pc.muki == 'n') {
+                    putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+                    $koudouArray.push({ type: 'idou', value: this.nextXY });
+                }
+                else {
+                    $pc.muki = 'n';
+                }
+            }
+        };
         Muki_N.prototype.over = function (pc) {
             return pc.y <= 0;
         };
@@ -345,9 +333,26 @@ var Aao;
     var Muki_E = (function () {
         function Muki_E() {
             this.muki = 'e';
+            this.nextXY = { x: 1, y: 0 };
             this.frameEnd = 40;
             this.nextPosition = { top: 0, left: 640 };
         }
+        Muki_E.prototype.move = function () {
+            var check_ascii_x = Math.floor(($pc.x + 32) / 16);
+            var check_ascii_y = Math.floor(($pc.y + 0) / 32);
+            var check_c1 = get(check_ascii_x, check_ascii_y);
+            var check_c2 = ' ';
+            var check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
+            if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+                if ($pc.muki == 'e') {
+                    putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+                    $koudouArray.push({ type: 'idou', value: this.nextXY });
+                }
+                else {
+                    $pc.muki = 'e';
+                }
+            }
+        };
         Muki_E.prototype.over = function (pc) {
             return 640 - 32 <= pc.x;
         };
@@ -366,9 +371,26 @@ var Aao;
     var Muki_S = (function () {
         function Muki_S() {
             this.muki = 's';
+            this.nextXY = { x: 0, y: 1 };
             this.frameEnd = 30;
             this.nextPosition = { top: 480, left: 0 };
         }
+        Muki_S.prototype.move = function () {
+            var check_ascii_x = Math.floor(($pc.x + 0) / 16);
+            var check_ascii_y = Math.floor(($pc.y + 32) / 32);
+            var check_c1 = get(check_ascii_x, check_ascii_y);
+            var check_c2 = get(check_ascii_x + 1, check_ascii_y);
+            var check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
+            if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+                if ($pc.muki == 's') {
+                    putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+                    $koudouArray.push({ type: 'idou', value: this.nextXY });
+                }
+                else {
+                    $pc.muki = 's';
+                }
+            }
+        };
         Muki_S.prototype.over = function (pc) {
             return 480 - 32 <= pc.y;
         };
@@ -387,9 +409,26 @@ var Aao;
     var Muki_W = (function () {
         function Muki_W() {
             this.muki = 'w';
+            this.nextXY = { x: -1, y: 0 };
             this.frameEnd = 40;
             this.nextPosition = { top: 0, left: -640 };
         }
+        Muki_W.prototype.move = function () {
+            var check_ascii_x = Math.floor($pc.x / 16) - (($pc.x % 16 == 0) ? 1 : 0);
+            var check_ascii_y = Math.floor(($pc.y + 0) / 32);
+            var check_c1 = get(check_ascii_x, check_ascii_y);
+            var check_c2 = ' ';
+            var check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
+            if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+                if ($pc.muki == 'w') {
+                    putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+                    $koudouArray.push({ type: 'idou', value: this.nextXY });
+                }
+                else {
+                    $pc.muki = 'w';
+                }
+            }
+        };
         Muki_W.prototype.over = function (pc) {
             return pc.x <= 0;
         };

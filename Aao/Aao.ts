@@ -183,10 +183,6 @@ namespace Aao {
 		throw name + ' is not found';
 	}
 
-	let $hougaku: { [index: string]: XY } = {
-		n: { x: 0, y: -1 }, e: { x: 1, y: 0 }, s: { x: 0, y: 1 }, w: { x: -1, y: 0 }
-	}
-
 	function put(obj: Character): void {
 		putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
 	}
@@ -273,16 +269,16 @@ namespace Aao {
 			display();
 
 			if ($lastKeyCode == KEY_UP) {
-				move_tate('n');
+				muki_n.move();
 			}
 			if ($lastKeyCode == KEY_RIGHT) {
-				move_yoko('e');
+				muki_e.move();
 			}
 			if ($lastKeyCode == KEY_DOWN) {
-				move_tate('s');
+				muki_s.move();
 			}
 			if ($lastKeyCode == KEY_LEFT) {
-				move_yoko('w');
+				muki_w.move();
 			}
 		}
 	}
@@ -379,38 +375,6 @@ namespace Aao {
 		setTimeout(frameCheck, FRAME_TIMING);
 	}
 
-	function move_tate(hougaku: MukiType): void {
-		let check_ascii_x = Math.floor(($pc.x + 0) / 16);
-		let check_ascii_y = hougaku == 's' ? Math.floor(($pc.y + 32) / 32) : Math.floor($pc.y / 32) - (($pc.y % 32 == 0) ? 1 : 0);
-
-		let check_c1 = get(check_ascii_x, check_ascii_y);
-		let check_c2 = get(check_ascii_x + 1, check_ascii_y);
-		let check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
-
-		move_check(hougaku, check_c1, check_c2, check_offet);
-	}
-
-	function move_yoko(hougaku: MukiType): void {
-		let check_ascii_x = hougaku == 'e' ? Math.floor(($pc.x + 32) / 16) : Math.floor($pc.x / 16) - (($pc.x % 16 == 0) ? 1 : 0);
-		let check_ascii_y = Math.floor(($pc.y + 0) / 32);
-
-		let check_c = get(check_ascii_x, check_ascii_y);
-		let check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
-
-		move_check(hougaku, check_c, ' ', check_offet);
-	}
-
-	function move_check(hougaku: MukiType, c1: string, c2: string, c3: string) {
-		if (c1 == ' ' && c2 == ' ' && c3 == ' ') {
-			if ($pc.muki == hougaku) {
-				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-				$koudouArray.push({ type: 'idou', value: $hougaku[hougaku] });
-			} else {
-				$pc.muki = hougaku;
-			}
-		}
-	}
-
 	type MukiType = 'n' | 'e' | 's' | 'w';
 
 	interface Muki {
@@ -440,7 +404,26 @@ namespace Aao {
 
 	class Muki_N implements Muki {
 		muki: MukiType = 'n';
+		readonly nextXY: XY = { x: 0, y: -1 };
 		readonly frameEnd: number = 30;
+
+		move(): void {
+			let check_ascii_x = Math.floor(($pc.x + 0) / 16);
+			let check_ascii_y = Math.floor($pc.y / 32) - (($pc.y % 32 == 0) ? 1 : 0);
+
+			let check_c1 = get(check_ascii_x, check_ascii_y);
+			let check_c2 = get(check_ascii_x + 1, check_ascii_y);
+			let check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
+
+			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+				if ($pc.muki == 'n') {
+					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+					$koudouArray.push({ type: 'idou', value: this.nextXY });
+				} else {
+					$pc.muki = 'n';
+				}
+			}
+		}
 
 		over(pc: Character): boolean {
 			return pc.y <= 0;
@@ -464,7 +447,26 @@ namespace Aao {
 
 	class Muki_E implements Muki {
 		muki: MukiType = 'e';
+		readonly nextXY: XY = { x: 1, y: 0 };
 		readonly frameEnd: number = 40;
+
+		move(): void {
+			let check_ascii_x = Math.floor(($pc.x + 32) / 16);
+			let check_ascii_y = Math.floor(($pc.y + 0) / 32);
+
+			let check_c1 = get(check_ascii_x, check_ascii_y);
+			let check_c2 = ' ';
+			let check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
+
+			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+				if ($pc.muki == 'e') {
+					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+					$koudouArray.push({ type: 'idou', value: this.nextXY });
+				} else {
+					$pc.muki = 'e';
+				}
+			}
+		}
 
 		over(pc: Character): boolean {
 			return 640 - 32 <= pc.x;
@@ -488,7 +490,26 @@ namespace Aao {
 
 	class Muki_S implements Muki {
 		muki: MukiType = 's';
+		readonly nextXY: XY = { x: 0, y: 1 };
 		readonly frameEnd: number = 30;
+
+		move(): void {
+			let check_ascii_x = Math.floor(($pc.x + 0) / 16);
+			let check_ascii_y = Math.floor(($pc.y + 32) / 32);
+
+			let check_c1 = get(check_ascii_x, check_ascii_y);
+			let check_c2 = get(check_ascii_x + 1, check_ascii_y);
+			let check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
+
+			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+				if ($pc.muki == 's') {
+					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+					$koudouArray.push({ type: 'idou', value: this.nextXY });
+				} else {
+					$pc.muki = 's';
+				}
+			}
+		}
 
 		over(pc: Character): boolean {
 			return 480 - 32 <= pc.y;
@@ -512,7 +533,26 @@ namespace Aao {
 
 	class Muki_W implements Muki {
 		muki: MukiType = 'w';
+		readonly nextXY: XY = { x: -1, y: 0 };
 		readonly frameEnd: number = 40;
+
+		move(): void {
+			let check_ascii_x = Math.floor($pc.x / 16) - (($pc.x % 16 == 0) ? 1 : 0);
+			let check_ascii_y = Math.floor(($pc.y + 0) / 32);
+
+			let check_c1 = get(check_ascii_x, check_ascii_y);
+			let check_c2 = ' ';
+			let check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
+
+			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
+				if ($pc.muki == 'w') {
+					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+					$koudouArray.push({ type: 'idou', value: this.nextXY });
+				} else {
+					$pc.muki = 'w';
+				}
+			}
+		}
 
 		over(pc: Character): boolean {
 			return pc.x <= 0;
