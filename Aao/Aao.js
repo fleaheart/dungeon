@@ -82,8 +82,6 @@ var Aao;
     var $field1 = new Array();
     var $field2 = new Array();
     var $field3 = new Array();
-    var $koudouArray = new Array();
-    var $lastKeyCode;
     var FRAME_TIMING = 16;
     var $pc;
     $field1.push('**************************      ********');
@@ -179,7 +177,9 @@ var Aao;
             this.player = new Character('');
             this.gameFieldGamen = NullGameFieldGamen;
             this.frameCount = 0;
+            this.lastKeyCode = -1;
             this.lastKey = '';
+            this.koudouArray = new Array();
         }
         return GameStatus;
     }());
@@ -193,56 +193,57 @@ var Aao;
             if (this.gameStatus.frameCount % 2 != 0) {
                 return;
             }
-            if (0 < $koudouArray.length) {
-                var koudou = $koudouArray.shift();
-                if (koudou.type == 'idou') {
-                    $pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
-                    var muki = createMuki($pc.muki);
-                    if (muki.over($pc)) {
-                        var nextName = _gameStatus.gameFieldGamen.over[muki.muki];
-                        if (nextName != null) {
-                            var nextGameFieldGamen = getGameFieldGamen(nextName);
-                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
-                            return;
+            if (0 < this.gameStatus.koudouArray.length) {
+                var koudou = this.gameStatus.koudouArray.shift();
+                if (koudou != undefined) {
+                    if (koudou.type == 'idou') {
+                        var muki = koudou.muki;
+                        $pc.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
+                        if (muki.over($pc)) {
+                            var nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
+                            if (nextName != null) {
+                                var nextGameFieldGamen = getGameFieldGamen(nextName);
+                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
+                                return;
+                            }
                         }
                     }
-                }
-                if (koudou.type == 'jump') {
-                    $pc.moveBy(0, koudou.value);
+                    if (koudou.type == 'jump') {
+                    }
                 }
             }
             put($pc);
             display();
-            if ($lastKeyCode == KEY_UP) {
-                move($pc, muki_n);
+            if (_gameStatus.lastKeyCode == KEY_UP) {
+                this.move($pc, muki_n);
             }
-            if ($lastKeyCode == KEY_RIGHT) {
-                move($pc, muki_e);
+            if (_gameStatus.lastKeyCode == KEY_RIGHT) {
+                this.move($pc, muki_e);
             }
-            if ($lastKeyCode == KEY_DOWN) {
-                move($pc, muki_s);
+            if (_gameStatus.lastKeyCode == KEY_DOWN) {
+                this.move($pc, muki_s);
             }
-            if ($lastKeyCode == KEY_LEFT) {
-                move($pc, muki_w);
+            if (_gameStatus.lastKeyCode == KEY_LEFT) {
+                this.move($pc, muki_w);
+            }
+        };
+        FreeGameMode.prototype.move = function (player, muki) {
+            var next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
+            var next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+            var check_c1 = get(next_ascii_x, next_ascii_y);
+            var check_c2 = get(next_ascii_x + 1, next_ascii_y);
+            if (check_c1 == ' ' && check_c2 == ' ') {
+                if (player.muki == muki.muki) {
+                    putc(player.asciiPosX(), player.asciiPosY(), ' ');
+                    this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
+                }
+                else {
+                    player.muki = muki.muki;
+                }
             }
         };
         return FreeGameMode;
     }());
-    function move(player, muki) {
-        var next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
-        var next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
-        var check_c1 = get(next_ascii_x, next_ascii_y);
-        var check_c2 = get(next_ascii_x + 1, next_ascii_y);
-        if (check_c1 == ' ' && check_c2 == ' ') {
-            if (player.muki == muki.muki) {
-                putc(player.asciiPosX(), player.asciiPosY(), ' ');
-                $koudouArray.push({ type: 'idou', value: muki.nextXY });
-            }
-            else {
-                player.muki = muki.muki;
-            }
-        }
-    }
     var ScrollGameMode = (function () {
         function ScrollGameMode(gameStatus, mukiType, nextGameFieldGamen) {
             this.name = 'scrl';
@@ -291,12 +292,12 @@ var Aao;
                 gameStatus.gameMode.name
                     + '<br>' + gameStatus.frameCount
                     + '<br>' + gameStatus.lastKey
-                    + ' / ' + $lastKeyCode
+                    + ' / ' + _gameStatus.lastKeyCode
                     + '<br>' + gameStatus.gameFieldGamen.name
                     + '<br>' + $pc.x + ',' + $pc.y
                     + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY();
         }
-        if ($lastKeyCode == 27) {
+        if (_gameStatus.lastKeyCode == 27) {
             return;
         }
         gameStatus.gameMode.do();
@@ -380,12 +381,12 @@ var Aao;
     window.addEventListener('load', function () {
         initMainBoard();
         document.addEventListener('keydown', function (e) {
-            $lastKeyCode = e.keyCode;
+            _gameStatus.lastKeyCode = e.keyCode;
             _gameStatus.lastKey = e.key;
         });
         document.addEventListener('keyup', function (e) {
-            if (e.keyCode == $lastKeyCode) {
-                $lastKeyCode = -1;
+            if (e.keyCode == _gameStatus.lastKeyCode) {
+                _gameStatus.lastKeyCode = -1;
             }
         });
         _GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));

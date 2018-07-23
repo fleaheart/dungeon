@@ -109,9 +109,6 @@ namespace Aao {
 	let $field2: string[] = new Array();
 	let $field3: string[] = new Array();
 
-	let $koudouArray = new Array();
-	let $lastKeyCode: number;
-
 	const FRAME_TIMING: number = 16;
 
 	let $pc: Character;
@@ -212,6 +209,11 @@ namespace Aao {
 		}
 	}
 
+	interface Koudou {
+		type: string;
+		muki: Muki;
+	}
+
 	class GameStatus {
 		gameMode: GameMode | null = null;
 		player: Character = new Character('');
@@ -219,7 +221,10 @@ namespace Aao {
 		gameFieldGamen: GameFieldGamen = NullGameFieldGamen;
 
 		frameCount: number = 0;
+		lastKeyCode: number = -1;
 		lastKey: string = '';
+
+		koudouArray: Array<Koudou> = new Array<Koudou>();
 	}
 	let _gameStatus: GameStatus = new GameStatus();
 
@@ -243,61 +248,64 @@ namespace Aao {
 				return;
 			}
 
-			if (0 < $koudouArray.length) {
+			if (0 < this.gameStatus.koudouArray.length) {
 
-				let koudou = $koudouArray.shift();
-				if (koudou.type == 'idou') {
+				let koudou = this.gameStatus.koudouArray.shift();
+				if (koudou != undefined) {
+					if (koudou.type == 'idou') {
+						let muki: Muki = koudou.muki;
 
-					$pc.moveBy(koudou.value.x * 4, koudou.value.y * 4);
+						$pc.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
 
-					let muki: Muki = createMuki($pc.muki);
-					if (muki.over($pc)) {
-						let nextName = _gameStatus.gameFieldGamen.over[muki.muki];
-						if (nextName != null) {
-							let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
-							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
-							return;
+						if (muki.over($pc)) {
+							let nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
+							if (nextName != null) {
+								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
+								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
+								return;
+							}
 						}
 					}
-				}
-				if (koudou.type == 'jump') {
-					$pc.moveBy(0, koudou.value);
+					if (koudou.type == 'jump') {
+						// 未実装
+					}
 				}
 			}
 
 			put($pc);
 			display();
 
-			if ($lastKeyCode == KEY_UP) {
-				move($pc, muki_n);
+			if (_gameStatus.lastKeyCode == KEY_UP) {
+				this.move($pc, muki_n);
 			}
-			if ($lastKeyCode == KEY_RIGHT) {
-				move($pc, muki_e);
+			if (_gameStatus.lastKeyCode == KEY_RIGHT) {
+				this.move($pc, muki_e);
 			}
-			if ($lastKeyCode == KEY_DOWN) {
-				move($pc, muki_s);
+			if (_gameStatus.lastKeyCode == KEY_DOWN) {
+				this.move($pc, muki_s);
 			}
-			if ($lastKeyCode == KEY_LEFT) {
-				move($pc, muki_w);
-			}
-		}
-	}
-
-	function move(player: Character, muki: Muki) {
-		let next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
-		let next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
-
-		let check_c1 = get(next_ascii_x, next_ascii_y);
-		let check_c2 = get(next_ascii_x + 1, next_ascii_y);
-
-		if (check_c1 == ' ' && check_c2 == ' ') {
-			if (player.muki == muki.muki) {
-				putc(player.asciiPosX(), player.asciiPosY(), ' ');
-				$koudouArray.push({ type: 'idou', value: muki.nextXY });
-			} else {
-				player.muki = muki.muki;
+			if (_gameStatus.lastKeyCode == KEY_LEFT) {
+				this.move($pc, muki_w);
 			}
 		}
+
+		move(player: Character, muki: Muki) {
+			let next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
+			let next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+
+			let check_c1 = get(next_ascii_x, next_ascii_y);
+			let check_c2 = get(next_ascii_x + 1, next_ascii_y);
+
+			if (check_c1 == ' ' && check_c2 == ' ') {
+				if (player.muki == muki.muki) {
+					putc(player.asciiPosX(), player.asciiPosY(), ' ');
+					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
+				} else {
+					player.muki = muki.muki;
+				}
+			}
+		}
+
 	}
 
 	class ScrollGameMode implements GameMode {
@@ -366,14 +374,14 @@ namespace Aao {
 				gameStatus.gameMode.name
 				+ '<br>' + gameStatus.frameCount
 				+ '<br>' + gameStatus.lastKey
-				+ ' / ' + $lastKeyCode
+				+ ' / ' + _gameStatus.lastKeyCode
 				+ '<br>' + gameStatus.gameFieldGamen.name
 				+ '<br>' + $pc.x + ',' + $pc.y
 				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
 				;
 		}
 
-		if ($lastKeyCode == 27) {
+		if (_gameStatus.lastKeyCode == 27) {
 			return;
 		}
 
@@ -474,13 +482,13 @@ namespace Aao {
 		initMainBoard();
 
 		document.addEventListener('keydown', (e: KeyboardEvent): void => {
-			$lastKeyCode = e.keyCode;
+			_gameStatus.lastKeyCode = e.keyCode;
 			_gameStatus.lastKey = e.key;
 		});
 
 		document.addEventListener('keyup', (e: KeyboardEvent): void => {
-			if (e.keyCode == $lastKeyCode) {
-				$lastKeyCode = -1;
+			if (e.keyCode == _gameStatus.lastKeyCode) {
+				_gameStatus.lastKeyCode = -1;
 			}
 		});
 
