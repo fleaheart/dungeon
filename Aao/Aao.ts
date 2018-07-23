@@ -269,16 +269,33 @@ namespace Aao {
 			display();
 
 			if ($lastKeyCode == KEY_UP) {
-				muki_n.move();
+				move($pc, muki_n);
 			}
 			if ($lastKeyCode == KEY_RIGHT) {
-				muki_e.move();
+				move($pc, muki_e);
 			}
 			if ($lastKeyCode == KEY_DOWN) {
-				muki_s.move();
+				move($pc, muki_s);
 			}
 			if ($lastKeyCode == KEY_LEFT) {
-				muki_w.move();
+				move($pc, muki_w);
+			}
+		}
+	}
+
+	function move(player: Character, muki: Muki) {
+		let next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
+		let next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+
+		let check_c1 = get(next_ascii_x, next_ascii_y);
+		let check_c2 = get(next_ascii_x + 1, next_ascii_y);
+
+		if (check_c1 == ' ' && check_c2 == ' ') {
+			if (player.muki == muki.muki) {
+				putc(player.asciiPosX(), player.asciiPosY(), ' ');
+				$koudouArray.push({ type: 'idou', value: muki.nextXY });
+			} else {
+				player.muki = muki.muki;
 			}
 		}
 	}
@@ -379,6 +396,7 @@ namespace Aao {
 
 	interface Muki {
 		muki: MukiType;
+		nextXY: XY;
 		over: Function;
 		nextPosition: Position;
 		scroll(frame: number): ScrollAmount;
@@ -407,24 +425,6 @@ namespace Aao {
 		readonly nextXY: XY = { x: 0, y: -1 };
 		readonly frameEnd: number = 30;
 
-		move(): void {
-			let check_ascii_x = Math.floor(($pc.x + 0) / 16);
-			let check_ascii_y = Math.floor($pc.y / 32) - (($pc.y % 32 == 0) ? 1 : 0);
-
-			let check_c1 = get(check_ascii_x, check_ascii_y);
-			let check_c2 = get(check_ascii_x + 1, check_ascii_y);
-			let check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
-
-			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if ($pc.muki == 'n') {
-					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-					$koudouArray.push({ type: 'idou', value: this.nextXY });
-				} else {
-					$pc.muki = 'n';
-				}
-			}
-		}
-
 		over(pc: Character): boolean {
 			return pc.y <= 0;
 		}
@@ -449,24 +449,6 @@ namespace Aao {
 		muki: MukiType = 'e';
 		readonly nextXY: XY = { x: 1, y: 0 };
 		readonly frameEnd: number = 40;
-
-		move(): void {
-			let check_ascii_x = Math.floor(($pc.x + 32) / 16);
-			let check_ascii_y = Math.floor(($pc.y + 0) / 32);
-
-			let check_c1 = get(check_ascii_x, check_ascii_y);
-			let check_c2 = ' ';
-			let check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
-
-			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if ($pc.muki == 'e') {
-					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-					$koudouArray.push({ type: 'idou', value: this.nextXY });
-				} else {
-					$pc.muki = 'e';
-				}
-			}
-		}
 
 		over(pc: Character): boolean {
 			return 640 - 32 <= pc.x;
@@ -493,24 +475,6 @@ namespace Aao {
 		readonly nextXY: XY = { x: 0, y: 1 };
 		readonly frameEnd: number = 30;
 
-		move(): void {
-			let check_ascii_x = Math.floor(($pc.x + 0) / 16);
-			let check_ascii_y = Math.floor(($pc.y + 32) / 32);
-
-			let check_c1 = get(check_ascii_x, check_ascii_y);
-			let check_c2 = get(check_ascii_x + 1, check_ascii_y);
-			let check_offet = $pc.x % 16 == 0 ? ' ' : get(check_ascii_x + 2, check_ascii_y);
-
-			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if ($pc.muki == 's') {
-					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-					$koudouArray.push({ type: 'idou', value: this.nextXY });
-				} else {
-					$pc.muki = 's';
-				}
-			}
-		}
-
 		over(pc: Character): boolean {
 			return 480 - 32 <= pc.y;
 		}
@@ -535,24 +499,6 @@ namespace Aao {
 		muki: MukiType = 'w';
 		readonly nextXY: XY = { x: -1, y: 0 };
 		readonly frameEnd: number = 40;
-
-		move(): void {
-			let check_ascii_x = Math.floor($pc.x / 16) - (($pc.x % 16 == 0) ? 1 : 0);
-			let check_ascii_y = Math.floor(($pc.y + 0) / 32);
-
-			let check_c1 = get(check_ascii_x, check_ascii_y);
-			let check_c2 = ' ';
-			let check_offet = $pc.y % 32 == 0 ? ' ' : get(check_ascii_x, check_ascii_y + 1);
-
-			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if ($pc.muki == 'w') {
-					putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
-					$koudouArray.push({ type: 'idou', value: this.nextXY });
-				} else {
-					$pc.muki = 'w';
-				}
-			}
-		}
 
 		over(pc: Character): boolean {
 			return pc.x <= 0;
