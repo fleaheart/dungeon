@@ -326,14 +326,12 @@ namespace Aao {
 
 			this.frame++;
 
-			let scrollAmount: ScrollAmount = this.muki.scroll(this.frame);
+			_gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextXY.y) + 'px';
+			_gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextXY.x) + 'px';
+			_gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
+			_gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
 
-			_gameBoard.current.backGround.style.top = scrollAmount.current.top + 'px';
-			_gameBoard.current.backGround.style.left = scrollAmount.current.left + 'px';
-			_gameBoard.next.backGround.style.top = scrollAmount.next.top + 'px';
-			_gameBoard.next.backGround.style.left = scrollAmount.next.left + 'px';
-
-			$pc.moveBy(scrollAmount.pc.x, scrollAmount.pc.y);
+			$pc.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
 
 			if (this.muki.frameEnd <= this.frame) {
 				_gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
@@ -390,25 +388,13 @@ namespace Aao {
 		muki: MukiType;
 		nextXY: XY;
 		over: Function;
-		scroll(frame: number): ScrollAmount;
 		frameEnd: number;
 		scrollEndAdgust(pc: Character): void;
-	}
-
-	interface Position {
-		top: number;
-		left: number;
 	}
 
 	interface XY {
 		x: number;
 		y: number;
-	}
-
-	interface ScrollAmount {
-		current: Position;
-		next: Position;
-		pc: XY;
 	}
 
 	class Muki_N implements Muki {
@@ -418,14 +404,6 @@ namespace Aao {
 
 		over(pc: Character): boolean {
 			return pc.y <= 0;
-		}
-
-		scroll(frame: number): ScrollAmount {
-			let current: Position = { top: 0 + 16 * frame, left: 0 };
-			let next: Position = { top: -480 + 16 * frame, left: 0 };
-			let pc: XY = { x: 0, y: 15 };
-
-			return { current: current, next: next, pc: pc }
 		}
 
 		scrollEndAdgust(pc: Character): void {
@@ -443,14 +421,6 @@ namespace Aao {
 			return 640 - 32 <= pc.x;
 		}
 
-		scroll(frame: number): ScrollAmount {
-			let current: Position = { top: 0, left: 0 - 16 * frame };
-			let next: Position = { top: 0, left: 640 - 16 * frame };
-			let pc: XY = { x: -15.2, y: 0 };
-
-			return { current: current, next: next, pc: pc }
-		}
-
 		scrollEndAdgust(pc: Character): void {
 			pc.moveTo(0, pc.y);
 		}
@@ -466,14 +436,6 @@ namespace Aao {
 			return 480 - 32 <= pc.y;
 		}
 
-		scroll(frame: number): ScrollAmount {
-			let current: Position = { top: 0 - 16 * frame, left: 0 };
-			let next: Position = { top: 480 - 16 * frame, left: 0 };
-			let pc: XY = { x: 0, y: -15 };
-
-			return { current: current, next: next, pc: pc }
-		}
-
 		scrollEndAdgust(pc: Character): void {
 			pc.moveTo(pc.x, 0);
 		}
@@ -487,14 +449,6 @@ namespace Aao {
 
 		over(pc: Character): boolean {
 			return pc.x <= 0;
-		}
-
-		scroll(frame: number): ScrollAmount {
-			let current: Position = { top: 0, left: 0 + 16 * frame };
-			let next: Position = { top: 0, left: -640 + 16 * frame };
-			let pc: XY = { x: 15.2, y: 0 };
-
-			return { current: current, next: next, pc: pc }
 		}
 
 		scrollEndAdgust(pc: Character): void {

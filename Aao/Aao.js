@@ -259,12 +259,11 @@ var Aao;
                 putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
             this.frame++;
-            var scrollAmount = this.muki.scroll(this.frame);
-            _gameBoard.current.backGround.style.top = scrollAmount.current.top + 'px';
-            _gameBoard.current.backGround.style.left = scrollAmount.current.left + 'px';
-            _gameBoard.next.backGround.style.top = scrollAmount.next.top + 'px';
-            _gameBoard.next.backGround.style.left = scrollAmount.next.left + 'px';
-            $pc.moveBy(scrollAmount.pc.x, scrollAmount.pc.y);
+            _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextXY.y) + 'px';
+            _gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextXY.x) + 'px';
+            _gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
+            _gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
+            $pc.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
             if (this.muki.frameEnd <= this.frame) {
                 _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
                 _gameBoard.current.backGround.style.top = '0px';
@@ -312,12 +311,6 @@ var Aao;
         Muki_N.prototype.over = function (pc) {
             return pc.y <= 0;
         };
-        Muki_N.prototype.scroll = function (frame) {
-            var current = { top: 0 + 16 * frame, left: 0 };
-            var next = { top: -480 + 16 * frame, left: 0 };
-            var pc = { x: 0, y: 15 };
-            return { current: current, next: next, pc: pc };
-        };
         Muki_N.prototype.scrollEndAdgust = function (pc) {
             pc.moveTo(pc.x, 480 - 32);
         };
@@ -332,12 +325,6 @@ var Aao;
         }
         Muki_E.prototype.over = function (pc) {
             return 640 - 32 <= pc.x;
-        };
-        Muki_E.prototype.scroll = function (frame) {
-            var current = { top: 0, left: 0 - 16 * frame };
-            var next = { top: 0, left: 640 - 16 * frame };
-            var pc = { x: -15.2, y: 0 };
-            return { current: current, next: next, pc: pc };
         };
         Muki_E.prototype.scrollEndAdgust = function (pc) {
             pc.moveTo(0, pc.y);
@@ -354,12 +341,6 @@ var Aao;
         Muki_S.prototype.over = function (pc) {
             return 480 - 32 <= pc.y;
         };
-        Muki_S.prototype.scroll = function (frame) {
-            var current = { top: 0 - 16 * frame, left: 0 };
-            var next = { top: 480 - 16 * frame, left: 0 };
-            var pc = { x: 0, y: -15 };
-            return { current: current, next: next, pc: pc };
-        };
         Muki_S.prototype.scrollEndAdgust = function (pc) {
             pc.moveTo(pc.x, 0);
         };
@@ -374,12 +355,6 @@ var Aao;
         }
         Muki_W.prototype.over = function (pc) {
             return pc.x <= 0;
-        };
-        Muki_W.prototype.scroll = function (frame) {
-            var current = { top: 0, left: 0 + 16 * frame };
-            var next = { top: 0, left: -640 + 16 * frame };
-            var pc = { x: 15.2, y: 0 };
-            return { current: current, next: next, pc: pc };
         };
         Muki_W.prototype.scrollEndAdgust = function (pc) {
             pc.moveTo(640 - 32, pc.y);
