@@ -83,7 +83,6 @@ var Aao;
     var $field2 = new Array();
     var $field3 = new Array();
     var FRAME_TIMING = 16;
-    var $pc;
     $field1.push('**************************      ********');
     $field1.push('*        **                            *');
     $field1.push('*       **    **      ***      ****    *');
@@ -198,12 +197,12 @@ var Aao;
                 if (koudou != undefined) {
                     if (koudou.type == 'idou') {
                         var muki = koudou.muki;
-                        $pc.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
-                        if (muki.over($pc)) {
+                        this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
+                        if (muki.over(this.gameStatus.player)) {
                             var nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
                             if (nextName != null) {
                                 var nextGameFieldGamen = getGameFieldGamen(nextName);
-                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
+                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
                                 return;
                             }
                         }
@@ -212,19 +211,19 @@ var Aao;
                     }
                 }
             }
-            put($pc);
+            put(this.gameStatus.player);
             display();
             if (_gameStatus.lastKeyCode == KEY_UP) {
-                this.move($pc, muki_n);
+                this.move(this.gameStatus.player, muki_n);
             }
             if (_gameStatus.lastKeyCode == KEY_RIGHT) {
-                this.move($pc, muki_e);
+                this.move(this.gameStatus.player, muki_e);
             }
             if (_gameStatus.lastKeyCode == KEY_DOWN) {
-                this.move($pc, muki_s);
+                this.move(this.gameStatus.player, muki_s);
             }
             if (_gameStatus.lastKeyCode == KEY_LEFT) {
-                this.move($pc, muki_w);
+                this.move(this.gameStatus.player, muki_w);
             }
         };
         FreeGameMode.prototype.move = function (player, muki) {
@@ -257,20 +256,20 @@ var Aao;
                 _gameBoard.next.field = this.nextGameFieldGamen.field;
                 _gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
                 _gameBoard.next.backGround.style.display = '';
-                putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+                putc(this.gameStatus.player.asciiPosX(), this.gameStatus.player.asciiPosY(), ' ');
             }
             this.frame++;
             _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextXY.y) + 'px';
             _gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextXY.x) + 'px';
             _gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
             _gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
-            $pc.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
+            this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
             if (this.muki.frameEnd <= this.frame) {
                 _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
                 _gameBoard.current.backGround.style.top = '0px';
                 _gameBoard.current.backGround.style.left = '0px';
                 _gameBoard.next.backGround.style.display = 'none';
-                this.muki.scrollEndAdgust($pc);
+                this.muki.scrollEndAdgust(this.gameStatus.player);
                 for (var i = 0; i < _gameBoard.current.field.length; i++) {
                     _gameBoard.current.field[i] = _gameBoard.next.field[i];
                 }
@@ -294,8 +293,8 @@ var Aao;
                     + '<br>' + gameStatus.lastKey
                     + ' / ' + _gameStatus.lastKeyCode
                     + '<br>' + gameStatus.gameFieldGamen.name
-                    + '<br>' + $pc.x + ',' + $pc.y
-                    + '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY();
+                    + '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
+                    + '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY();
         }
         if (_gameStatus.lastKeyCode == 27) {
             return;
@@ -392,12 +391,12 @@ var Aao;
         _GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));
         _GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
         _GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
-        $pc = new Character('A');
-        $pc.moveTo(18 * 16, 2 * 32);
-        _gameBoard.fieldGraph.appendChild($pc.img);
-        _gameStatus.player = $pc;
+        var player = new Character('A');
+        player.moveTo(18 * 16, 2 * 32);
+        _gameBoard.fieldGraph.appendChild(player.img);
+        _gameStatus.player = player;
         _gameStatus.gameFieldGamen = getGameFieldGamen('field1');
-        put($pc);
+        put(player);
         display();
         setTimeout(frameCheck, FRAME_TIMING);
     });

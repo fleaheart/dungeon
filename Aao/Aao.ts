@@ -111,8 +111,6 @@ namespace Aao {
 
 	const FRAME_TIMING: number = 16;
 
-	let $pc: Character;
-
 	$field1.push('**************************      ********');
 	$field1.push('*        **                            *');
 	$field1.push('*       **    **      ***      ****    *');
@@ -255,13 +253,13 @@ namespace Aao {
 					if (koudou.type == 'idou') {
 						let muki: Muki = koudou.muki;
 
-						$pc.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
+						this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
 
-						if (muki.over($pc)) {
+						if (muki.over(this.gameStatus.player)) {
 							let nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
 							if (nextName != null) {
 								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
-								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, $pc.muki, nextGameFieldGamen);
+								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
 								return;
 							}
 						}
@@ -272,20 +270,20 @@ namespace Aao {
 				}
 			}
 
-			put($pc);
+			put(this.gameStatus.player);
 			display();
 
 			if (_gameStatus.lastKeyCode == KEY_UP) {
-				this.move($pc, muki_n);
+				this.move(this.gameStatus.player, muki_n);
 			}
 			if (_gameStatus.lastKeyCode == KEY_RIGHT) {
-				this.move($pc, muki_e);
+				this.move(this.gameStatus.player, muki_e);
 			}
 			if (_gameStatus.lastKeyCode == KEY_DOWN) {
-				this.move($pc, muki_s);
+				this.move(this.gameStatus.player, muki_s);
 			}
 			if (_gameStatus.lastKeyCode == KEY_LEFT) {
-				this.move($pc, muki_w);
+				this.move(this.gameStatus.player, muki_w);
 			}
 		}
 
@@ -329,7 +327,7 @@ namespace Aao {
 				_gameBoard.next.field = this.nextGameFieldGamen.field;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
 				_gameBoard.next.backGround.style.display = '';
-				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
+				putc(this.gameStatus.player.asciiPosX(), this.gameStatus.player.asciiPosY(), ' ');
 			}
 
 			this.frame++;
@@ -339,7 +337,7 @@ namespace Aao {
 			_gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
 			_gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
 
-			$pc.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
+			this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
 
 			if (this.muki.frameEnd <= this.frame) {
 				_gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
@@ -347,7 +345,7 @@ namespace Aao {
 				_gameBoard.current.backGround.style.left = '0px';
 				_gameBoard.next.backGround.style.display = 'none';
 
-				this.muki.scrollEndAdgust($pc);
+				this.muki.scrollEndAdgust(this.gameStatus.player);
 
 				for (let i = 0; i < _gameBoard.current.field.length; i++) {
 					_gameBoard.current.field[i] = _gameBoard.next.field[i];
@@ -376,8 +374,8 @@ namespace Aao {
 				+ '<br>' + gameStatus.lastKey
 				+ ' / ' + _gameStatus.lastKeyCode
 				+ '<br>' + gameStatus.gameFieldGamen.name
-				+ '<br>' + $pc.x + ',' + $pc.y
-				+ '<br>' + $pc.asciiPosX() + ',' + $pc.asciiPosY()
+				+ '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
+				+ '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY()
 				;
 		}
 
@@ -496,14 +494,14 @@ namespace Aao {
 		_GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
 		_GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
 
-		$pc = new Character('A');
-		$pc.moveTo(18 * 16, 2 * 32);
-		_gameBoard.fieldGraph.appendChild($pc.img);
+		let player = new Character('A');
+		player.moveTo(18 * 16, 2 * 32);
+		_gameBoard.fieldGraph.appendChild(player.img);
 
-		_gameStatus.player = $pc;
+		_gameStatus.player = player;
 		_gameStatus.gameFieldGamen = getGameFieldGamen('field1');
 
-		put($pc);
+		put(player);
 
 		display();
 
