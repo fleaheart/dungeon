@@ -255,10 +255,6 @@ var Aao;
             if (this.frame == 0) {
                 _gameBoard.next.field = this.nextGameFieldGamen.field;
                 _gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
-                _gameBoard.next.backGround.style.top = this.muki.nextPosition + 'px';
-                _gameBoard.next.backGround.style.left = '0px';
-                _gameBoard.current.backGround.style.top = '0px';
-                _gameBoard.current.backGround.style.left = '0px';
                 _gameBoard.next.backGround.style.display = '';
                 putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
             }
@@ -312,7 +308,6 @@ var Aao;
             this.muki = 'n';
             this.nextXY = { x: 0, y: -1 };
             this.frameEnd = 30;
-            this.nextPosition = { top: -480, left: 0 };
         }
         Muki_N.prototype.over = function (pc) {
             return pc.y <= 0;
@@ -334,7 +329,6 @@ var Aao;
             this.muki = 'e';
             this.nextXY = { x: 1, y: 0 };
             this.frameEnd = 40;
-            this.nextPosition = { top: 0, left: 640 };
         }
         Muki_E.prototype.over = function (pc) {
             return 640 - 32 <= pc.x;
@@ -356,7 +350,6 @@ var Aao;
             this.muki = 's';
             this.nextXY = { x: 0, y: 1 };
             this.frameEnd = 30;
-            this.nextPosition = { top: 480, left: 0 };
         }
         Muki_S.prototype.over = function (pc) {
             return 480 - 32 <= pc.y;
@@ -378,7 +371,6 @@ var Aao;
             this.muki = 'w';
             this.nextXY = { x: -1, y: 0 };
             this.frameEnd = 40;
-            this.nextPosition = { top: 0, left: -640 };
         }
         Muki_W.prototype.over = function (pc) {
             return pc.x <= 0;

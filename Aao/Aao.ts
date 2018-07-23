@@ -318,17 +318,9 @@ namespace Aao {
 
 		do() {
 			if (this.frame == 0) {
-
 				_gameBoard.next.field = this.nextGameFieldGamen.field;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
-				_gameBoard.next.backGround.style.top = this.muki.nextPosition + 'px';
-				_gameBoard.next.backGround.style.left = '0px';
-
-				_gameBoard.current.backGround.style.top = '0px';
-				_gameBoard.current.backGround.style.left = '0px';
-
 				_gameBoard.next.backGround.style.display = '';
-
 				putc($pc.asciiPosX(), $pc.asciiPosY(), ' ');
 			}
 
@@ -398,7 +390,6 @@ namespace Aao {
 		muki: MukiType;
 		nextXY: XY;
 		over: Function;
-		nextPosition: Position;
 		scroll(frame: number): ScrollAmount;
 		frameEnd: number;
 		scrollEndAdgust(pc: Character): void;
@@ -429,8 +420,6 @@ namespace Aao {
 			return pc.y <= 0;
 		}
 
-		nextPosition: Position = { top: -480, left: 0 };
-
 		scroll(frame: number): ScrollAmount {
 			let current: Position = { top: 0 + 16 * frame, left: 0 };
 			let next: Position = { top: -480 + 16 * frame, left: 0 };
@@ -453,8 +442,6 @@ namespace Aao {
 		over(pc: Character): boolean {
 			return 640 - 32 <= pc.x;
 		}
-
-		nextPosition: Position = { top: 0, left: 640 };
 
 		scroll(frame: number): ScrollAmount {
 			let current: Position = { top: 0, left: 0 - 16 * frame };
@@ -479,8 +466,6 @@ namespace Aao {
 			return 480 - 32 <= pc.y;
 		}
 
-		nextPosition: Position = { top: 480, left: 0 };
-
 		scroll(frame: number): ScrollAmount {
 			let current: Position = { top: 0 - 16 * frame, left: 0 };
 			let next: Position = { top: 480 - 16 * frame, left: 0 };
@@ -503,8 +488,6 @@ namespace Aao {
 		over(pc: Character): boolean {
 			return pc.x <= 0;
 		}
-
-		nextPosition: Position = { top: 0, left: -640 };
 
 		scroll(frame: number): ScrollAmount {
 			let current: Position = { top: 0, left: 0 + 16 * frame };
