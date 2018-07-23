@@ -213,20 +213,22 @@ var Aao;
             }
             put(this.gameStatus.player);
             display();
-            if (_gameStatus.lastKeyCode == KEY_UP) {
-                this.move(this.gameStatus.player, muki_n);
+            var lastKeyCode = this.gameStatus.lastKeyCode;
+            if (lastKeyCode == KEY_UP) {
+                this.move(muki_n);
             }
-            if (_gameStatus.lastKeyCode == KEY_RIGHT) {
-                this.move(this.gameStatus.player, muki_e);
+            if (lastKeyCode == KEY_RIGHT) {
+                this.move(muki_e);
             }
-            if (_gameStatus.lastKeyCode == KEY_DOWN) {
-                this.move(this.gameStatus.player, muki_s);
+            if (lastKeyCode == KEY_DOWN) {
+                this.move(muki_s);
             }
-            if (_gameStatus.lastKeyCode == KEY_LEFT) {
-                this.move(this.gameStatus.player, muki_w);
+            if (lastKeyCode == KEY_LEFT) {
+                this.move(muki_w);
             }
         };
-        FreeGameMode.prototype.move = function (player, muki) {
+        FreeGameMode.prototype.move = function (muki) {
+            var player = this.gameStatus.player;
             var next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
             var next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
             var check_c1 = get(next_ascii_x, next_ascii_y);
@@ -291,12 +293,12 @@ var Aao;
                 gameStatus.gameMode.name
                     + '<br>' + gameStatus.frameCount
                     + '<br>' + gameStatus.lastKey
-                    + ' / ' + _gameStatus.lastKeyCode
+                    + ' / ' + gameStatus.lastKeyCode
                     + '<br>' + gameStatus.gameFieldGamen.name
                     + '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
                     + '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY();
         }
-        if (_gameStatus.lastKeyCode == 27) {
+        if (gameStatus.lastKeyCode == 27) {
             return;
         }
         gameStatus.gameMode.do();
@@ -386,6 +388,7 @@ var Aao;
         document.addEventListener('keyup', function (e) {
             if (e.keyCode == _gameStatus.lastKeyCode) {
                 _gameStatus.lastKeyCode = -1;
+                _gameStatus.lastKey = '';
             }
         });
         _GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));

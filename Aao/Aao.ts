@@ -273,21 +273,24 @@ namespace Aao {
 			put(this.gameStatus.player);
 			display();
 
-			if (_gameStatus.lastKeyCode == KEY_UP) {
-				this.move(this.gameStatus.player, muki_n);
+			let lastKeyCode = this.gameStatus.lastKeyCode;
+			if (lastKeyCode == KEY_UP) {
+				this.move(muki_n);
 			}
-			if (_gameStatus.lastKeyCode == KEY_RIGHT) {
-				this.move(this.gameStatus.player, muki_e);
+			if (lastKeyCode == KEY_RIGHT) {
+				this.move(muki_e);
 			}
-			if (_gameStatus.lastKeyCode == KEY_DOWN) {
-				this.move(this.gameStatus.player, muki_s);
+			if (lastKeyCode == KEY_DOWN) {
+				this.move(muki_s);
 			}
-			if (_gameStatus.lastKeyCode == KEY_LEFT) {
-				this.move(this.gameStatus.player, muki_w);
+			if (lastKeyCode == KEY_LEFT) {
+				this.move(muki_w);
 			}
 		}
 
-		move(player: Character, muki: Muki) {
+		move(muki: Muki) {
+			let player: Character = this.gameStatus.player;
+
 			let next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
 			let next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
 
@@ -372,14 +375,14 @@ namespace Aao {
 				gameStatus.gameMode.name
 				+ '<br>' + gameStatus.frameCount
 				+ '<br>' + gameStatus.lastKey
-				+ ' / ' + _gameStatus.lastKeyCode
+				+ ' / ' + gameStatus.lastKeyCode
 				+ '<br>' + gameStatus.gameFieldGamen.name
 				+ '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
 				+ '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY()
 				;
 		}
 
-		if (_gameStatus.lastKeyCode == 27) {
+		if (gameStatus.lastKeyCode == 27) {
 			return;
 		}
 
@@ -487,6 +490,7 @@ namespace Aao {
 		document.addEventListener('keyup', (e: KeyboardEvent): void => {
 			if (e.keyCode == _gameStatus.lastKeyCode) {
 				_gameStatus.lastKeyCode = -1;
+				_gameStatus.lastKey = '';
 			}
 		});
 
