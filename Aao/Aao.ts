@@ -69,6 +69,7 @@ namespace Aao {
 		fieldGraph: HTMLDivElement;
 		fieldAscii: HTMLDivElement | null = null;
 		objectAscii: HTMLDivElement | null = null;
+		asciiPosition: Array<string>;
 		debug: HTMLDivElement | null = null;
 
 		current: GameField;
@@ -76,6 +77,10 @@ namespace Aao {
 
 		constructor() {
 			this.fieldGraph = <HTMLDivElement>document.createElement('DIV');
+			this.asciiPosition = new Array<string>();
+			for (let i = 0; i < 15; i++) {
+				this.asciiPosition.push('                                        ');
+			}
 
 			this.current = new GameField();
 			this.next = new GameField();
@@ -159,10 +164,6 @@ namespace Aao {
 	for (let i = 0; i < $field1.length; i++) {
 		_gameBoard.current.field.push($field1[i]);
 	}
-	let $asciiPosition: string[] = new Array();
-	for (let i = 0; i < _gameBoard.current.field.length; i++) {
-		$asciiPosition.push('                                        ');
-	}
 
 	let _GameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
 	function getGameFieldGamen(name: string): GameFieldGamen {
@@ -182,9 +183,9 @@ namespace Aao {
 			chr = obj.chr;
 		}
 
-		let swp = $asciiPosition[y];
+		let swp = _gameBoard.asciiPosition[y];
 		swp = swp.substr(0, x) + chr + swp.substr(x + 1);
-		$asciiPosition[y] = swp;
+		_gameBoard.asciiPosition[y] = swp;
 	}
 
 	function get(x: number, y: number): string {
@@ -202,7 +203,7 @@ namespace Aao {
 			_gameBoard.fieldAscii.innerHTML = _gameBoard.current.field.join('<br>').replace(/ /g, '&nbsp;');
 		}
 		if (_gameBoard.objectAscii != null) {
-			_gameBoard.objectAscii.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
+			_gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
 		}
 	}
 

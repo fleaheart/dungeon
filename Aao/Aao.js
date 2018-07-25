@@ -53,6 +53,10 @@ var Aao;
             this.objectAscii = null;
             this.debug = null;
             this.fieldGraph = document.createElement('DIV');
+            this.asciiPosition = new Array();
+            for (var i = 0; i < 15; i++) {
+                this.asciiPosition.push('                                        ');
+            }
             this.current = new GameField();
             this.next = new GameField();
         }
@@ -125,10 +129,6 @@ var Aao;
     for (var i = 0; i < $field1.length; i++) {
         _gameBoard.current.field.push($field1[i]);
     }
-    var $asciiPosition = new Array();
-    for (var i = 0; i < _gameBoard.current.field.length; i++) {
-        $asciiPosition.push('                                        ');
-    }
     var _GameFieldGamenList = new Array();
     function getGameFieldGamen(name) {
         for (var i = 0, len = _GameFieldGamenList.length; i < len; i++) {
@@ -145,9 +145,9 @@ var Aao;
         if (chr == undefined) {
             chr = obj.chr;
         }
-        var swp = $asciiPosition[y];
+        var swp = _gameBoard.asciiPosition[y];
         swp = swp.substr(0, x) + chr + swp.substr(x + 1);
-        $asciiPosition[y] = swp;
+        _gameBoard.asciiPosition[y] = swp;
     }
     function get(x, y) {
         if (y < 0 || _gameBoard.current.field.length <= y) {
@@ -163,7 +163,7 @@ var Aao;
             _gameBoard.fieldAscii.innerHTML = _gameBoard.current.field.join('<br>').replace(/ /g, '&nbsp;');
         }
         if (_gameBoard.objectAscii != null) {
-            _gameBoard.objectAscii.innerHTML = $asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
+            _gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
         }
     }
     var GameStatus = (function () {
