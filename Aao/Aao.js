@@ -145,10 +145,12 @@ var Aao;
         }
         throw name + ' is not found';
     }
-    function put(obj) {
-        putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
-    }
-    function putc(x, y, chr) {
+    function put(obj, chr) {
+        var x = obj.asciiPosX();
+        var y = obj.asciiPosY();
+        if (chr == undefined) {
+            chr = obj.chr;
+        }
         var swp = $asciiPosition[y];
         swp = swp.substr(0, x) + chr + swp.substr(x + 1);
         $asciiPosition[y] = swp;
@@ -235,7 +237,7 @@ var Aao;
             var check_c2 = get(next_ascii_x + 1, next_ascii_y);
             if (check_c1 == ' ' && check_c2 == ' ') {
                 if (player.muki == muki.muki) {
-                    putc(player.asciiPosX(), player.asciiPosY(), ' ');
+                    put(player, ' ');
                     this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
                 }
                 else {
@@ -258,7 +260,7 @@ var Aao;
                 _gameBoard.next.field = this.nextGameFieldGamen.field;
                 _gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
                 _gameBoard.next.backGround.style.display = '';
-                putc(this.gameStatus.player.asciiPosX(), this.gameStatus.player.asciiPosY(), ' ');
+                put(this.gameStatus.player, ' ');
             }
             this.frame++;
             _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextXY.y) + 'px';

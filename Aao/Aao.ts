@@ -178,11 +178,13 @@ namespace Aao {
 		throw name + ' is not found';
 	}
 
-	function put(obj: Character): void {
-		putc(obj.asciiPosX(), obj.asciiPosY(), obj.chr);
-	}
+	function put(obj: Character, chr?: string): void {
+		let x: number = obj.asciiPosX();
+		let y: number = obj.asciiPosY();
+		if (chr == undefined) {
+			chr = obj.chr;
+		}
 
-	function putc(x: number, y: number, chr: string): void {
 		let swp = $asciiPosition[y];
 		swp = swp.substr(0, x) + chr + swp.substr(x + 1);
 		$asciiPosition[y] = swp;
@@ -299,7 +301,7 @@ namespace Aao {
 
 			if (check_c1 == ' ' && check_c2 == ' ') {
 				if (player.muki == muki.muki) {
-					putc(player.asciiPosX(), player.asciiPosY(), ' ');
+					put(player, ' ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
 				} else {
 					player.muki = muki.muki;
@@ -330,7 +332,7 @@ namespace Aao {
 				_gameBoard.next.field = this.nextGameFieldGamen.field;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
 				_gameBoard.next.backGround.style.display = '';
-				putc(this.gameStatus.player.asciiPosX(), this.gameStatus.player.asciiPosY(), ' ');
+				put(this.gameStatus.player, ' ');
 			}
 
 			this.frame++;
