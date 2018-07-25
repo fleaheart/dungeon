@@ -3,36 +3,30 @@ var Aao;
     var KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
     var Character = (function () {
         function Character(chr) {
+            this.mukiListGroup = { 'n': ['player2.png'], 'e': ['player4.png'], 's': ['player1.png'], 'w': ['player3.png'] };
             this.chr = chr;
             this.img = document.createElement('IMG');
             this.img.style.position = 'absolute';
             this.x = 0;
             this.y = 0;
+            this.frame = 0;
             this.muki = 'e';
         }
-        Character.prototype.moveTo = function (x, y) {
+        Character.prototype.moveTo = function (x, y, muki) {
             var dx = x - this.x;
             var dy = y - this.y;
-            this.moveBy(dx, dy);
+            this.moveBy(dx, dy, muki);
             this.x = x;
             this.y = y;
         };
-        Character.prototype.moveBy = function (dx, dy) {
-            if (dx < 0) {
-                this.img.src = 'player3.png';
-            }
-            if (0 < dx) {
-                this.img.src = 'player4.png';
-            }
-            if (dy < 0) {
-                this.img.src = 'player2.png';
-            }
-            if (0 < dy) {
-                this.img.src = 'player1.png';
-            }
+        Character.prototype.moveBy = function (dx, dy, muki) {
+            var array = this.mukiListGroup[muki.muki];
+            var currentFlame = this.frame % array.length;
+            this.img.src = array[currentFlame];
             this.x += dx;
             this.y += dy;
             this.refrectStyle();
+            this.frame++;
         };
         Character.prototype.asciiPosX = function () {
             return Math.floor((this.x) / 16);
@@ -199,7 +193,7 @@ var Aao;
                 if (koudou != undefined) {
                     if (koudou.type == 'idou') {
                         var muki = koudou.muki;
-                        this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
+                        this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
                         if (muki.over(this.gameStatus.player)) {
                             var nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
                             if (nextName != null) {
@@ -267,7 +261,7 @@ var Aao;
             _gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextXY.x) + 'px';
             _gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
             _gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
-            this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
+            this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y, this.muki);
             if (this.muki.frameEnd <= this.frame) {
                 _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
                 _gameBoard.current.backGround.style.top = '0px';
@@ -316,7 +310,7 @@ var Aao;
             return pc.y <= 0;
         };
         Muki_N.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(pc.x, 480 - 32);
+            pc.moveTo(pc.x, 480 - 32, this);
         };
         return Muki_N;
     }());
@@ -331,7 +325,7 @@ var Aao;
             return 640 - 32 <= pc.x;
         };
         Muki_E.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(0, pc.y);
+            pc.moveTo(0, pc.y, this);
         };
         return Muki_E;
     }());
@@ -346,7 +340,7 @@ var Aao;
             return 480 - 32 <= pc.y;
         };
         Muki_S.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(pc.x, 0);
+            pc.moveTo(pc.x, 0, this);
         };
         return Muki_S;
     }());
@@ -361,7 +355,7 @@ var Aao;
             return pc.x <= 0;
         };
         Muki_W.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(640 - 32, pc.y);
+            pc.moveTo(640 - 32, pc.y, this);
         };
         return Muki_W;
     }());
@@ -397,7 +391,7 @@ var Aao;
         _GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
         _GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
         var player = new Character('A');
-        player.moveTo(18 * 16, 2 * 32);
+        player.moveTo(18 * 16, 2 * 32, muki_s);
         _gameBoard.fieldGraph.appendChild(player.img);
         _gameStatus.player = player;
         _gameStatus.gameFieldGamen = getGameFieldGamen('field1');

@@ -6,7 +6,9 @@ namespace Aao {
 		img: HTMLImageElement;
 		x: number;
 		y: number;
+		frame: number;
 		muki: MukiType;
+		mukiListGroup: { [idx: string]: Array<string> } = { 'n': ['player2.png'], 'e': ['player4.png'], 's': ['player1.png'], 'w': ['player3.png'] }
 
 		constructor(chr: string) {
 			this.chr = chr;
@@ -14,33 +16,28 @@ namespace Aao {
 			this.img.style.position = 'absolute';
 			this.x = 0;
 			this.y = 0;
+			this.frame = 0;
 			this.muki = 'e'
 		}
 
-		moveTo(x: number, y: number): void {
+		moveTo(x: number, y: number, muki: Muki): void {
 			let dx: number = x - this.x;
 			let dy: number = y - this.y;
-			this.moveBy(dx, dy);
+			this.moveBy(dx, dy, muki);
 			this.x = x;
 			this.y = y;
 		}
 
-		moveBy(dx: number, dy: number): void {
-			if (dx < 0) {
-				this.img.src = 'player3.png';
-			}
-			if (0 < dx) {
-				this.img.src = 'player4.png';
-			}
-			if (dy < 0) {
-				this.img.src = 'player2.png';
-			}
-			if (0 < dy) {
-				this.img.src = 'player1.png';
-			}
+		moveBy(dx: number, dy: number, muki: Muki): void {
+			let array: Array<string> = this.mukiListGroup[muki.muki];
+			let currentFlame: number = this.frame % array.length;
+
+			this.img.src = array[currentFlame];
 			this.x += dx;
 			this.y += dy;
 			this.refrectStyle();
+
+			this.frame++;
 		}
 
 		asciiPosX(): number {
@@ -255,7 +252,7 @@ namespace Aao {
 					if (koudou.type == 'idou') {
 						let muki: Muki = koudou.muki;
 
-						this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4);
+						this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
 
 						if (muki.over(this.gameStatus.player)) {
 							let nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
@@ -342,7 +339,7 @@ namespace Aao {
 			_gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
 			_gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
 
-			this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y);
+			this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y, this.muki);
 
 			if (this.muki.frameEnd <= this.frame) {
 				_gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
@@ -418,7 +415,7 @@ namespace Aao {
 		}
 
 		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(pc.x, 480 - 32);
+			pc.moveTo(pc.x, 480 - 32, this);
 		}
 	}
 	let muki_n = new Muki_N();
@@ -433,7 +430,7 @@ namespace Aao {
 		}
 
 		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(0, pc.y);
+			pc.moveTo(0, pc.y, this);
 		}
 	}
 	let muki_e = new Muki_E();
@@ -448,7 +445,7 @@ namespace Aao {
 		}
 
 		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(pc.x, 0);
+			pc.moveTo(pc.x, 0, this);
 		}
 	}
 	let muki_s = new Muki_S();
@@ -463,7 +460,7 @@ namespace Aao {
 		}
 
 		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(640 - 32, pc.y);
+			pc.moveTo(640 - 32, pc.y, this);
 		}
 	}
 	let muki_w = new Muki_W();
@@ -501,7 +498,7 @@ namespace Aao {
 		_GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
 
 		let player = new Character('A');
-		player.moveTo(18 * 16, 2 * 32);
+		player.moveTo(18 * 16, 2 * 32, muki_s);
 		_gameBoard.fieldGraph.appendChild(player.img);
 
 		_gameStatus.player = player;
