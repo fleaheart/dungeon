@@ -224,18 +224,18 @@ var Aao;
             }
         };
         FreeGameMode.prototype.move = function (muki) {
-            var player = this.gameStatus.player;
-            var next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
-            var next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+            var character = this.gameStatus.player;
+            var next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
+            var next_ascii_y = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
             var check_c1 = get(next_ascii_x, next_ascii_y);
             var check_c2 = get(next_ascii_x + 1, next_ascii_y);
             if (check_c1 == ' ' && check_c2 == ' ') {
-                if (player.muki == muki.muki) {
-                    put(player, ' ');
+                if (character.muki == muki.muki) {
+                    put(character, ' ');
                     this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
                 }
                 else {
-                    player.muki = muki.muki;
+                    character.muki = muki.muki;
                 }
             }
         };
@@ -306,11 +306,11 @@ var Aao;
             this.nextXY = { x: 0, y: -1 };
             this.frameEnd = 30;
         }
-        Muki_N.prototype.over = function (pc) {
-            return pc.y <= 0;
+        Muki_N.prototype.over = function (character) {
+            return character.y <= 0;
         };
-        Muki_N.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(pc.x, 480 - 32, this);
+        Muki_N.prototype.scrollEndAdgust = function (character) {
+            character.moveTo(character.x, 480 - 32, this);
         };
         return Muki_N;
     }());
@@ -321,11 +321,11 @@ var Aao;
             this.nextXY = { x: 1, y: 0 };
             this.frameEnd = 40;
         }
-        Muki_E.prototype.over = function (pc) {
-            return 640 - 32 <= pc.x;
+        Muki_E.prototype.over = function (character) {
+            return 640 - 32 <= character.x;
         };
-        Muki_E.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(0, pc.y, this);
+        Muki_E.prototype.scrollEndAdgust = function (character) {
+            character.moveTo(0, character.y, this);
         };
         return Muki_E;
     }());
@@ -336,11 +336,11 @@ var Aao;
             this.nextXY = { x: 0, y: 1 };
             this.frameEnd = 30;
         }
-        Muki_S.prototype.over = function (pc) {
-            return 480 - 32 <= pc.y;
+        Muki_S.prototype.over = function (character) {
+            return 480 - 32 <= character.y;
         };
-        Muki_S.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(pc.x, 0, this);
+        Muki_S.prototype.scrollEndAdgust = function (character) {
+            character.moveTo(character.x, 0, this);
         };
         return Muki_S;
     }());
@@ -351,11 +351,11 @@ var Aao;
             this.nextXY = { x: -1, y: 0 };
             this.frameEnd = 40;
         }
-        Muki_W.prototype.over = function (pc) {
-            return pc.x <= 0;
+        Muki_W.prototype.over = function (character) {
+            return character.x <= 0;
         };
-        Muki_W.prototype.scrollEndAdgust = function (pc) {
-            pc.moveTo(640 - 32, pc.y, this);
+        Muki_W.prototype.scrollEndAdgust = function (character) {
+            character.moveTo(640 - 32, character.y, this);
         };
         return Muki_W;
     }());

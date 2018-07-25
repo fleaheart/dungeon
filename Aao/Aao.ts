@@ -288,20 +288,20 @@ namespace Aao {
 		}
 
 		move(muki: Muki) {
-			let player: Character = this.gameStatus.player;
+			let character: Character = this.gameStatus.player;
 
-			let next_ascii_x = Math.floor(player.x / 16) + ((player.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
-			let next_ascii_y = Math.floor(player.y / 32) + ((player.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+			let next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
+			let next_ascii_y = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
 
 			let check_c1 = get(next_ascii_x, next_ascii_y);
 			let check_c2 = get(next_ascii_x + 1, next_ascii_y);
 
 			if (check_c1 == ' ' && check_c2 == ' ') {
-				if (player.muki == muki.muki) {
-					put(player, ' ');
+				if (character.muki == muki.muki) {
+					put(character, ' ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
 				} else {
-					player.muki = muki.muki;
+					character.muki = muki.muki;
 				}
 			}
 		}
@@ -397,7 +397,7 @@ namespace Aao {
 		nextXY: XY;
 		over: Function;
 		frameEnd: number;
-		scrollEndAdgust(pc: Character): void;
+		scrollEndAdgust(character: Character): void;
 	}
 
 	interface XY {
@@ -410,12 +410,12 @@ namespace Aao {
 		readonly nextXY: XY = { x: 0, y: -1 };
 		readonly frameEnd: number = 30;
 
-		over(pc: Character): boolean {
-			return pc.y <= 0;
+		over(character: Character): boolean {
+			return character.y <= 0;
 		}
 
-		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(pc.x, 480 - 32, this);
+		scrollEndAdgust(character: Character): void {
+			character.moveTo(character.x, 480 - 32, this);
 		}
 	}
 	let muki_n = new Muki_N();
@@ -425,12 +425,12 @@ namespace Aao {
 		readonly nextXY: XY = { x: 1, y: 0 };
 		readonly frameEnd: number = 40;
 
-		over(pc: Character): boolean {
-			return 640 - 32 <= pc.x;
+		over(character: Character): boolean {
+			return 640 - 32 <= character.x;
 		}
 
-		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(0, pc.y, this);
+		scrollEndAdgust(character: Character): void {
+			character.moveTo(0, character.y, this);
 		}
 	}
 	let muki_e = new Muki_E();
@@ -440,12 +440,12 @@ namespace Aao {
 		readonly nextXY: XY = { x: 0, y: 1 };
 		readonly frameEnd: number = 30;
 
-		over(pc: Character): boolean {
-			return 480 - 32 <= pc.y;
+		over(character: Character): boolean {
+			return 480 - 32 <= character.y;
 		}
 
-		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(pc.x, 0, this);
+		scrollEndAdgust(character: Character): void {
+			character.moveTo(character.x, 0, this);
 		}
 	}
 	let muki_s = new Muki_S();
@@ -455,12 +455,12 @@ namespace Aao {
 		readonly nextXY: XY = { x: -1, y: 0 };
 		readonly frameEnd: number = 40;
 
-		over(pc: Character): boolean {
-			return pc.x <= 0;
+		over(character: Character): boolean {
+			return character.x <= 0;
 		}
 
-		scrollEndAdgust(pc: Character): void {
-			pc.moveTo(640 - 32, pc.y, this);
+		scrollEndAdgust(character: Character): void {
+			character.moveTo(640 - 32, character.y, this);
 		}
 	}
 	let muki_w = new Muki_W();
