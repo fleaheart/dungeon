@@ -297,7 +297,16 @@ namespace Aao {
 			let check_c1 = get(next_ascii_x, next_ascii_y);
 			let check_c2 = get(next_ascii_x + 1, next_ascii_y);
 
-			if (check_c1 == ' ' && check_c2 == ' ') {
+			let check_offet: string;
+			if (muki.muki == 'n' || muki.muki == 's') {
+				check_offet = character.x % 16 == 0 ? ' ' : get(next_ascii_x + 2, next_ascii_y);
+			} else if (muki.muki == 'e' || muki.muki == 'w') {
+				check_offet = character.y % 32 == 0 ? ' ' : get(next_ascii_x + 1, next_ascii_y + 1);
+			} else {
+				throw 'unreachable';
+			}
+
+			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
 				if (character.muki == muki.muki) {
 					put(character, ' ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
