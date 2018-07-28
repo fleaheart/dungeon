@@ -418,4 +418,4 @@ var Dangeon;
         context.stroke();
     }
 })(Dangeon || (Dangeon = {}));
-//# sourceMappingURL=Dangeon.js.map
+//# sourceMappingURL=Dungeon.js.map
