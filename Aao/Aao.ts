@@ -556,38 +556,19 @@ namespace Aao {
 		}
 
 		let keyboard = new Kyoutsu.Keyboard();
-		mainBoard.appendChild(keyboard.keyBoard);
+		keyboard.keyboard.style.top = '496px';
+
+		mainBoard.appendChild(keyboard.keyboard);
 
 		keyboard.setKeyEvent('mousedown', keyboardMousedown);
 		keyboard.setKeyEvent('mouseup', keyboardMouseup);
 
-		keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
+		keyboard.setKeytops([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
 	}
 
 	function keyboardMousedown(e: MouseEvent): void {
-		let target: EventTarget | null = e.target;
-		if (target == null) {
-			return;
-		}
-		let element: HTMLElement | Node | null = <HTMLElement>target;
-
-		while (true) {
-			if (element == null) {
-				break;
-			}
-			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
-				break;
-			}
-			element = element.parentNode;
-		}
-		if (element == null) {
-			return;
-		}
-
-		let key: string | null = element.textContent;
-		if (key != null) {
-			_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
-		}
+		let key = Kyoutsu.getKeytop(e.target);
+		_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
 	}
 
 	function keyboardMouseup() {

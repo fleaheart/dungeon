@@ -90,17 +90,16 @@ var Kyoutsu;
     Kyoutsu.getInputCode = getInputCode;
     var Keyboard = (function () {
         function Keyboard() {
-            this.keyBoard = document.createElement('DIV');
+            this.keyboard = document.createElement('DIV');
             this.keys = new Array();
-            var keyBoard = this.keyBoard;
-            keyBoard.style.position = 'absolute';
-            keyBoard.style.top = '496px';
-            keyBoard.style.width = '138px';
-            keyBoard.style.display = 'flex';
-            keyBoard.style.flexWrap = 'wrap';
-            keyBoard.style.border = '1px solid black';
-            keyBoard.style.padding = '2px';
-            keyBoard.style.textAlign = 'center';
+            var keyboard = this.keyboard;
+            keyboard.style.position = 'absolute';
+            keyboard.style.width = '138px';
+            keyboard.style.display = 'flex';
+            keyboard.style.flexWrap = 'wrap';
+            keyboard.style.border = '1px solid black';
+            keyboard.style.padding = '2px';
+            keyboard.style.textAlign = 'center';
             for (var i = 0; i < 9; i++) {
                 var key = document.createElement('DIV');
                 key.className = 'sofwareKey';
@@ -110,7 +109,7 @@ var Kyoutsu;
                 key.style.height = '40px';
                 key.style.border = '1px solid red';
                 key.style.textAlign = 'center';
-                keyBoard.appendChild(key);
+                keyboard.appendChild(key);
                 this.keys.push(key);
             }
         }
@@ -119,7 +118,7 @@ var Kyoutsu;
                 this.keys[i].addEventListener(type, listener);
             }
         };
-        Keyboard.prototype.setKeytop = function (keytops) {
+        Keyboard.prototype.setKeytops = function (keytops) {
             for (var i = 0, len = this.keys.length; i < len; i++) {
                 var key = this.keys[i];
                 var keytop = keytops[i];
@@ -136,5 +135,26 @@ var Kyoutsu;
         return Keyboard;
     }());
     Kyoutsu.Keyboard = Keyboard;
+    function getKeytop(target) {
+        var element = target;
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element.classList.contains('sofwareKey')) {
+                break;
+            }
+            element = element.parentNode;
+        }
+        if (element == null) {
+            return '';
+        }
+        var key = element.textContent;
+        if (key == null) {
+            return '';
+        }
+        return key;
+    }
+    Kyoutsu.getKeytop = getKeytop;
 })(Kyoutsu || (Kyoutsu = {}));
 //# sourceMappingURL=Kyoutsu.js.map

@@ -429,33 +429,15 @@ var Aao;
             mainBoard.appendChild(elm);
         }
         var keyboard = new Kyoutsu.Keyboard();
-        mainBoard.appendChild(keyboard.keyBoard);
+        keyboard.keyboard.style.top = '496px';
+        mainBoard.appendChild(keyboard.keyboard);
         keyboard.setKeyEvent('mousedown', keyboardMousedown);
         keyboard.setKeyEvent('mouseup', keyboardMouseup);
-        keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
+        keyboard.setKeytops([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
     }
     function keyboardMousedown(e) {
-        var target = e.target;
-        if (target == null) {
-            return;
-        }
-        var element = target;
-        while (true) {
-            if (element == null) {
-                break;
-            }
-            if (element.classList.contains('sofwareKey')) {
-                break;
-            }
-            element = element.parentNode;
-        }
-        if (element == null) {
-            return;
-        }
-        var key = element.textContent;
-        if (key != null) {
-            _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
-        }
+        var key = Kyoutsu.getKeytop(e.target);
+        _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
     }
     function keyboardMouseup() {
         _gameStatus.lastInputCode = 0;

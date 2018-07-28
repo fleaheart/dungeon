@@ -97,19 +97,18 @@ namespace Kyoutsu {
 	}
 
 	export class Keyboard {
-		keyBoard: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+		keyboard: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
 		keys: Array<HTMLElement> = new Array<HTMLElement>();
 
 		constructor() {
-			let keyBoard = this.keyBoard;
-			keyBoard.style.position = 'absolute';
-			keyBoard.style.top = '496px';
-			keyBoard.style.width = '138px';
-			keyBoard.style.display = 'flex';
-			keyBoard.style.flexWrap = 'wrap';
-			keyBoard.style.border = '1px solid black';
-			keyBoard.style.padding = '2px';
-			keyBoard.style.textAlign = 'center';
+			let keyboard = this.keyboard;
+			keyboard.style.position = 'absolute';
+			keyboard.style.width = '138px';
+			keyboard.style.display = 'flex';
+			keyboard.style.flexWrap = 'wrap';
+			keyboard.style.border = '1px solid black';
+			keyboard.style.padding = '2px';
+			keyboard.style.textAlign = 'center';
 
 			for (let i = 0; i < 9; i++) {
 				let key = document.createElement('DIV');
@@ -120,7 +119,7 @@ namespace Kyoutsu {
 				key.style.height = '40px';
 				key.style.border = '1px solid red';
 				key.style.textAlign = 'center';
-				keyBoard.appendChild(key);
+				keyboard.appendChild(key);
 
 				this.keys.push(key);
 			}
@@ -132,7 +131,7 @@ namespace Kyoutsu {
 			}
 		}
 
-		setKeytop(keytops: Array<string>): void {
+		setKeytops(keytops: Array<string>): void {
 			for (let i = 0, len: number = this.keys.length; i < len; i++) {
 				let key: HTMLElement | undefined = this.keys[i];
 				let keytop: string | undefined = keytops[i];
@@ -145,6 +144,30 @@ namespace Kyoutsu {
 				}
 			}
 		}
+	}
+
+	export function getKeytop(target: EventTarget | HTMLElement | null): string {
+		let element: HTMLElement | Node | null = <HTMLElement>target;
+
+		while (true) {
+			if (element == null) {
+				break;
+			}
+			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
+				break;
+			}
+			element = element.parentNode;
+		}
+		if (element == null) {
+			return '';
+		}
+
+		let key: string | null = element.textContent;
+		if (key == null) {
+			return '';
+		}
+
+		return key;
 	}
 
 }

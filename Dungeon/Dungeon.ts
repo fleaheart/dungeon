@@ -54,40 +54,19 @@ namespace Dungeon {
 		submapview();
 
 		let keyboard = new Kyoutsu.Keyboard();
-		keyboard.keyBoard.style.top = '320px';
+		keyboard.keyboard.style.top = '320px';
 
-		document.body.appendChild(keyboard.keyBoard);
+		document.body.appendChild(keyboard.keyboard);
 
 		keyboard.setKeyEvent('click', keyboardClick);
 		keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
-		keyboard.setKeytop([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
+		keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
 	}
 
 	function keyboardClick(e: Event) {
-		let target: EventTarget | null = e.target;
-		if (target == null) {
-			return;
-		}
-		let element: HTMLElement | Node | null = <HTMLElement>target;
-
-		while (true) {
-			if (element == null) {
-				break;
-			}
-			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
-				break;
-			}
-			element = element.parentNode;
-		}
-		if (element == null) {
-			return;
-		}
-
-		let key: string | null = element.textContent;
-		if (key != null) {
-			keyOperation(key);
-		}
+		let key = Kyoutsu.getKeytop(e.target);
+		keyOperation(key);
 	}
 
 	function keyDownEvent(e: KeyboardEvent): void {
