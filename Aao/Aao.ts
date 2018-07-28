@@ -554,6 +554,97 @@ namespace Aao {
 
 			mainBoard.appendChild(elm);
 		}
+
+		let keyBoard: HTMLElement = addKeyBoard();
+		mainBoard.appendChild(keyBoard);
+
+		setKey(keyBoard, [' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
+		addEvent(keyBoard, 'mousedown', (e: MouseEvent) => {
+			let target: EventTarget | null = e.target;
+			if (target == null) {
+				return;
+			}
+			let element: HTMLElement | Node | null = <HTMLElement>target;
+
+			while (true) {
+				if (element == null) {
+					break;
+				}
+				if ((<HTMLElement>element).classList.contains('sofwareKey')) {
+					break;
+				}
+				element = element.parentNode;
+			}
+			if (element == null) {
+				return;
+			}
+
+			let key: string | null = element.textContent;
+			if (key != null) {
+				_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+			}
+		});
+		addEvent(keyBoard, 'mouseup', () => {
+			_gameStatus.lastInputCode = 0;
+		});
+	}
+
+	function addKeyBoard(): HTMLElement {
+		let keyBoard = <HTMLDivElement>document.createElement('DIV');
+		keyBoard.style.position = 'absolute';
+		keyBoard.style.top = '496px';
+		keyBoard.style.width = '138px';
+		keyBoard.style.display = 'flex';
+		keyBoard.style.flexWrap = 'wrap';
+		keyBoard.style.border = '1px solid black';
+		keyBoard.style.padding = '2px';
+		keyBoard.style.textAlign = 'center';
+
+		for (let i = 0; i < 9; i++) {
+			let elm = document.createElement('DIV');
+			elm.className = 'sofwareKey';
+			elm.style.display = 'inline-block';
+			elm.style.margin = '2px';
+			elm.style.width = '40px';
+			elm.style.height = '40px';
+			elm.style.border = '1px solid red';
+			elm.style.textAlign = 'center';
+			keyBoard.appendChild(elm);
+		}
+
+		return keyBoard;
+	}
+
+	function setKey(keyBoard: HTMLElement, keys: Array<string>): void {
+		let childNodes: NodeListOf<Node> = keyBoard.childNodes;
+
+		let keyIdx = 0;
+		for (let i = 0, len: number = childNodes.length; i < len; i++) {
+			let node = <HTMLElement>childNodes.item(i);
+			if (node.classList.contains('sofwareKey')) {
+				let key = keys[keyIdx];
+				if (key != undefined) {
+					if (3 < key.length) {
+						node.innerHTML = key.substr(0, 3) + '<span style="display:none">' + key.substr(3) + '</span>';
+					} else {
+						node.innerHTML = key;
+					}
+				}
+				keyIdx++;
+			}
+		}
+	}
+
+	function addEvent(keyBoard: HTMLElement, type: string, listener: any) {
+		let childNodes: NodeListOf<Node> = keyBoard.childNodes;
+		for (let i = 0, len: number = childNodes.length; i < len; i++) {
+			let node = <HTMLElement>childNodes.item(i);
+			if (node.classList.contains('sofwareKey')) {
+				(function (keyElement: HTMLElement, type: string, listener: any) {
+					keyElement.addEventListener(type, listener)
+				})(node, type, listener);
+			}
+		}
 	}
 
 	class PlayerInitter implements Initter {
