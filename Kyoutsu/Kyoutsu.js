@@ -64,5 +64,29 @@ var Kyoutsu;
     }
     Kyoutsu.load = load;
     ;
+    Kyoutsu.INPUT_UP = 1;
+    Kyoutsu.INPUT_RIGHT = 2;
+    Kyoutsu.INPUT_DOWN = 4;
+    Kyoutsu.INPUT_LEFT = 8;
+    Kyoutsu.INPUT_ESCAPE = 27;
+    function getInputCode(key) {
+        if (key == 'w' || key == 'W') {
+            return Kyoutsu.INPUT_UP;
+        }
+        if (key == 'd' || key == 'D') {
+            return Kyoutsu.INPUT_RIGHT;
+        }
+        if (key == 's' || key == 'S') {
+            return Kyoutsu.INPUT_DOWN;
+        }
+        if (key == 'a' || key == 'A') {
+            return Kyoutsu.INPUT_LEFT;
+        }
+        if (key == 'Escape' || key == 'Esc') {
+            return Kyoutsu.INPUT_ESCAPE;
+        }
+        return 0;
+    }
+    Kyoutsu.getInputCode = getInputCode;
 })(Kyoutsu || (Kyoutsu = {}));
 //# sourceMappingURL=Kyoutsu.js.map

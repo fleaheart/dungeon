@@ -68,4 +68,32 @@ namespace Kyoutsu {
 		return res;
 	};
 
+	export const INPUT_UP: number = 1;
+	export const INPUT_RIGHT: number = 2;
+	export const INPUT_DOWN: number = 4;
+	export const INPUT_LEFT: number = 8;
+
+	export const INPUT_ESCAPE: number = 27;
+
+	// keyCodeが必要になったらまた考える。案)getKeyCode(s: string): number
+	export function getInputCode(key: string): number {
+		if (key == 'w' || key == 'W') {
+			return INPUT_UP;
+		}
+		if (key == 'd' || key == 'D') {
+			return INPUT_RIGHT;
+		}
+		if (key == 's' || key == 'S') {
+			return INPUT_DOWN;
+		}
+		if (key == 'a' || key == 'A') {
+			return INPUT_LEFT;
+		}
+		if (key == 'Escape' || key == 'Esc') {
+			return INPUT_ESCAPE;
+		}
+
+		return 0;
+	}
+
 }

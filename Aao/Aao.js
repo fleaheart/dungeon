@@ -1,6 +1,5 @@
 var Aao;
 (function (Aao) {
-    var KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
     var FRAME_TIMING = 16;
     var Character = (function () {
         function Character(chr, mukiListGroup) {
@@ -157,8 +156,7 @@ var Aao;
             this.player = new Character('');
             this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
             this.frameCount = 0;
-            this.lastKeyCode = -1;
-            this.lastKey = '';
+            this.lastInputCode = 0;
             this.koudouArray = new Array();
         }
         return GameStatus;
@@ -194,17 +192,17 @@ var Aao;
             }
             put(this.gameStatus.player);
             display();
-            var lastKeyCode = this.gameStatus.lastKeyCode;
-            if (lastKeyCode == KEY_UP) {
+            var inputCode = this.gameStatus.lastInputCode;
+            if (inputCode == Kyoutsu.INPUT_UP) {
                 this.move(muki_n);
             }
-            if (lastKeyCode == KEY_RIGHT) {
+            if (inputCode == Kyoutsu.INPUT_RIGHT) {
                 this.move(muki_e);
             }
-            if (lastKeyCode == KEY_DOWN) {
+            if (inputCode == Kyoutsu.INPUT_DOWN) {
                 this.move(muki_s);
             }
-            if (lastKeyCode == KEY_LEFT) {
+            if (inputCode == Kyoutsu.INPUT_LEFT) {
                 this.move(muki_w);
             }
         };
@@ -283,13 +281,12 @@ var Aao;
             _gameBoard.debug.innerHTML =
                 gameStatus.gameMode.name
                     + '<br>' + gameStatus.frameCount
-                    + '<br>' + gameStatus.lastKey
-                    + ' / ' + gameStatus.lastKeyCode
+                    + '<br>' + gameStatus.lastInputCode
                     + '<br>' + gameStatus.gameFieldGamen.name
                     + '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
                     + '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY();
         }
-        if (gameStatus.lastKeyCode == 27) {
+        if (gameStatus.lastInputCode == Kyoutsu.INPUT_ESCAPE) {
             return;
         }
         gameStatus.gameMode.do();
@@ -373,13 +370,12 @@ var Aao;
     window.addEventListener('load', function () {
         initMainBoard();
         document.addEventListener('keydown', function (e) {
-            _gameStatus.lastKeyCode = e.keyCode;
-            _gameStatus.lastKey = e.key;
+            _gameStatus.lastInputCode = Kyoutsu.getInputCode(e.key);
         });
         document.addEventListener('keyup', function (e) {
-            if (e.keyCode == _gameStatus.lastKeyCode) {
-                _gameStatus.lastKeyCode = -1;
-                _gameStatus.lastKey = '';
+            var inputCode = Kyoutsu.getInputCode(e.key);
+            if (inputCode == _gameStatus.lastInputCode) {
+                _gameStatus.lastInputCode = 0;
             }
         });
         loadData();

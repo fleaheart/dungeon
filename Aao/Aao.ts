@@ -1,6 +1,4 @@
 namespace Aao {
-	let KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
-
 	const FRAME_TIMING: number = 16;
 
 	interface MukiListGroup {
@@ -208,8 +206,7 @@ namespace Aao {
 		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
 
 		frameCount: number = 0;
-		lastKeyCode: number = -1;
-		lastKey: string = '';
+		lastInputCode: number = 0;
 
 		koudouArray: Array<Koudou> = new Array<Koudou>();
 	}
@@ -262,17 +259,17 @@ namespace Aao {
 			put(this.gameStatus.player);
 			display();
 
-			let lastKeyCode = this.gameStatus.lastKeyCode;
-			if (lastKeyCode == KEY_UP) {
+			let inputCode: number = this.gameStatus.lastInputCode;
+			if (inputCode == Kyoutsu.INPUT_UP) {
 				this.move(muki_n);
 			}
-			if (lastKeyCode == KEY_RIGHT) {
+			if (inputCode == Kyoutsu.INPUT_RIGHT) {
 				this.move(muki_e);
 			}
-			if (lastKeyCode == KEY_DOWN) {
+			if (inputCode == Kyoutsu.INPUT_DOWN) {
 				this.move(muki_s);
 			}
-			if (lastKeyCode == KEY_LEFT) {
+			if (inputCode == Kyoutsu.INPUT_LEFT) {
 				this.move(muki_w);
 			}
 		}
@@ -372,15 +369,14 @@ namespace Aao {
 			_gameBoard.debug.innerHTML =
 				gameStatus.gameMode.name
 				+ '<br>' + gameStatus.frameCount
-				+ '<br>' + gameStatus.lastKey
-				+ ' / ' + gameStatus.lastKeyCode
+				+ '<br>' + gameStatus.lastInputCode
 				+ '<br>' + gameStatus.gameFieldGamen.name
 				+ '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
 				+ '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY()
 				;
 		}
 
-		if (gameStatus.lastKeyCode == 27) {
+		if (gameStatus.lastInputCode == Kyoutsu.INPUT_ESCAPE) {
 			return;
 		}
 
@@ -481,14 +477,13 @@ namespace Aao {
 		initMainBoard();
 
 		document.addEventListener('keydown', (e: KeyboardEvent): void => {
-			_gameStatus.lastKeyCode = e.keyCode;
-			_gameStatus.lastKey = e.key;
+			_gameStatus.lastInputCode = Kyoutsu.getInputCode(e.key);
 		});
 
 		document.addEventListener('keyup', (e: KeyboardEvent): void => {
-			if (e.keyCode == _gameStatus.lastKeyCode) {
-				_gameStatus.lastKeyCode = -1;
-				_gameStatus.lastKey = '';
+			let inputCode = Kyoutsu.getInputCode(e.key);
+			if (inputCode == _gameStatus.lastInputCode) {
+				_gameStatus.lastInputCode = 0;
 			}
 		});
 
