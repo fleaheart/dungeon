@@ -473,7 +473,7 @@ namespace Aao {
 		throw mukiType + ' is illigal argument';
 	}
 
-	window.addEventListener('load', (): void => {
+	export function init(): void {
 		initMainBoard();
 
 		document.addEventListener('keydown', (e: KeyboardEvent): void => {
@@ -505,7 +505,7 @@ namespace Aao {
 		display();
 
 		setTimeout(frameCheck, FRAME_TIMING);
-	});
+	};
 
 	function initMainBoard(): void {
 		let mainBoard: HTMLElement = Kyoutsu.getElementById('mainBoard');

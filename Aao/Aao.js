@@ -367,7 +367,7 @@ var Aao;
         }
         throw mukiType + ' is illigal argument';
     }
-    window.addEventListener('load', function () {
+    function init() {
         initMainBoard();
         document.addEventListener('keydown', function (e) {
             _gameStatus.lastInputCode = Kyoutsu.getInputCode(e.key);
@@ -390,7 +390,9 @@ var Aao;
         put(player);
         display();
         setTimeout(frameCheck, FRAME_TIMING);
-    });
+    }
+    Aao.init = init;
+    ;
     function initMainBoard() {
         var mainBoard = Kyoutsu.getElementById('mainBoard');
         {
