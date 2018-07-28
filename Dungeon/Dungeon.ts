@@ -52,19 +52,15 @@ namespace Dungeon {
 		document.addEventListener('click', clickEvent);
 		document.addEventListener('keydown', keyDownEvent);
 
-		let div_map: HTMLElement | null = document.getElementById('div_map');
-		if (div_map != null) {
-			mapview(div_map, $mapdata);
-		}
+		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
+		mapview(div_map, $mapdata);
 
 		$pc.xpos = 0;
 		$pc.ypos = 7;
 		$pc.muki = 0;
 
-		let nakami: HTMLElement | null = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-		if (nakami != null) {
-			nakami.innerHTML = '↑';
-		}
+		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+		nakami.innerHTML = '↑';
 
 		submapview();
 	}
@@ -132,17 +128,14 @@ namespace Dungeon {
 			}
 
 			if (xdiff != 0 || ydiff != 0) {
-				let nakami: HTMLElement | null = null;
-				nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-				if (nakami != null) {
-					nakami.innerHTML = '';
-				}
+				let nakami: HTMLElement;
+				nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+				nakami.innerHTML = '';
+
 				$pc.xpos += xdiff;
 				$pc.ypos += ydiff;
-				nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-				if (nakami != null) {
-					nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-				}
+				nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+				nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
 
 				submapview();
 			}
@@ -152,11 +145,8 @@ namespace Dungeon {
 			if ($pc.muki < 0) {
 				$pc.muki = $MUKI_CHARACTER_LENGTH - 1;
 			}
-			let nakami: HTMLElement | null = null;
-			nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			if (nakami != null) {
-				nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-			}
+			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+			nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
 
 			submapview();
 
@@ -165,11 +155,8 @@ namespace Dungeon {
 			if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
 				$pc.muki = 0;
 			}
-			let nakami: HTMLElement | null = null;
-			nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			if (nakami != null) {
-				nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-			}
+			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+			nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
 
 			submapview();
 		}
@@ -180,22 +167,18 @@ namespace Dungeon {
 		let zenpou: number = 3
 		let hidarimigi: number = 1;
 
-		let div_submap: HTMLElement | null = document.getElementById('div_submap');
-
 		let submapdata: string[] = map_kiritori($mapdata, zenpou, hidarimigi);
 
-		if (div_submap != null) {
-			mapview(div_submap, submapdata);
-		}
+		draw3D(submapdata, zenpou, hidarimigi);
+
+		let div_submap: HTMLElement = Kyoutsu.getElementById('div_submap');
+
+		mapview(div_submap, submapdata);
 
 		// デバッグ情報の表示
-		if (div_submap != null) {
-			let html: string = div_submap.innerHTML;
-			html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
-			div_submap.innerHTML = html;
-		}
-
-		draw3D(submapdata, zenpou, hidarimigi);
+		let html: string = div_submap.innerHTML;
+		html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
+		div_submap.innerHTML = html;
 	}
 
 	function map_kiritori(mapdata: string[], zenpou: number, hidarimigi: number): string[] {
@@ -279,11 +262,7 @@ namespace Dungeon {
 	}
 
 	function draw3D(mapdata: string[], zenpou: number, hidarimigi: number): void {
-		let elm: HTMLElement | null = document.getElementById('map3d');
-		if (elm == null) {
-			return;
-		}
-		let cvs: HTMLCanvasElement = <HTMLCanvasElement>elm;
+		let cvs: HTMLCanvasElement = <HTMLCanvasElement>Kyoutsu.getElementById('map3d');;
 		let context: CanvasRenderingContext2D | null = cvs.getContext('2d');
 		if (context == null) {
 			return;

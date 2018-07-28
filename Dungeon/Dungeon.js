@@ -40,17 +40,13 @@ var Dungeon;
         document.addEventListener('touchstart', touchEvent);
         document.addEventListener('click', clickEvent);
         document.addEventListener('keydown', keyDownEvent);
-        var div_map = document.getElementById('div_map');
-        if (div_map != null) {
-            mapview(div_map, $mapdata);
-        }
+        var div_map = Kyoutsu.getElementById('div_map');
+        mapview(div_map, $mapdata);
         $pc.xpos = 0;
         $pc.ypos = 7;
         $pc.muki = 0;
-        var nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-        if (nakami != null) {
-            nakami.innerHTML = '↑';
-        }
+        var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+        nakami.innerHTML = '↑';
         submapview();
     }
     Dungeon.init = init;
@@ -115,17 +111,13 @@ var Dungeon;
                 }
             }
             if (xdiff != 0 || ydiff != 0) {
-                var nakami = null;
-                nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-                if (nakami != null) {
-                    nakami.innerHTML = '';
-                }
+                var nakami = void 0;
+                nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+                nakami.innerHTML = '';
                 $pc.xpos += xdiff;
                 $pc.ypos += ydiff;
-                nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-                if (nakami != null) {
-                    nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-                }
+                nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+                nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
                 submapview();
             }
         }
@@ -134,11 +126,8 @@ var Dungeon;
             if ($pc.muki < 0) {
                 $pc.muki = $MUKI_CHARACTER_LENGTH - 1;
             }
-            var nakami = null;
-            nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            if (nakami != null) {
-                nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-            }
+            var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+            nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
             submapview();
         }
         else if (keyCode == $KEY.D) {
@@ -146,28 +135,21 @@ var Dungeon;
             if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
                 $pc.muki = 0;
             }
-            var nakami = null;
-            nakami = document.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            if (nakami != null) {
-                nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
-            }
+            var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+            nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
             submapview();
         }
     }
     function submapview() {
         var zenpou = 3;
         var hidarimigi = 1;
-        var div_submap = document.getElementById('div_submap');
         var submapdata = map_kiritori($mapdata, zenpou, hidarimigi);
-        if (div_submap != null) {
-            mapview(div_submap, submapdata);
-        }
-        if (div_submap != null) {
-            var html = div_submap.innerHTML;
-            html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
-            div_submap.innerHTML = html;
-        }
         draw3D(submapdata, zenpou, hidarimigi);
+        var div_submap = Kyoutsu.getElementById('div_submap');
+        mapview(div_submap, submapdata);
+        var html = div_submap.innerHTML;
+        html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
+        div_submap.innerHTML = html;
     }
     function map_kiritori(mapdata, zenpou, hidarimigi) {
         var kiritorimapdata = new Array();
@@ -247,11 +229,8 @@ var Dungeon;
         return c;
     }
     function draw3D(mapdata, zenpou, hidarimigi) {
-        var elm = document.getElementById('map3d');
-        if (elm == null) {
-            return;
-        }
-        var cvs = elm;
+        var cvs = Kyoutsu.getElementById('map3d');
+        ;
         var context = cvs.getContext('2d');
         if (context == null) {
             return;
