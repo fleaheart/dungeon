@@ -162,8 +162,47 @@ namespace Aao {
 		muki: Muki;
 	}
 
+	interface Initter {
+		analize(line: string): void;
+		save(): void;
+	}
+
+	class GameInitter implements Initter {
+		start_field: string = 'no define';
+		start_x: number = 0;
+		start_y: number = 0;
+		start_muki: Muki = muki_e;
+
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		analize(line: string): void {
+			let defineData: RegExpMatchArray | null = line.match(this.reg);
+			if (defineData != null) {
+				let attr: string = defineData[1];
+				let value: string = defineData[2];
+
+				if (attr == 'start_field') {
+					this.start_field = value;
+				} else if (attr == 'start_x') {
+					this.start_x = +value;
+				} else if (attr == 'start_y') {
+					this.start_y = +value;
+				} else if (attr == 'start_muki') {
+					if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
+						this.start_muki = createMuki(value);
+					}
+				}
+			}
+		}
+
+		save(): void {
+			// 全部そろうまでわからないので、ここでは何もしない
+		}
+	}
+
 	class GameStatus {
 		gameMode: GameMode | null = null;
+		gameInitter: GameInitter = new GameInitter();
 		player: Character = new Character('');
 
 		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
@@ -456,10 +495,10 @@ namespace Aao {
 		loadData();
 
 		let player = _gameStatus.player;
-		player.moveTo(18 * 16, 2 * 32, muki_s);
+		player.moveTo(_gameStatus.gameInitter.start_x * 16, _gameStatus.gameInitter.start_y * 32, _gameStatus.gameInitter.start_muki);
 		_gameBoard.fieldGraph.appendChild(player.img);
 
-		_gameStatus.gameFieldGamen = getGameFieldGamen('field1');
+		_gameStatus.gameFieldGamen = getGameFieldGamen(_gameStatus.gameInitter.start_field);
 
 		for (let i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
 			_gameBoard.current.maptext.push(_gameStatus.gameFieldGamen.maptext[i]);
@@ -520,11 +559,6 @@ namespace Aao {
 
 			mainBoard.appendChild(elm);
 		}
-	}
-
-	interface Initter {
-		analize(line: string): void;
-		save(): void;
 	}
 
 	class PlayerInitter implements Initter {
@@ -627,7 +661,14 @@ namespace Aao {
 				break;
 			}
 
-			if (line == '[PLAYER]') {
+			if (line == '[GAME_INITIALIZE]') {
+				if (initter != null) {
+					initter.save();
+				}
+				// gameInitterだけは、全部そろうまでわからないので、捨てないで使いまわす。
+				initter = _gameStatus.gameInitter;
+
+			} else if (line == '[PLAYER]') {
 				if (initter != null) {
 					initter.save();
 				}

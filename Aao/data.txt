@@ -1,3 +1,9 @@
+[GAME_INITIALIZE]
+start_field:field1
+start_x:18
+start_y:2
+start_muki:s
+
 [PLAYER]
 chr:A
 
