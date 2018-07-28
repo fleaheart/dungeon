@@ -59,11 +59,11 @@ namespace Aao {
 
 	class GameField {
 		backGround: HTMLImageElement;
-		field: Array<string>;
+		maptext: Array<string>;
 
 		constructor() {
 			this.backGround = <HTMLImageElement>document.createElement('IMG');
-			this.field = new Array<string>();
+			this.maptext = new Array<string>();
 		}
 	}
 
@@ -92,14 +92,14 @@ namespace Aao {
 
 	class GameFieldGamen {
 		name: string;
-		field: Array<string>;
+		maptext: Array<string>;
 		imgsrc: string;
 
 		over: { [mukiType: string]: string | null } = {};
 
-		constructor(name: string, field: Array<string>, imgsrc: string, over_n: string | null, over_e: string | null, over_s: string | null, over_w: string | null) {
+		constructor(name: string, maptext: Array<string>, imgsrc: string, over_n: string | null, over_e: string | null, over_s: string | null, over_w: string | null) {
 			this.name = name;
-			this.field = field;
+			this.maptext = maptext;
 			this.imgsrc = imgsrc;
 			this.over['n'] = over_n;
 			this.over['e'] = over_e;
@@ -132,18 +132,18 @@ namespace Aao {
 	}
 
 	function get(x: number, y: number): string {
-		if (y < 0 || _gameBoard.current.field.length <= y) {
+		if (y < 0 || _gameBoard.current.maptext.length <= y) {
 			return '';
 		}
-		if (x < 0 || _gameBoard.current.field[y].length <= x) {
+		if (x < 0 || _gameBoard.current.maptext[y].length <= x) {
 			return '';
 		}
-		return _gameBoard.current.field[y].charAt(x);
+		return _gameBoard.current.maptext[y].charAt(x);
 	}
 
 	function display(): void {
 		if (_gameBoard.fieldAscii != null) {
-			_gameBoard.fieldAscii.innerHTML = _gameBoard.current.field.join('<br>').replace(/ /g, '&nbsp;');
+			_gameBoard.fieldAscii.innerHTML = _gameBoard.current.maptext.join('<br>').replace(/ /g, '&nbsp;');
 		}
 		if (_gameBoard.objectAscii != null) {
 			_gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
@@ -279,7 +279,7 @@ namespace Aao {
 
 		do() {
 			if (this.frame == 0) {
-				_gameBoard.next.field = this.nextGameFieldGamen.field;
+				_gameBoard.next.maptext = this.nextGameFieldGamen.maptext;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
 				_gameBoard.next.backGround.style.display = '';
 				put(this.gameStatus.player, ' ');
@@ -302,8 +302,8 @@ namespace Aao {
 
 				this.muki.scrollEndAdgust(this.gameStatus.player);
 
-				for (let i = 0; i < _gameBoard.current.field.length; i++) {
-					_gameBoard.current.field[i] = _gameBoard.next.field[i];
+				for (let i = 0; i < _gameBoard.current.maptext.length; i++) {
+					_gameBoard.current.maptext[i] = _gameBoard.next.maptext[i];
 				}
 				display();
 
@@ -455,8 +455,8 @@ namespace Aao {
 		_gameStatus.player = player;
 		_gameStatus.gameFieldGamen = getGameFieldGamen('field1');
 
-		for (let i = 0; i < _gameStatus.gameFieldGamen.field.length; i++) {
-			_gameBoard.current.field.push(_gameStatus.gameFieldGamen.field[i]);
+		for (let i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
+			_gameBoard.current.maptext.push(_gameStatus.gameFieldGamen.maptext[i]);
 		}
 		_gameBoard.current.backGround.src = _gameStatus.gameFieldGamen.imgsrc;
 
@@ -518,7 +518,7 @@ namespace Aao {
 
 	class GameFieldGamenInit {
 		name: string = 'no define';
-		field: Array<string> = new Array<string>();
+		maptext: Array<string> = new Array<string>();
 		imgsrc: string = 'no define';
 		over_n: string | null = null;
 		over_e: string | null = null;
@@ -529,7 +529,7 @@ namespace Aao {
 		maptextCount: number = 0;
 
 		save() {
-			_GameFieldGamenList.push(new GameFieldGamen(this.name, this.field, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
+			_GameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
 		}
 	}
 
@@ -561,7 +561,7 @@ namespace Aao {
 			}
 
 			if (initter.maptextMode) {
-				initter.field.push(line);
+				initter.maptext.push(line);
 				initter.maptextCount++;
 				if (15 <= initter.maptextCount) {
 					initter.maptextMode = false;
