@@ -1,5 +1,5 @@
-var Dangeon;
-(function (Dangeon) {
+var Dungeon;
+(function (Dungeon) {
     var Pc = (function () {
         function Pc() {
         }
@@ -36,7 +36,7 @@ var Dangeon;
         $KEY.A = 65;
         $KEY.D = 68;
     })($KEY || ($KEY = {}));
-    window.addEventListener('load', function () {
+    function init() {
         document.addEventListener('touchstart', touchEvent);
         document.addEventListener('click', clickEvent);
         document.addEventListener('keydown', keyDownEvent);
@@ -52,7 +52,8 @@ var Dangeon;
             nakami.innerHTML = '↑';
         }
         submapview();
-    });
+    }
+    Dungeon.init = init;
     function touchEvent(evt) {
         var elm = evt.srcElement;
         if (elm == null) {
@@ -417,5 +418,5 @@ var Dangeon;
         context.closePath();
         context.stroke();
     }
-})(Dangeon || (Dangeon = {}));
+})(Dungeon || (Dungeon = {}));
 //# sourceMappingURL=Dungeon.js.map
