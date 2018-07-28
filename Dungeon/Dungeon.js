@@ -48,8 +48,46 @@ var Dungeon;
         var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
         nakami.innerHTML = '↑';
         submapview();
+        var keyboard = new Kyoutsu.Keyboard();
+        keyboard.keyBoard.style.top = '320px';
+        document.body.appendChild(keyboard.keyBoard);
+        keyboard.setKeyEvent('click', keyboardClick);
+        keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', ' ', ' ']);
     }
     Dungeon.init = init;
+    function keyboardClick(e) {
+        var target = e.target;
+        if (target == null) {
+            return;
+        }
+        var element = target;
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element.classList.contains('sofwareKey')) {
+                break;
+            }
+            element = element.parentNode;
+        }
+        if (element == null) {
+            return;
+        }
+        var key = element.textContent;
+        if (key != null) {
+            var keyCode = 0;
+            if (key == 'w') {
+                keyCode = $KEY.W;
+            }
+            else if (key == 'a') {
+                keyCode = $KEY.A;
+            }
+            else if (key == 'd') {
+                keyCode = $KEY.D;
+            }
+            keyOperation(keyCode);
+        }
+    }
     function touchEvent(evt) {
         var elm = evt.srcElement;
         if (elm == null) {

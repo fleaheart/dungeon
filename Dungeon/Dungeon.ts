@@ -63,6 +63,49 @@ namespace Dungeon {
 		nakami.innerHTML = '↑';
 
 		submapview();
+
+		let keyboard = new Kyoutsu.Keyboard();
+		keyboard.keyBoard.style.top = '320px';
+
+		document.body.appendChild(keyboard.keyBoard);
+
+		keyboard.setKeyEvent('click', keyboardClick);
+
+		keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', ' ', ' ']);
+	}
+
+	function keyboardClick(e: MouseEvent) {
+		let target: EventTarget | null = e.target;
+		if (target == null) {
+			return;
+		}
+		let element: HTMLElement | Node | null = <HTMLElement>target;
+
+		while (true) {
+			if (element == null) {
+				break;
+			}
+			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
+				break;
+			}
+			element = element.parentNode;
+		}
+		if (element == null) {
+			return;
+		}
+
+		let key: string | null = element.textContent;
+		if (key != null) {
+			let keyCode = 0;
+			if (key == 'w') {
+				keyCode = $KEY.W;
+			} else if (key == 'a') {
+				keyCode = $KEY.A;
+			} else if (key == 'd') {
+				keyCode = $KEY.D;
+			}
+			keyOperation(keyCode);
+		}
 	}
 
 	function touchEvent(evt: TouchEvent) {
