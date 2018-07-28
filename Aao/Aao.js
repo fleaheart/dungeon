@@ -3,8 +3,8 @@ var Aao;
     var KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
     var FRAME_TIMING = 16;
     var Character = (function () {
-        function Character(chr) {
-            this.mukiListGroup = { 'n': ['player2.png'], 'e': ['player4.png'], 's': ['player1.png'], 'w': ['player3.png'] };
+        function Character(chr, mukiListGroup) {
+            this.mukiListGroup = {};
             this.chr = chr;
             this.img = document.createElement('IMG');
             this.img.style.position = 'absolute';
@@ -12,6 +12,9 @@ var Aao;
             this.y = 0;
             this.frame = 0;
             this.muki = 'e';
+            if (mukiListGroup != undefined) {
+                this.mukiListGroup = mukiListGroup;
+            }
         }
         Character.prototype.moveTo = function (x, y, muki) {
             var dx = x - this.x;
@@ -346,10 +349,9 @@ var Aao;
             }
         });
         loadData();
-        var player = new Character('A');
+        var player = _gameStatus.player;
         player.moveTo(18 * 16, 2 * 32, muki_s);
         _gameBoard.fieldGraph.appendChild(player.img);
-        _gameStatus.player = player;
         _gameStatus.gameFieldGamen = getGameFieldGamen('field1');
         for (var i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
             _gameBoard.current.maptext.push(_gameStatus.gameFieldGamen.maptext[i]);
@@ -395,8 +397,46 @@ var Aao;
             mainBoard.appendChild(elm);
         }
     }
-    var GameFieldGamenInit = (function () {
-        function GameFieldGamenInit() {
+    var PlayerInitter = (function () {
+        function PlayerInitter() {
+            this.chr = 'no define';
+            this.mukiList_n = new Array();
+            this.mukiList_e = new Array();
+            this.mukiList_s = new Array();
+            this.mukiList_w = new Array();
+            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+        }
+        PlayerInitter.prototype.analize = function (line) {
+            var defineData = line.match(this.reg);
+            if (defineData != null) {
+                var attr = defineData[1];
+                var value = defineData[2];
+                if (attr == 'chr') {
+                    this.chr = value;
+                }
+                else if (attr == 'mukiList_n') {
+                    this.mukiList_n.push(value);
+                }
+                else if (attr == 'mukiList_e') {
+                    this.mukiList_e.push(value);
+                }
+                else if (attr == 'mukiList_s') {
+                    this.mukiList_s.push(value);
+                }
+                else if (attr == 'mukiList_w') {
+                    this.mukiList_w.push(value);
+                }
+            }
+        };
+        PlayerInitter.prototype.save = function () {
+            var mukiListGroup = { 'n': this.mukiList_n, 'e': this.mukiList_e, 's': this.mukiList_s, 'w': this.mukiList_w };
+            var player = new Character(this.chr, mukiListGroup);
+            _gameStatus.player = player;
+        };
+        return PlayerInitter;
+    }());
+    var GameFieldGamenInitter = (function () {
+        function GameFieldGamenInitter() {
             this.name = 'no define';
             this.maptext = new Array();
             this.imgsrc = 'no define';
@@ -404,19 +444,56 @@ var Aao;
             this.over_e = null;
             this.over_s = null;
             this.over_w = null;
+            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
             this.maptextMode = false;
             this.maptextCount = 0;
         }
-        GameFieldGamenInit.prototype.save = function () {
+        GameFieldGamenInitter.prototype.analize = function (line) {
+            if (this.maptextMode) {
+                this.maptext.push(line);
+                this.maptextCount++;
+                if (15 <= this.maptextCount) {
+                    this.maptextMode = false;
+                }
+            }
+            else {
+                var defineData = line.match(this.reg);
+                if (defineData != null) {
+                    var attr = defineData[1];
+                    var value = defineData[2];
+                    if (attr == 'name') {
+                        this.name = value;
+                    }
+                    else if (attr == 'imgsrc') {
+                        this.imgsrc = value;
+                    }
+                    else if (attr == 'maptext') {
+                        this.maptextMode = true;
+                    }
+                    else if (attr == 'over_n') {
+                        this.over_n = value;
+                    }
+                    else if (attr == 'over_e') {
+                        this.over_e = value;
+                    }
+                    else if (attr == 'over_s') {
+                        this.over_s = value;
+                    }
+                    else if (attr == 'over_w') {
+                        this.over_w = value;
+                    }
+                }
+            }
+        };
+        GameFieldGamenInitter.prototype.save = function () {
             _GameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
         };
-        return GameFieldGamenInit;
+        return GameFieldGamenInitter;
     }());
     function loadData() {
         var data = Kyoutsu.load('data.txt');
         var lines = data.split(/[\r\n]+/g);
         var initter = null;
-        var reg = /^([_a-z]*): ?(.*)\s*/;
         var i = 0;
         while (true) {
             var line = lines[i];
@@ -424,49 +501,20 @@ var Aao;
             if (line == undefined) {
                 break;
             }
-            if (line == '[FIELD]') {
+            if (line == '[PLAYER]') {
                 if (initter != null) {
                     initter.save();
                 }
-                initter = new GameFieldGamenInit();
+                initter = new PlayerInitter();
             }
-            if (initter == null) {
-                continue;
-            }
-            if (initter.maptextMode) {
-                initter.maptext.push(line);
-                initter.maptextCount++;
-                if (15 <= initter.maptextCount) {
-                    initter.maptextMode = false;
+            else if (line == '[FIELD]') {
+                if (initter != null) {
+                    initter.save();
                 }
+                initter = new GameFieldGamenInitter();
             }
-            else {
-                var defineData = line.match(reg);
-                if (defineData != null) {
-                    var attr = defineData[1];
-                    var value = defineData[2];
-                    if (attr == 'name') {
-                        initter.name = value;
-                    }
-                    else if (attr == 'imgsrc') {
-                        initter.imgsrc = value;
-                    }
-                    else if (attr == 'maptext') {
-                        initter.maptextMode = true;
-                    }
-                    else if (attr == 'over_n') {
-                        initter.over_n = value;
-                    }
-                    else if (attr == 'over_e') {
-                        initter.over_e = value;
-                    }
-                    else if (attr == 'over_s') {
-                        initter.over_s = value;
-                    }
-                    else if (attr == 'over_w') {
-                        initter.over_w = value;
-                    }
-                }
+            if (initter != null) {
+                initter.analize(line);
             }
         }
         if (initter != null) {

@@ -1,3 +1,11 @@
+[PLAYER]
+chr:A
+
+mukiList_n: player2.png
+mukiList_e: player4.png
+mukiList_s: player1.png
+mukiList_w: player3.png
+
 [FIELD]
 name:field1
 

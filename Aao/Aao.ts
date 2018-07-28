@@ -3,6 +3,10 @@ namespace Aao {
 
 	const FRAME_TIMING: number = 16;
 
+	interface MukiListGroup {
+		[idx: string]: Array<string>
+	}
+
 	class Character {
 		chr: string;
 		img: HTMLImageElement;
@@ -10,9 +14,9 @@ namespace Aao {
 		y: number;
 		frame: number;
 		muki: MukiType;
-		mukiListGroup: { [idx: string]: Array<string> } = { 'n': ['player2.png'], 'e': ['player4.png'], 's': ['player1.png'], 'w': ['player3.png'] }
+		mukiListGroup: MukiListGroup = {}
 
-		constructor(chr: string) {
+		constructor(chr: string, mukiListGroup?: MukiListGroup) {
 			this.chr = chr;
 			this.img = <HTMLImageElement>document.createElement('IMG');
 			this.img.style.position = 'absolute';
@@ -20,6 +24,9 @@ namespace Aao {
 			this.y = 0;
 			this.frame = 0;
 			this.muki = 'e'
+			if (mukiListGroup != undefined) {
+				this.mukiListGroup = mukiListGroup;
+			}
 		}
 
 		moveTo(x: number, y: number, muki: Muki): void {
@@ -448,11 +455,10 @@ namespace Aao {
 
 		loadData();
 
-		let player = new Character('A');
+		let player = _gameStatus.player;
 		player.moveTo(18 * 16, 2 * 32, muki_s);
 		_gameBoard.fieldGraph.appendChild(player.img);
 
-		_gameStatus.player = player;
 		_gameStatus.gameFieldGamen = getGameFieldGamen('field1');
 
 		for (let i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
@@ -516,7 +522,48 @@ namespace Aao {
 		}
 	}
 
-	class GameFieldGamenInit {
+	interface Initter {
+		analize(line: string): void;
+		save(): void;
+	}
+
+	class PlayerInitter implements Initter {
+		chr: string = 'no define';
+
+		mukiList_n: Array<string> = new Array<string>();
+		mukiList_e: Array<string> = new Array<string>();
+		mukiList_s: Array<string> = new Array<string>();
+		mukiList_w: Array<string> = new Array<string>();
+
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		analize(line: string): void {
+			let defineData: RegExpMatchArray | null = line.match(this.reg);
+			if (defineData != null) {
+				let attr: string = defineData[1];
+				let value: string = defineData[2];
+				if (attr == 'chr') {
+					this.chr = value;
+				} else if (attr == 'mukiList_n') {
+					this.mukiList_n.push(value);
+				} else if (attr == 'mukiList_e') {
+					this.mukiList_e.push(value);
+				} else if (attr == 'mukiList_s') {
+					this.mukiList_s.push(value);
+				} else if (attr == 'mukiList_w') {
+					this.mukiList_w.push(value);
+				}
+			}
+		}
+
+		save(): void {
+			let mukiListGroup: MukiListGroup = { 'n': this.mukiList_n, 'e': this.mukiList_e, 's': this.mukiList_s, 'w': this.mukiList_w };
+			let player = new Character(this.chr, mukiListGroup);
+			_gameStatus.player = player;
+		}
+	}
+
+	class GameFieldGamenInitter implements Initter {
 		name: string = 'no define';
 		maptext: Array<string> = new Array<string>();
 		imgsrc: string = 'no define';
@@ -525,10 +572,43 @@ namespace Aao {
 		over_s: string | null = null;
 		over_w: string | null = null;
 
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
 		maptextMode: boolean = false;
 		maptextCount: number = 0;
 
-		save() {
+		analize(line: string): void {
+			if (this.maptextMode) {
+				this.maptext.push(line);
+				this.maptextCount++;
+				if (15 <= this.maptextCount) {
+					this.maptextMode = false;
+				}
+			} else {
+				let defineData: RegExpMatchArray | null = line.match(this.reg);
+				if (defineData != null) {
+					let attr: string = defineData[1];
+					let value: string = defineData[2];
+					if (attr == 'name') {
+						this.name = value;
+					} else if (attr == 'imgsrc') {
+						this.imgsrc = value;
+					} else if (attr == 'maptext') {
+						this.maptextMode = true;
+					} else if (attr == 'over_n') {
+						this.over_n = value;
+					} else if (attr == 'over_e') {
+						this.over_e = value;
+					} else if (attr == 'over_s') {
+						this.over_s = value;
+					} else if (attr == 'over_w') {
+						this.over_w = value;
+					}
+				}
+			}
+		}
+
+		save(): void {
 			_GameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
 		}
 	}
@@ -537,9 +617,7 @@ namespace Aao {
 		let data: string = Kyoutsu.load('data.txt');
 		let lines: Array<string> = data.split(/[\r\n]+/g);
 
-		let initter: GameFieldGamenInit | null = null;
-
-		let reg: RegExp = /^([_a-z]*): ?(.*)\s*/;
+		let initter: Initter | null = null;
 
 		let i = 0;
 		while (true) {
@@ -549,47 +627,23 @@ namespace Aao {
 				break;
 			}
 
-			if (line == '[FIELD]') {
+			if (line == '[PLAYER]') {
 				if (initter != null) {
 					initter.save();
 				}
-				initter = new GameFieldGamenInit();
+				initter = new PlayerInitter();
+
+			} else if (line == '[FIELD]') {
+				if (initter != null) {
+					initter.save();
+				}
+				initter = new GameFieldGamenInitter();
 			}
 
-			if (initter == null) {
-				continue;
-			}
-
-			if (initter.maptextMode) {
-				initter.maptext.push(line);
-				initter.maptextCount++;
-				if (15 <= initter.maptextCount) {
-					initter.maptextMode = false;
-				}
-			} else {
-				let defineData: RegExpMatchArray | null = line.match(reg);
-				if (defineData != null) {
-					let attr: string = defineData[1];
-					let value: string = defineData[2];
-					if (attr == 'name') {
-						initter.name = value;
-					} else if (attr == 'imgsrc') {
-						initter.imgsrc = value;
-					} else if (attr == 'maptext') {
-						initter.maptextMode = true;
-					} else if (attr == 'over_n') {
-						initter.over_n = value;
-					} else if (attr == 'over_e') {
-						initter.over_e = value;
-					} else if (attr == 'over_s') {
-						initter.over_s = value;
-					} else if (attr == 'over_w') {
-						initter.over_w = value;
-					}
-				}
+			if (initter != null) {
+				initter.analize(line);
 			}
 		}
-
 		if (initter != null) {
 			initter.save();
 		}
