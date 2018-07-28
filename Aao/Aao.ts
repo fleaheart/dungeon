@@ -555,94 +555,92 @@ namespace Aao {
 			mainBoard.appendChild(elm);
 		}
 
-		let keyBoard: HTMLElement = addKeyBoard();
-		mainBoard.appendChild(keyBoard);
+		let keyboard = new Keyboard();
+		mainBoard.appendChild(keyboard.keyBoard);
 
-		setKey(keyBoard, [' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
-		addEvent(keyBoard, 'mousedown', (e: MouseEvent) => {
-			let target: EventTarget | null = e.target;
-			if (target == null) {
-				return;
-			}
-			let element: HTMLElement | Node | null = <HTMLElement>target;
+		keyboard.setKeyEvent('mousedown', keyboardMousedown);
+		keyboard.setKeyEvent('mouseup', keyboardMouseup);
 
-			while (true) {
-				if (element == null) {
-					break;
-				}
-				if ((<HTMLElement>element).classList.contains('sofwareKey')) {
-					break;
-				}
-				element = element.parentNode;
-			}
-			if (element == null) {
-				return;
-			}
-
-			let key: string | null = element.textContent;
-			if (key != null) {
-				_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
-			}
-		});
-		addEvent(keyBoard, 'mouseup', () => {
-			_gameStatus.lastInputCode = 0;
-		});
+		keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
 	}
 
-	function addKeyBoard(): HTMLElement {
-		let keyBoard = <HTMLDivElement>document.createElement('DIV');
-		keyBoard.style.position = 'absolute';
-		keyBoard.style.top = '496px';
-		keyBoard.style.width = '138px';
-		keyBoard.style.display = 'flex';
-		keyBoard.style.flexWrap = 'wrap';
-		keyBoard.style.border = '1px solid black';
-		keyBoard.style.padding = '2px';
-		keyBoard.style.textAlign = 'center';
+	function keyboardMousedown(e: MouseEvent): void {
+		let target: EventTarget | null = e.target;
+		if (target == null) {
+			return;
+		}
+		let element: HTMLElement | Node | null = <HTMLElement>target;
 
-		for (let i = 0; i < 9; i++) {
-			let elm = document.createElement('DIV');
-			elm.className = 'sofwareKey';
-			elm.style.display = 'inline-block';
-			elm.style.margin = '2px';
-			elm.style.width = '40px';
-			elm.style.height = '40px';
-			elm.style.border = '1px solid red';
-			elm.style.textAlign = 'center';
-			keyBoard.appendChild(elm);
+		while (true) {
+			if (element == null) {
+				break;
+			}
+			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
+				break;
+			}
+			element = element.parentNode;
+		}
+		if (element == null) {
+			return;
 		}
 
-		return keyBoard;
+		let key: string | null = element.textContent;
+		if (key != null) {
+			_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+		}
 	}
 
-	function setKey(keyBoard: HTMLElement, keys: Array<string>): void {
-		let childNodes: NodeListOf<Node> = keyBoard.childNodes;
+	function keyboardMouseup() {
+		_gameStatus.lastInputCode = 0;
+	}
 
-		let keyIdx = 0;
-		for (let i = 0, len: number = childNodes.length; i < len; i++) {
-			let node = <HTMLElement>childNodes.item(i);
-			if (node.classList.contains('sofwareKey')) {
-				let key = keys[keyIdx];
-				if (key != undefined) {
-					if (3 < key.length) {
-						node.innerHTML = key.substr(0, 3) + '<span style="display:none">' + key.substr(3) + '</span>';
+	class Keyboard {
+		keyBoard: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+		keys: Array<HTMLElement> = new Array<HTMLElement>();
+
+		constructor() {
+			let keyBoard = this.keyBoard;
+			keyBoard.style.position = 'absolute';
+			keyBoard.style.top = '496px';
+			keyBoard.style.width = '138px';
+			keyBoard.style.display = 'flex';
+			keyBoard.style.flexWrap = 'wrap';
+			keyBoard.style.border = '1px solid black';
+			keyBoard.style.padding = '2px';
+			keyBoard.style.textAlign = 'center';
+
+			for (let i = 0; i < 9; i++) {
+				let key = document.createElement('DIV');
+				key.className = 'sofwareKey';
+				key.style.display = 'inline-block';
+				key.style.margin = '2px';
+				key.style.width = '40px';
+				key.style.height = '40px';
+				key.style.border = '1px solid red';
+				key.style.textAlign = 'center';
+				keyBoard.appendChild(key);
+
+				this.keys.push(key);
+			}
+		}
+
+		setKeyEvent(type: string, listener: EventListenerOrEventListenerObject) {
+			for (let i = 0, len: number = this.keys.length; i < len; i++) {
+				this.keys[i].addEventListener(type, listener);
+			}
+		}
+
+		setKeytop(keytops: Array<string>): void {
+			for (let i = 0, len: number = this.keys.length; i < len; i++) {
+				let key: HTMLElement | undefined = this.keys[i];
+				let keytop: string | undefined = keytops[i];
+				if (key != undefined && keytop != undefined) {
+					if (3 < keytop.length) {
+						key.innerHTML = keytop.substr(0, 3) + '<span style="display:none">' + keytop.substr(3) + '</span>';
 					} else {
-						node.innerHTML = key;
+						key.innerHTML = keytop;
 					}
 				}
-				keyIdx++;
-			}
-		}
-	}
-
-	function addEvent(keyBoard: HTMLElement, type: string, listener: any) {
-		let childNodes: NodeListOf<Node> = keyBoard.childNodes;
-		for (let i = 0, len: number = childNodes.length; i < len; i++) {
-			let node = <HTMLElement>childNodes.item(i);
-			if (node.classList.contains('sofwareKey')) {
-				(function (keyElement: HTMLElement, type: string, listener: any) {
-					keyElement.addEventListener(type, listener)
-				})(node, type, listener);
 			}
 		}
 	}

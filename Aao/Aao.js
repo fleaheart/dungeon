@@ -428,89 +428,85 @@ var Aao;
             _gameBoard.debug = elm;
             mainBoard.appendChild(elm);
         }
-        var keyBoard = addKeyBoard();
-        mainBoard.appendChild(keyBoard);
-        setKey(keyBoard, [' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
-        addEvent(keyBoard, 'mousedown', function (e) {
-            var target = e.target;
-            if (target == null) {
-                return;
-            }
-            var element = target;
-            while (true) {
-                if (element == null) {
-                    break;
-                }
-                if (element.classList.contains('sofwareKey')) {
-                    break;
-                }
-                element = element.parentNode;
-            }
-            if (element == null) {
-                return;
-            }
-            var key = element.textContent;
-            if (key != null) {
-                _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
-            }
-        });
-        addEvent(keyBoard, 'mouseup', function () {
-            _gameStatus.lastInputCode = 0;
-        });
+        var keyboard = new Keyboard();
+        mainBoard.appendChild(keyboard.keyBoard);
+        keyboard.setKeyEvent('mousedown', keyboardMousedown);
+        keyboard.setKeyEvent('mouseup', keyboardMouseup);
+        keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
     }
-    function addKeyBoard() {
-        var keyBoard = document.createElement('DIV');
-        keyBoard.style.position = 'absolute';
-        keyBoard.style.top = '496px';
-        keyBoard.style.width = '138px';
-        keyBoard.style.display = 'flex';
-        keyBoard.style.flexWrap = 'wrap';
-        keyBoard.style.border = '1px solid black';
-        keyBoard.style.padding = '2px';
-        keyBoard.style.textAlign = 'center';
-        for (var i = 0; i < 9; i++) {
-            var elm = document.createElement('DIV');
-            elm.className = 'sofwareKey';
-            elm.style.display = 'inline-block';
-            elm.style.margin = '2px';
-            elm.style.width = '40px';
-            elm.style.height = '40px';
-            elm.style.border = '1px solid red';
-            elm.style.textAlign = 'center';
-            keyBoard.appendChild(elm);
+    function keyboardMousedown(e) {
+        var target = e.target;
+        if (target == null) {
+            return;
         }
-        return keyBoard;
+        var element = target;
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element.classList.contains('sofwareKey')) {
+                break;
+            }
+            element = element.parentNode;
+        }
+        if (element == null) {
+            return;
+        }
+        var key = element.textContent;
+        if (key != null) {
+            _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+        }
     }
-    function setKey(keyBoard, keys) {
-        var childNodes = keyBoard.childNodes;
-        var keyIdx = 0;
-        for (var i = 0, len = childNodes.length; i < len; i++) {
-            var node = childNodes.item(i);
-            if (node.classList.contains('sofwareKey')) {
-                var key = keys[keyIdx];
-                if (key != undefined) {
-                    if (3 < key.length) {
-                        node.innerHTML = key.substr(0, 3) + '<span style="display:none">' + key.substr(3) + '</span>';
+    function keyboardMouseup() {
+        _gameStatus.lastInputCode = 0;
+    }
+    var Keyboard = (function () {
+        function Keyboard() {
+            this.keyBoard = document.createElement('DIV');
+            this.keys = new Array();
+            var keyBoard = this.keyBoard;
+            keyBoard.style.position = 'absolute';
+            keyBoard.style.top = '496px';
+            keyBoard.style.width = '138px';
+            keyBoard.style.display = 'flex';
+            keyBoard.style.flexWrap = 'wrap';
+            keyBoard.style.border = '1px solid black';
+            keyBoard.style.padding = '2px';
+            keyBoard.style.textAlign = 'center';
+            for (var i = 0; i < 9; i++) {
+                var key = document.createElement('DIV');
+                key.className = 'sofwareKey';
+                key.style.display = 'inline-block';
+                key.style.margin = '2px';
+                key.style.width = '40px';
+                key.style.height = '40px';
+                key.style.border = '1px solid red';
+                key.style.textAlign = 'center';
+                keyBoard.appendChild(key);
+                this.keys.push(key);
+            }
+        }
+        Keyboard.prototype.setKeyEvent = function (type, listener) {
+            for (var i = 0, len = this.keys.length; i < len; i++) {
+                this.keys[i].addEventListener(type, listener);
+            }
+        };
+        Keyboard.prototype.setKeytop = function (keytops) {
+            for (var i = 0, len = this.keys.length; i < len; i++) {
+                var key = this.keys[i];
+                var keytop = keytops[i];
+                if (key != undefined && keytop != undefined) {
+                    if (3 < keytop.length) {
+                        key.innerHTML = keytop.substr(0, 3) + '<span style="display:none">' + keytop.substr(3) + '</span>';
                     }
                     else {
-                        node.innerHTML = key;
+                        key.innerHTML = keytop;
                     }
                 }
-                keyIdx++;
             }
-        }
-    }
-    function addEvent(keyBoard, type, listener) {
-        var childNodes = keyBoard.childNodes;
-        for (var i = 0, len = childNodes.length; i < len; i++) {
-            var node = childNodes.item(i);
-            if (node.classList.contains('sofwareKey')) {
-                (function (keyElement, type, listener) {
-                    keyElement.addEventListener(type, listener);
-                })(node, type, listener);
-            }
-        }
-    }
+        };
+        return Keyboard;
+    }());
     var PlayerInitter = (function () {
         function PlayerInitter() {
             this.chr = 'no define';
