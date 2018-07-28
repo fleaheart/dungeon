@@ -30,15 +30,7 @@ var Dungeon;
     var $BIT_LEFT = 8;
     var $MUKI_CHARACTER = ['↑', '→', '↓', '←'];
     var $MUKI_CHARACTER_LENGTH = $MUKI_CHARACTER.length;
-    var $KEY;
-    (function ($KEY) {
-        $KEY.W = 87;
-        $KEY.A = 65;
-        $KEY.D = 68;
-    })($KEY || ($KEY = {}));
     function init() {
-        document.addEventListener('touchstart', touchEvent);
-        document.addEventListener('click', clickEvent);
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
         mapview(div_map, $mapdata);
@@ -52,7 +44,8 @@ var Dungeon;
         keyboard.keyBoard.style.top = '320px';
         document.body.appendChild(keyboard.keyBoard);
         keyboard.setKeyEvent('click', keyboardClick);
-        keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', ' ', ' ']);
+        keyboard.setKeyEvent('touch', function (e) { keyboardClick(e); e.preventDefault(); });
+        keyboard.setKeytop([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
     }
     Dungeon.init = init;
     function keyboardClick(e) {
@@ -75,55 +68,15 @@ var Dungeon;
         }
         var key = element.textContent;
         if (key != null) {
-            var keyCode = 0;
-            if (key == 'w') {
-                keyCode = $KEY.W;
-            }
-            else if (key == 'a') {
-                keyCode = $KEY.A;
-            }
-            else if (key == 'd') {
-                keyCode = $KEY.D;
-            }
-            keyOperation(keyCode);
+            keyOperation(key);
         }
     }
-    function touchEvent(evt) {
-        var elm = evt.srcElement;
-        if (elm == null) {
-            return;
-        }
-        clickElement(elm);
-        evt.preventDefault();
+    function keyDownEvent(e) {
+        keyOperation(e.key);
     }
-    function clickEvent(evt) {
-        var elm = evt.srcElement;
-        if (elm == null) {
-            return;
-        }
-        clickElement(elm);
-    }
-    function clickElement(elm) {
-        var keyCode = 0;
-        if (elm.id == 'ctrl_W') {
-            keyCode = $KEY.W;
-        }
-        else if (elm.id == 'ctrl_A') {
-            keyCode = $KEY.A;
-        }
-        else if (elm.id == 'ctrl_D') {
-            keyCode = $KEY.D;
-        }
-        if (0 < keyCode) {
-            keyOperation(keyCode);
-        }
-    }
-    function keyDownEvent(evt) {
-        var keyCode = evt.keyCode;
-        keyOperation(keyCode);
-    }
-    function keyOperation(keyCode) {
-        if (keyCode == $KEY.W) {
+    function keyOperation(key) {
+        var inputCode = Kyoutsu.getInputCode(key);
+        if (inputCode == Kyoutsu.INPUT_UP) {
             var kabeChar = $mapdata[$pc.ypos].charAt($pc.xpos);
             var kabeType = parseInt(kabeChar, 16);
             var xdiff = 0;
@@ -159,7 +112,7 @@ var Dungeon;
                 submapview();
             }
         }
-        else if (keyCode == $KEY.A) {
+        else if (inputCode == Kyoutsu.INPUT_LEFT) {
             $pc.muki--;
             if ($pc.muki < 0) {
                 $pc.muki = $MUKI_CHARACTER_LENGTH - 1;
@@ -168,7 +121,7 @@ var Dungeon;
             nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
             submapview();
         }
-        else if (keyCode == $KEY.D) {
+        else if (inputCode == Kyoutsu.INPUT_RIGHT) {
             $pc.muki++;
             if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
                 $pc.muki = 0;

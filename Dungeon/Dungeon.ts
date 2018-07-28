@@ -37,19 +37,8 @@ namespace Dungeon {
 	let $MUKI_CHARACTER: string[] = ['↑', '→', '↓', '←'];
 	let $MUKI_CHARACTER_LENGTH: number = $MUKI_CHARACTER.length;
 
-	namespace $KEY {
-		export const W: number = 87;
-		export const A: number = 65;
-		export const D: number = 68;
-	}
-
-    /**
-     * 最初に実行されるもの
-     */
 	export function init() {
 
-		document.addEventListener('touchstart', touchEvent);
-		document.addEventListener('click', clickEvent);
 		document.addEventListener('keydown', keyDownEvent);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
@@ -70,11 +59,12 @@ namespace Dungeon {
 		document.body.appendChild(keyboard.keyBoard);
 
 		keyboard.setKeyEvent('click', keyboardClick);
+		keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
-		keyboard.setKeytop([' ', 'w', ' ', 'a', 's', 'd', ' ', ' ', ' ']);
+		keyboard.setKeytop([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
 	}
 
-	function keyboardClick(e: MouseEvent) {
+	function keyboardClick(e: Event) {
 		let target: EventTarget | null = e.target;
 		if (target == null) {
 			return;
@@ -96,57 +86,17 @@ namespace Dungeon {
 
 		let key: string | null = element.textContent;
 		if (key != null) {
-			let keyCode = 0;
-			if (key == 'w') {
-				keyCode = $KEY.W;
-			} else if (key == 'a') {
-				keyCode = $KEY.A;
-			} else if (key == 'd') {
-				keyCode = $KEY.D;
-			}
-			keyOperation(keyCode);
+			keyOperation(key);
 		}
 	}
 
-	function touchEvent(evt: TouchEvent) {
-		let elm: Element | null = evt.srcElement;
-		if (elm == null) {
-			return;
-		}
-		clickElement(elm);
-		evt.preventDefault();
+	function keyDownEvent(e: KeyboardEvent): void {
+		keyOperation(e.key);
 	}
 
-	function clickEvent(evt: MouseEvent) {
-		let elm: Element | null = evt.srcElement;
-		if (elm == null) {
-			return;
-		}
-		clickElement(elm);
-	}
-
-	function clickElement(elm: Element) {
-		let keyCode: number = 0;
-		if (elm.id == 'ctrl_W') {
-			keyCode = $KEY.W;
-		} else if (elm.id == 'ctrl_A') {
-			keyCode = $KEY.A;
-		} else if (elm.id == 'ctrl_D') {
-			keyCode = $KEY.D;
-		}
-
-		if (0 < keyCode) {
-			keyOperation(keyCode);
-		}
-	}
-
-	function keyDownEvent(evt: KeyboardEvent): void {
-		let keyCode: number = evt.keyCode;
-		keyOperation(keyCode);
-	}
-
-	function keyOperation(keyCode: number) {
-		if (keyCode == $KEY.W) {
+	function keyOperation(key: string) {
+		let inputCode: number = Kyoutsu.getInputCode(key);
+		if (inputCode == Kyoutsu.INPUT_UP) {
 			let kabeChar: string = $mapdata[$pc.ypos].charAt($pc.xpos);
 			let kabeType: number = parseInt(kabeChar, 16);
 
@@ -183,7 +133,7 @@ namespace Dungeon {
 				submapview();
 			}
 
-		} else if (keyCode == $KEY.A) {
+		} else if (inputCode == Kyoutsu.INPUT_LEFT) {
 			$pc.muki--;
 			if ($pc.muki < 0) {
 				$pc.muki = $MUKI_CHARACTER_LENGTH - 1;
@@ -193,7 +143,7 @@ namespace Dungeon {
 
 			submapview();
 
-		} else if (keyCode == $KEY.D) {
+		} else if (inputCode == Kyoutsu.INPUT_RIGHT) {
 			$pc.muki++;
 			if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
 				$pc.muki = 0;
