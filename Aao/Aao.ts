@@ -1,6 +1,8 @@
 namespace Aao {
 	let KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
 
+	const FRAME_TIMING: number = 16;
+
 	class Character {
 		chr: string;
 		img: HTMLImageElement;
@@ -105,67 +107,8 @@ namespace Aao {
 			this.over['w'] = over_w;
 		}
 	}
-	let NullGameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
-
-	let $field1: string[] = new Array();
-	let $field2: string[] = new Array();
-	let $field3: string[] = new Array();
-
-	const FRAME_TIMING: number = 16;
-
-	$field1.push('**************************      ********');
-	$field1.push('*        **                            *');
-	$field1.push('*       **    **      ***      ****    *');
-	$field1.push('*      **    **    ****************    *');
-	$field1.push('********    **     ******  *****       *');
-	$field1.push('**          **              ****       *');
-	$field1.push('**   ********                          *');
-	$field1.push('**   *                                 *');
-	$field1.push('**   *                      ***        *');
-	$field1.push('**   *                      ***        *');
-	$field1.push('*                                      *');
-	$field1.push('*                                      *');
-	$field1.push('*          ****               **********');
-	$field1.push('*          ****               **********');
-	$field1.push('****************************************');
-
-	$field2.push('****************************************');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                       ');
-	$field2.push('*                                       ');
-	$field2.push('*                                       ');
-	$field2.push('*                                       ');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('*                                      *');
-	$field2.push('**************************      ********');
-
-	$field3.push('****************************************');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('                                       *');
-	$field3.push('                                       *');
-	$field3.push('                                       *');
-	$field3.push('                                       *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('*                                      *');
-	$field3.push('****************************************');
-
-	for (let i = 0; i < $field1.length; i++) {
-		_gameBoard.current.field.push($field1[i]);
-	}
-
 	let _GameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
+
 	function getGameFieldGamen(name: string): GameFieldGamen {
 		for (let i = 0, len: number = _GameFieldGamenList.length; i < len; i++) {
 			let item: GameFieldGamen = _GameFieldGamenList[i];
@@ -216,7 +159,7 @@ namespace Aao {
 		gameMode: GameMode | null = null;
 		player: Character = new Character('');
 
-		gameFieldGamen: GameFieldGamen = NullGameFieldGamen;
+		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
 
 		frameCount: number = 0;
 		lastKeyCode: number = -1;
@@ -503,9 +446,7 @@ namespace Aao {
 			}
 		});
 
-		_GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));
-		_GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
-		_GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
+		loadData();
 
 		let player = new Character('A');
 		player.moveTo(18 * 16, 2 * 32, muki_s);
@@ -513,6 +454,11 @@ namespace Aao {
 
 		_gameStatus.player = player;
 		_gameStatus.gameFieldGamen = getGameFieldGamen('field1');
+
+		for (let i = 0; i < _gameStatus.gameFieldGamen.field.length; i++) {
+			_gameBoard.current.field.push(_gameStatus.gameFieldGamen.field[i]);
+		}
+		_gameBoard.current.backGround.src = _gameStatus.gameFieldGamen.imgsrc;
 
 		put(player);
 
@@ -528,7 +474,6 @@ namespace Aao {
 			let elm: HTMLDivElement = _gameBoard.fieldGraph;
 			elm.className = 'fieldGraph';
 
-			_gameBoard.current.backGround.src = 'map1.png';
 			_gameBoard.current.backGround.style.position = 'absolute';
 
 			_gameBoard.next.backGround.style.position = 'absolute';
@@ -568,6 +513,85 @@ namespace Aao {
 			_gameBoard.debug = elm;
 
 			mainBoard.appendChild(elm);
+		}
+	}
+
+	class GameFieldGamenInit {
+		name: string = 'no define';
+		field: Array<string> = new Array<string>();
+		imgsrc: string = 'no define';
+		over_n: string | null = null;
+		over_e: string | null = null;
+		over_s: string | null = null;
+		over_w: string | null = null;
+
+		maptextMode: boolean = false;
+		maptextCount: number = 0;
+
+		save() {
+			_GameFieldGamenList.push(new GameFieldGamen(this.name, this.field, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
+		}
+	}
+
+	function loadData() {
+		let data: string = Kyoutsu.load('data.txt');
+		let lines: Array<string> = data.split(/[\r\n]+/g);
+
+		let initter: GameFieldGamenInit | null = null;
+
+		let reg: RegExp = /^([_a-z]*): ?(.*)\s*/;
+
+		let i = 0;
+		while (true) {
+			let line: string | undefined = lines[i];
+			i++;
+			if (line == undefined) {
+				break;
+			}
+
+			if (line == '[FIELD]') {
+				if (initter != null) {
+					initter.save();
+				}
+				initter = new GameFieldGamenInit();
+			}
+
+			if (initter == null) {
+				continue;
+			}
+
+			if (initter.maptextMode) {
+				initter.field.push(line);
+				initter.maptextCount++;
+				if (15 <= initter.maptextCount) {
+					initter.maptextMode = false;
+				}
+			} else {
+				let defineData: RegExpMatchArray | null = line.match(reg);
+				if (defineData != null) {
+					let attr: string = defineData[1];
+					let value: string = defineData[2];
+					if (attr == 'name') {
+						initter.name = value;
+					} else if (attr == 'imgsrc') {
+						initter.imgsrc = value;
+					} else if (attr == 'maptext') {
+						initter.maptextMode = true;
+					} else if (attr == 'over_n') {
+						initter.over_n = value;
+					} else if (attr == 'over_e') {
+						initter.over_e = value;
+					} else if (attr == 'over_s') {
+						initter.over_s = value;
+					} else if (attr == 'over_w') {
+						initter.over_w = value;
+					}
+				}
+			}
+		}
+
+		if (initter != null) {
+			initter.save();
 		}
 	}
 }

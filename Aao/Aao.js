@@ -1,6 +1,7 @@
 var Aao;
 (function (Aao) {
     var KEY_UP = 87, KEY_RIGHT = 68, KEY_DOWN = 83, KEY_LEFT = 65;
+    var FRAME_TIMING = 16;
     var Character = (function () {
         function Character(chr) {
             this.mukiListGroup = { 'n': ['player2.png'], 'e': ['player4.png'], 's': ['player1.png'], 'w': ['player3.png'] };
@@ -76,59 +77,6 @@ var Aao;
         }
         return GameFieldGamen;
     }());
-    var NullGameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
-    var $field1 = new Array();
-    var $field2 = new Array();
-    var $field3 = new Array();
-    var FRAME_TIMING = 16;
-    $field1.push('**************************      ********');
-    $field1.push('*        **                            *');
-    $field1.push('*       **    **      ***      ****    *');
-    $field1.push('*      **    **    ****************    *');
-    $field1.push('********    **     ******  *****       *');
-    $field1.push('**          **              ****       *');
-    $field1.push('**   ********                          *');
-    $field1.push('**   *                                 *');
-    $field1.push('**   *                      ***        *');
-    $field1.push('**   *                      ***        *');
-    $field1.push('*                                      *');
-    $field1.push('*                                      *');
-    $field1.push('*          ****               **********');
-    $field1.push('*          ****               **********');
-    $field1.push('****************************************');
-    $field2.push('****************************************');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                       ');
-    $field2.push('*                                       ');
-    $field2.push('*                                       ');
-    $field2.push('*                                       ');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('*                                      *');
-    $field2.push('**************************      ********');
-    $field3.push('****************************************');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('                                       *');
-    $field3.push('                                       *');
-    $field3.push('                                       *');
-    $field3.push('                                       *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('*                                      *');
-    $field3.push('****************************************');
-    for (var i = 0; i < $field1.length; i++) {
-        _gameBoard.current.field.push($field1[i]);
-    }
     var _GameFieldGamenList = new Array();
     function getGameFieldGamen(name) {
         for (var i = 0, len = _GameFieldGamenList.length; i < len; i++) {
@@ -170,7 +118,7 @@ var Aao;
         function GameStatus() {
             this.gameMode = null;
             this.player = new Character('');
-            this.gameFieldGamen = NullGameFieldGamen;
+            this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
             this.frameCount = 0;
             this.lastKeyCode = -1;
             this.lastKey = '';
@@ -397,14 +345,16 @@ var Aao;
                 _gameStatus.lastKey = '';
             }
         });
-        _GameFieldGamenList.push(new GameFieldGamen('field1', $field1, 'map1.png', 'field2', null, null, null));
-        _GameFieldGamenList.push(new GameFieldGamen('field2', $field2, 'map2.png', null, 'field3', 'field1', null));
-        _GameFieldGamenList.push(new GameFieldGamen('field3', $field3, 'map3.png', null, null, null, 'field2'));
+        loadData();
         var player = new Character('A');
         player.moveTo(18 * 16, 2 * 32, muki_s);
         _gameBoard.fieldGraph.appendChild(player.img);
         _gameStatus.player = player;
         _gameStatus.gameFieldGamen = getGameFieldGamen('field1');
+        for (var i = 0; i < _gameStatus.gameFieldGamen.field.length; i++) {
+            _gameBoard.current.field.push(_gameStatus.gameFieldGamen.field[i]);
+        }
+        _gameBoard.current.backGround.src = _gameStatus.gameFieldGamen.imgsrc;
         put(player);
         display();
         setTimeout(frameCheck, FRAME_TIMING);
@@ -414,7 +364,6 @@ var Aao;
         {
             var elm = _gameBoard.fieldGraph;
             elm.className = 'fieldGraph';
-            _gameBoard.current.backGround.src = 'map1.png';
             _gameBoard.current.backGround.style.position = 'absolute';
             _gameBoard.next.backGround.style.position = 'absolute';
             _gameBoard.next.backGround.style.display = 'none';
@@ -444,6 +393,84 @@ var Aao;
             elm.style.left = '660px';
             _gameBoard.debug = elm;
             mainBoard.appendChild(elm);
+        }
+    }
+    var GameFieldGamenInit = (function () {
+        function GameFieldGamenInit() {
+            this.name = 'no define';
+            this.field = new Array();
+            this.imgsrc = 'no define';
+            this.over_n = null;
+            this.over_e = null;
+            this.over_s = null;
+            this.over_w = null;
+            this.maptextMode = false;
+            this.maptextCount = 0;
+        }
+        GameFieldGamenInit.prototype.save = function () {
+            _GameFieldGamenList.push(new GameFieldGamen(this.name, this.field, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
+        };
+        return GameFieldGamenInit;
+    }());
+    function loadData() {
+        var data = Kyoutsu.load('data.txt');
+        var lines = data.split(/[\r\n]+/g);
+        var initter = null;
+        var reg = /^([_a-z]*): ?(.*)\s*/;
+        var i = 0;
+        while (true) {
+            var line = lines[i];
+            i++;
+            if (line == undefined) {
+                break;
+            }
+            if (line == '[FIELD]') {
+                if (initter != null) {
+                    initter.save();
+                }
+                initter = new GameFieldGamenInit();
+            }
+            if (initter == null) {
+                continue;
+            }
+            if (initter.maptextMode) {
+                initter.field.push(line);
+                initter.maptextCount++;
+                if (15 <= initter.maptextCount) {
+                    initter.maptextMode = false;
+                }
+            }
+            else {
+                var defineData = line.match(reg);
+                if (defineData != null) {
+                    var attr = defineData[1];
+                    var value = defineData[2];
+                    if (attr == 'name') {
+                        initter.name = value;
+                    }
+                    else if (attr == 'imgsrc') {
+                        initter.imgsrc = value;
+                    }
+                    else if (attr == 'maptext') {
+                        initter.maptextMode = true;
+                    }
+                    else if (attr == 'over_n') {
+                        initter.over_n = value;
+                    }
+                    else if (attr == 'over_e') {
+                        initter.over_e = value;
+                    }
+                    else if (attr == 'over_s') {
+                        initter.over_s = value;
+                    }
+                    else if (attr == 'over_w') {
+                        initter.over_w = value;
+                    }
+                }
+            }
+        }
+        if (initter != null) {
+            initter.save();
         }
     }
 })(Aao || (Aao = {}));
