@@ -1,5 +1,11 @@
 var Dungeon;
 (function (Dungeon) {
+    var $kabex = [5, 40, 114, 155, 180];
+    var $kabey = [5, 31, 85, 115, 134];
+    var $SCREEN_WIDTH = 400;
+    var $SCREEN_HEIGHT = 300;
+    var $DRAW_WIDTH = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
+    var $DRAW_HEIGHT = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
     var Muki_N = (function () {
         function Muki_N() {
             this.index = 0;
@@ -55,13 +61,15 @@ var Dungeon;
         }
         return mukiArray[index];
     }
-    var Pc = (function () {
-        function Pc() {
+    var Character = (function () {
+        function Character() {
             this.muki = new Muki_N();
         }
-        return Pc;
+        return Character;
     }());
-    var $pc = new Pc();
+    var _gameStatus = {
+        player: new Character()
+    };
     var $mapdata = ['95555513',
         'A95553AA',
         'AAD53AAA',
@@ -70,20 +78,14 @@ var Dungeon;
         '93FAD3AB',
         'AAD452AA',
         'EC5556C6'];
-    var $kabex = [5, 40, 114, 155, 180];
-    var $kabey = [5, 31, 85, 115, 134];
-    var $SCREEN_WIDTH = 400;
-    var $SCREEN_HEIGHT = 300;
-    var $DRAW_WIDTH = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
-    var $DRAW_HEIGHT = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
     function init() {
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
         mapview(div_map, $mapdata);
-        $pc.xpos = 0;
-        $pc.ypos = 7;
-        $pc.muki = muki_n;
-        var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+        _gameStatus.player.xpos = 0;
+        _gameStatus.player.ypos = 7;
+        _gameStatus.player.muki = muki_n;
+        var nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
         nakami.innerHTML = '↑';
         submapview();
         var keyboard = new Kyoutsu.Keyboard();
@@ -104,34 +106,34 @@ var Dungeon;
     function keyOperation(key) {
         var inputCode = Kyoutsu.getInputCode(key);
         if (inputCode == Kyoutsu.INPUT_UP) {
-            var kabeChar = $mapdata[$pc.ypos].charAt($pc.xpos);
+            var kabeChar = $mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
             var kabeType = parseInt(kabeChar, 16);
             var xdiff = 0;
             var ydiff = 0;
-            var muki = $pc.muki;
+            var muki = _gameStatus.player.muki;
             xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
             ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
             if (xdiff != 0 || ydiff != 0) {
                 var nakami = void 0;
-                nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+                nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
                 nakami.innerHTML = '';
-                $pc.xpos += xdiff;
-                $pc.ypos += ydiff;
-                nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-                nakami.innerHTML = $pc.muki.mukiChr;
+                _gameStatus.player.xpos += xdiff;
+                _gameStatus.player.ypos += ydiff;
+                nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+                nakami.innerHTML = _gameStatus.player.muki.mukiChr;
                 submapview();
             }
         }
         else if (inputCode == Kyoutsu.INPUT_LEFT) {
-            $pc.muki = mukiRotation($pc.muki, -1);
-            var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            nakami.innerHTML = $pc.muki.mukiChr;
+            _gameStatus.player.muki = mukiRotation(_gameStatus.player.muki, -1);
+            var nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+            nakami.innerHTML = _gameStatus.player.muki.mukiChr;
             submapview();
         }
         else if (inputCode == Kyoutsu.INPUT_RIGHT) {
-            $pc.muki = mukiRotation($pc.muki, +1);
-            var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            nakami.innerHTML = $pc.muki.mukiChr;
+            _gameStatus.player.muki = mukiRotation(_gameStatus.player.muki, +1);
+            var nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+            nakami.innerHTML = _gameStatus.player.muki.mukiChr;
             submapview();
         }
     }
@@ -150,45 +152,45 @@ var Dungeon;
         var kiritorimapdata = new Array();
         var x = 0;
         var y = 0;
-        if ($pc.muki.bit == Kyoutsu.BIT_TOP) {
+        if (_gameStatus.player.muki.bit == Kyoutsu.BIT_TOP) {
             for (y = zenpou * -1; y <= 0; y++) {
                 var line = '';
                 for (x = hidarimigi * -1; x <= hidarimigi; x++) {
-                    var c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                    c = charkaiten(c, $pc.muki);
+                    var c = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+                    c = charkaiten(c, _gameStatus.player.muki);
                     line += c;
                 }
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki.bit == Kyoutsu.BIT_RIGHT) {
+        else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_RIGHT) {
             for (x = zenpou; 0 <= x; x--) {
                 var line = '';
                 for (y = hidarimigi * -1; y <= hidarimigi; y++) {
-                    var c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                    c = charkaiten(c, $pc.muki);
+                    var c = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+                    c = charkaiten(c, _gameStatus.player.muki);
                     line += c;
                 }
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki.bit == Kyoutsu.BIT_BOTTOM) {
+        else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_BOTTOM) {
             for (y = zenpou; 0 <= y; y--) {
                 var line = '';
                 for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
-                    var c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                    c = charkaiten(c, $pc.muki);
+                    var c = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+                    c = charkaiten(c, _gameStatus.player.muki);
                     line += c;
                 }
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki.bit == Kyoutsu.BIT_LEFT) {
+        else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_LEFT) {
             for (x = zenpou * -1; x <= 0; x++) {
                 var line = '';
                 for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
-                    var c = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-                    c = charkaiten(c, $pc.muki);
+                    var c = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+                    c = charkaiten(c, _gameStatus.player.muki);
                     line += c;
                 }
                 kiritorimapdata.push(line);

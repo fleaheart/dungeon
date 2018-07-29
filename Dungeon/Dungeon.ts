@@ -1,5 +1,14 @@
 namespace Dungeon {
 
+	let $kabex: number[] = [5, 40, 114, 155, 180];
+	let $kabey: number[] = [5, 31, 85, 115, 134];
+
+	let $SCREEN_WIDTH: number = 400;
+	let $SCREEN_HEIGHT: number = 300;
+
+	let $DRAW_WIDTH: number = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
+	let $DRAW_HEIGHT: number = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
+
 	interface XY {
 		x: number;
 		y: number;
@@ -63,13 +72,18 @@ namespace Dungeon {
 		return mukiArray[index];
 	}
 
-	class Pc {
+	class Character {
 		xpos: number;
 		ypos: number;
 		muki: Muki = new Muki_N();
 	}
 
-	let $pc: Pc = new Pc();
+	interface GameStatus {
+		player: Character;
+	}
+	let _gameStatus: GameStatus = {
+		player: new Character()
+	}
 
 	let $mapdata: string[] = ['95555513',
 		'A95553AA',
@@ -80,15 +94,6 @@ namespace Dungeon {
 		'AAD452AA',
 		'EC5556C6'];
 
-	let $kabex: number[] = [5, 40, 114, 155, 180];
-	let $kabey: number[] = [5, 31, 85, 115, 134];
-
-	let $SCREEN_WIDTH: number = 400;
-	let $SCREEN_HEIGHT: number = 300;
-
-	let $DRAW_WIDTH: number = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
-	let $DRAW_HEIGHT: number = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
-
 	export function init() {
 
 		document.addEventListener('keydown', keyDownEvent);
@@ -96,11 +101,11 @@ namespace Dungeon {
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
 		mapview(div_map, $mapdata);
 
-		$pc.xpos = 0;
-		$pc.ypos = 7;
-		$pc.muki = muki_n;
+		_gameStatus.player.xpos = 0;
+		_gameStatus.player.ypos = 7;
+		_gameStatus.player.muki = muki_n;
 
-		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
 		nakami.innerHTML = '↑';
 
 		submapview();
@@ -128,42 +133,42 @@ namespace Dungeon {
 	function keyOperation(key: string) {
 		let inputCode: number = Kyoutsu.getInputCode(key);
 		if (inputCode == Kyoutsu.INPUT_UP) {
-			let kabeChar: string = $mapdata[$pc.ypos].charAt($pc.xpos);
+			let kabeChar: string = $mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
 			let kabeType: number = parseInt(kabeChar, 16);
 
 			let xdiff: number = 0;
 			let ydiff: number = 0;
 
-			let muki: Muki = $pc.muki;
+			let muki: Muki = _gameStatus.player.muki;
 			xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
 			ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
 
 			if (xdiff != 0 || ydiff != 0) {
 				let nakami: HTMLElement;
-				nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
+				nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
 				nakami.innerHTML = '';
 
-				$pc.xpos += xdiff;
-				$pc.ypos += ydiff;
-				nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-				nakami.innerHTML = $pc.muki.mukiChr;
+				_gameStatus.player.xpos += xdiff;
+				_gameStatus.player.ypos += ydiff;
+				nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+				nakami.innerHTML = _gameStatus.player.muki.mukiChr;
 
 				submapview();
 			}
 
 		} else if (inputCode == Kyoutsu.INPUT_LEFT) {
-			$pc.muki = mukiRotation($pc.muki, -1);
+			_gameStatus.player.muki = mukiRotation(_gameStatus.player.muki, -1);
 
-			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			nakami.innerHTML = $pc.muki.mukiChr;
+			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+			nakami.innerHTML = _gameStatus.player.muki.mukiChr;
 
 			submapview();
 
 		} else if (inputCode == Kyoutsu.INPUT_RIGHT) {
-			$pc.muki = mukiRotation($pc.muki, +1);
+			_gameStatus.player.muki = mukiRotation(_gameStatus.player.muki, +1);
 
-			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			nakami.innerHTML = $pc.muki.mukiChr;
+			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
+			nakami.innerHTML = _gameStatus.player.muki.mukiChr;
 
 			submapview();
 		}
@@ -193,45 +198,45 @@ namespace Dungeon {
 		let x: number = 0;
 		let y: number = 0;
 
-		if ($pc.muki.bit == Kyoutsu.BIT_TOP) {
+		if (_gameStatus.player.muki.bit == Kyoutsu.BIT_TOP) {
 			for (y = zenpou * -1; y <= 0; y++) {
 				let line: string = '';
 				for (x = hidarimigi * -1; x <= hidarimigi; x++) {
-					let c: string = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-					c = charkaiten(c, $pc.muki);
+					let c: string = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+					c = charkaiten(c, _gameStatus.player.muki);
 					line += c;
 				}
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki.bit == Kyoutsu.BIT_RIGHT) {
+		} else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_RIGHT) {
 			for (x = zenpou; 0 <= x; x--) {
 				let line: string = '';
 				for (y = hidarimigi * -1; y <= hidarimigi; y++) {
-					let c: string = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-					c = charkaiten(c, $pc.muki);
+					let c: string = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+					c = charkaiten(c, _gameStatus.player.muki);
 					line += c;
 				}
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki.bit == Kyoutsu.BIT_BOTTOM) {
+		} else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_BOTTOM) {
 			for (y = zenpou; 0 <= y; y--) {
 				let line: string = '';
 				for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
-					let c: string = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-					c = charkaiten(c, $pc.muki);
+					let c: string = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+					c = charkaiten(c, _gameStatus.player.muki);
 					line += c;
 				}
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki.bit == Kyoutsu.BIT_LEFT) {
+		} else if (_gameStatus.player.muki.bit == Kyoutsu.BIT_LEFT) {
 			for (x = zenpou * -1; x <= 0; x++) {
 				let line: string = '';
 				for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
-					let c: string = getPosChar(mapdata, $pc.xpos + x, $pc.ypos + y);
-					c = charkaiten(c, $pc.muki);
+					let c: string = getPosChar(mapdata, _gameStatus.player.xpos + x, _gameStatus.player.ypos + y);
+					c = charkaiten(c, _gameStatus.player.muki);
 					line += c;
 				}
 				kiritorimapdata.push(line);
