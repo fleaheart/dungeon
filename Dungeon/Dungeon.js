@@ -1,7 +1,63 @@
 var Dungeon;
 (function (Dungeon) {
+    var Muki_N = (function () {
+        function Muki_N() {
+            this.index = 0;
+            this.mukiType = 'n';
+            this.mukiChr = '↑';
+            this.bit = Kyoutsu.BIT_TOP;
+            this.nextXY = { x: 0, y: -1 };
+        }
+        return Muki_N;
+    }());
+    var muki_n = new Muki_N();
+    var Muki_E = (function () {
+        function Muki_E() {
+            this.index = 1;
+            this.mukiType = 'e';
+            this.mukiChr = '→';
+            this.bit = Kyoutsu.BIT_RIGHT;
+            this.nextXY = { x: 1, y: 0 };
+        }
+        return Muki_E;
+    }());
+    var muki_e = new Muki_E();
+    var Muki_S = (function () {
+        function Muki_S() {
+            this.index = 2;
+            this.mukiType = 's';
+            this.mukiChr = '↓';
+            this.bit = Kyoutsu.BIT_BOTTOM;
+            this.nextXY = { x: 0, y: 1 };
+        }
+        return Muki_S;
+    }());
+    var muki_s = new Muki_S();
+    var Muki_W = (function () {
+        function Muki_W() {
+            this.index = 3;
+            this.mukiType = 'w';
+            this.mukiChr = '←';
+            this.bit = Kyoutsu.BIT_LEFT;
+            this.nextXY = { x: -1, y: 0 };
+        }
+        return Muki_W;
+    }());
+    var muki_w = new Muki_W();
+    var mukiArray = [muki_n, muki_e, muki_s, muki_w];
+    function mukiRotation(muki, chokkakuCount) {
+        var index = muki.index + chokkakuCount;
+        if (index < 0) {
+            index += 4;
+        }
+        else if (4 <= index) {
+            index -= 4;
+        }
+        return mukiArray[index];
+    }
     var Pc = (function () {
         function Pc() {
+            this.muki = new Muki_N();
         }
         return Pc;
     }());
@@ -20,19 +76,13 @@ var Dungeon;
     var $SCREEN_HEIGHT = 300;
     var $DRAW_WIDTH = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
     var $DRAW_HEIGHT = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
-    var $TOP = 0;
-    var $RIGHT = 1;
-    var $BOTTOM = 2;
-    var $LEFT = 3;
-    var $MUKI_CHARACTER = ['↑', '→', '↓', '←'];
-    var $MUKI_CHARACTER_LENGTH = $MUKI_CHARACTER.length;
     function init() {
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
         mapview(div_map, $mapdata);
         $pc.xpos = 0;
         $pc.ypos = 7;
-        $pc.muki = 0;
+        $pc.muki = muki_n;
         var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
         nakami.innerHTML = '↑';
         submapview();
@@ -58,26 +108,9 @@ var Dungeon;
             var kabeType = parseInt(kabeChar, 16);
             var xdiff = 0;
             var ydiff = 0;
-            if ($pc.muki == $TOP) {
-                if ((kabeType & Kyoutsu.BIT_TOP) == 0) {
-                    ydiff = -1;
-                }
-            }
-            else if ($pc.muki == $RIGHT) {
-                if ((kabeType & Kyoutsu.BIT_RIGHT) == 0) {
-                    xdiff = +1;
-                }
-            }
-            else if ($pc.muki == $BOTTOM) {
-                if ((kabeType & Kyoutsu.BIT_BOTTOM) == 0) {
-                    ydiff = +1;
-                }
-            }
-            else if ($pc.muki == $LEFT) {
-                if ((kabeType & Kyoutsu.BIT_LEFT) == 0) {
-                    xdiff = -1;
-                }
-            }
+            var muki = $pc.muki;
+            xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
+            ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
             if (xdiff != 0 || ydiff != 0) {
                 var nakami = void 0;
                 nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
@@ -85,26 +118,20 @@ var Dungeon;
                 $pc.xpos += xdiff;
                 $pc.ypos += ydiff;
                 nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-                nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+                nakami.innerHTML = $pc.muki.mukiChr;
                 submapview();
             }
         }
         else if (inputCode == Kyoutsu.INPUT_LEFT) {
-            $pc.muki--;
-            if ($pc.muki < 0) {
-                $pc.muki = $MUKI_CHARACTER_LENGTH - 1;
-            }
+            $pc.muki = mukiRotation($pc.muki, -1);
             var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+            nakami.innerHTML = $pc.muki.mukiChr;
             submapview();
         }
         else if (inputCode == Kyoutsu.INPUT_RIGHT) {
-            $pc.muki++;
-            if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
-                $pc.muki = 0;
-            }
+            $pc.muki = mukiRotation($pc.muki, +1);
             var nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-            nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+            nakami.innerHTML = $pc.muki.mukiChr;
             submapview();
         }
     }
@@ -123,7 +150,7 @@ var Dungeon;
         var kiritorimapdata = new Array();
         var x = 0;
         var y = 0;
-        if ($pc.muki == $TOP) {
+        if ($pc.muki.bit == Kyoutsu.BIT_TOP) {
             for (y = zenpou * -1; y <= 0; y++) {
                 var line = '';
                 for (x = hidarimigi * -1; x <= hidarimigi; x++) {
@@ -134,7 +161,7 @@ var Dungeon;
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki == $RIGHT) {
+        else if ($pc.muki.bit == Kyoutsu.BIT_RIGHT) {
             for (x = zenpou; 0 <= x; x--) {
                 var line = '';
                 for (y = hidarimigi * -1; y <= hidarimigi; y++) {
@@ -145,7 +172,7 @@ var Dungeon;
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki == $BOTTOM) {
+        else if ($pc.muki.bit == Kyoutsu.BIT_BOTTOM) {
             for (y = zenpou; 0 <= y; y--) {
                 var line = '';
                 for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
@@ -156,7 +183,7 @@ var Dungeon;
                 kiritorimapdata.push(line);
             }
         }
-        else if ($pc.muki == $LEFT) {
+        else if ($pc.muki.bit == Kyoutsu.BIT_LEFT) {
             for (x = zenpou * -1; x <= 0; x++) {
                 var line = '';
                 for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
@@ -186,7 +213,7 @@ var Dungeon;
     }
     function charkaiten(c, muki) {
         var n = parseInt(c, 16);
-        for (var i = 0; i < (4 - muki) % 4; i++) {
+        for (var i = 0; i < (4 - muki.index) % 4; i++) {
             n = n * 2;
             if (16 <= n) {
                 n = n - 16;
@@ -219,13 +246,13 @@ var Dungeon;
             }
             if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
                 if (kabe == -1 || i <= kabe) {
-                    kabetatekaku(context, i + 1, $LEFT);
+                    kabetatekaku(context, i + 1, Kyoutsu.BIT_LEFT);
                     hidarikabeflg = 1;
                 }
             }
             if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
                 if (kabe == -1 || i <= kabe) {
-                    kabetatekaku(context, i + 1, $RIGHT);
+                    kabetatekaku(context, i + 1, Kyoutsu.BIT_RIGHT);
                     migikabeflg = 1;
                 }
             }
@@ -234,7 +261,7 @@ var Dungeon;
             if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
                 if (kabe == -1 || i <= kabe) {
                     if (hidarikabeflg != 1) {
-                        kabeyokokaku(context, i + 1, $LEFT);
+                        kabeyokokaku(context, i + 1, Kyoutsu.BIT_LEFT);
                     }
                 }
             }
@@ -243,7 +270,7 @@ var Dungeon;
             if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
                 if (kabe == -1 || i <= kabe) {
                     if (migikabeflg != 1) {
-                        kabeyokokaku(context, i + 1, $RIGHT);
+                        kabeyokokaku(context, i + 1, Kyoutsu.BIT_RIGHT);
                     }
                 }
             }
@@ -324,11 +351,11 @@ var Dungeon;
     function kabetatekaku(context, fukasa, side) {
         var startx;
         var fugou;
-        if (side == $LEFT) {
+        if (side == Kyoutsu.BIT_LEFT) {
             startx = 0;
             fugou = 1;
         }
-        else if (side == $RIGHT) {
+        else if (side == Kyoutsu.BIT_RIGHT) {
             startx = $DRAW_WIDTH;
             fugou = -1;
         }
@@ -346,11 +373,11 @@ var Dungeon;
     function kabeyokokaku(context, fukasa, side) {
         var startx;
         var fugou;
-        if (side == $LEFT) {
+        if (side == Kyoutsu.BIT_LEFT) {
             startx = 0;
             fugou = 1;
         }
-        else if (side == $RIGHT) {
+        else if (side == Kyoutsu.BIT_RIGHT) {
             startx = $DRAW_WIDTH;
             fugou = -1;
         }

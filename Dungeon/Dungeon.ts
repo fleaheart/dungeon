@@ -1,8 +1,72 @@
 namespace Dungeon {
+
+	interface XY {
+		x: number;
+		y: number;
+	}
+
+	type MukiType = 'n' | 'e' | 's' | 'w';
+	type MukiChr = '↑' | '→' | '↓' | '←';
+
+	interface Muki {
+		index: number;
+		mukiType: MukiType;
+		mukiChr: MukiChr;
+		bit: number;
+		nextXY: XY;
+	}
+
+	class Muki_N implements Muki {
+		readonly index: number = 0;
+		readonly mukiType: MukiType = 'n';
+		readonly mukiChr: MukiChr = '↑';
+		readonly bit: number = Kyoutsu.BIT_TOP;
+		readonly nextXY: XY = { x: 0, y: -1 };
+	}
+	let muki_n = new Muki_N();
+
+	class Muki_E implements Muki {
+		readonly index: number = 1;
+		readonly mukiType: MukiType = 'e';
+		readonly mukiChr: MukiChr = '→';
+		readonly bit: number = Kyoutsu.BIT_RIGHT;
+		readonly nextXY: XY = { x: 1, y: 0 };
+	}
+	let muki_e = new Muki_E();
+
+	class Muki_S implements Muki {
+		readonly index: number = 2;
+		readonly mukiType: MukiType = 's';
+		readonly mukiChr: MukiChr = '↓';
+		readonly bit: number = Kyoutsu.BIT_BOTTOM;
+		readonly nextXY: XY = { x: 0, y: 1 };
+	}
+	let muki_s = new Muki_S();
+
+	class Muki_W implements Muki {
+		readonly index: number = 3;
+		readonly mukiType: MukiType = 'w';
+		readonly mukiChr: MukiChr = '←';
+		readonly bit: number = Kyoutsu.BIT_LEFT;
+		readonly nextXY: XY = { x: -1, y: 0 };
+	}
+	let muki_w = new Muki_W();
+	let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
+
+	function mukiRotation(muki: Muki, chokkakuCount: number): Muki {
+		let index = muki.index + chokkakuCount;
+		if (index < 0) {
+			index += 4;
+		} else if (4 <= index) {
+			index -= 4;
+		}
+		return mukiArray[index];
+	}
+
 	class Pc {
 		xpos: number;
 		ypos: number;
-		muki: number;
+		muki: Muki = new Muki_N();
 	}
 
 	let $pc: Pc = new Pc();
@@ -25,14 +89,6 @@ namespace Dungeon {
 	let $DRAW_WIDTH: number = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
 	let $DRAW_HEIGHT: number = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
 
-	const $TOP: number = 0;
-	const $RIGHT: number = 1;
-	const $BOTTOM: number = 2;
-	const $LEFT: number = 3;
-
-	let $MUKI_CHARACTER: string[] = ['↑', '→', '↓', '←'];
-	let $MUKI_CHARACTER_LENGTH: number = $MUKI_CHARACTER.length;
-
 	export function init() {
 
 		document.addEventListener('keydown', keyDownEvent);
@@ -42,7 +98,7 @@ namespace Dungeon {
 
 		$pc.xpos = 0;
 		$pc.ypos = 7;
-		$pc.muki = 0;
+		$pc.muki = muki_n;
 
 		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
 		nakami.innerHTML = '↑';
@@ -77,23 +133,10 @@ namespace Dungeon {
 
 			let xdiff: number = 0;
 			let ydiff: number = 0;
-			if ($pc.muki == $TOP) {
-				if ((kabeType & Kyoutsu.BIT_TOP) == 0) {
-					ydiff = -1;
-				}
-			} else if ($pc.muki == $RIGHT) {
-				if ((kabeType & Kyoutsu.BIT_RIGHT) == 0) {
-					xdiff = +1;
-				}
-			} else if ($pc.muki == $BOTTOM) {
-				if ((kabeType & Kyoutsu.BIT_BOTTOM) == 0) {
-					ydiff = +1;
-				}
-			} else if ($pc.muki == $LEFT) {
-				if ((kabeType & Kyoutsu.BIT_LEFT) == 0) {
-					xdiff = -1;
-				}
-			}
+
+			let muki: Muki = $pc.muki;
+			xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
+			ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
 
 			if (xdiff != 0 || ydiff != 0) {
 				let nakami: HTMLElement;
@@ -103,28 +146,24 @@ namespace Dungeon {
 				$pc.xpos += xdiff;
 				$pc.ypos += ydiff;
 				nakami = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-				nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+				nakami.innerHTML = $pc.muki.mukiChr;
 
 				submapview();
 			}
 
 		} else if (inputCode == Kyoutsu.INPUT_LEFT) {
-			$pc.muki--;
-			if ($pc.muki < 0) {
-				$pc.muki = $MUKI_CHARACTER_LENGTH - 1;
-			}
+			$pc.muki = mukiRotation($pc.muki, -1);
+
 			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+			nakami.innerHTML = $pc.muki.mukiChr;
 
 			submapview();
 
 		} else if (inputCode == Kyoutsu.INPUT_RIGHT) {
-			$pc.muki++;
-			if ($MUKI_CHARACTER_LENGTH - 1 < $pc.muki) {
-				$pc.muki = 0;
-			}
+			$pc.muki = mukiRotation($pc.muki, +1);
+
 			let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + $pc.xpos + '][' + $pc.ypos + ']');
-			nakami.innerHTML = $MUKI_CHARACTER[$pc.muki];
+			nakami.innerHTML = $pc.muki.mukiChr;
 
 			submapview();
 		}
@@ -153,7 +192,8 @@ namespace Dungeon {
 		let kiritorimapdata: string[] = new Array();
 		let x: number = 0;
 		let y: number = 0;
-		if ($pc.muki == $TOP) {
+
+		if ($pc.muki.bit == Kyoutsu.BIT_TOP) {
 			for (y = zenpou * -1; y <= 0; y++) {
 				let line: string = '';
 				for (x = hidarimigi * -1; x <= hidarimigi; x++) {
@@ -164,7 +204,7 @@ namespace Dungeon {
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki == $RIGHT) {
+		} else if ($pc.muki.bit == Kyoutsu.BIT_RIGHT) {
 			for (x = zenpou; 0 <= x; x--) {
 				let line: string = '';
 				for (y = hidarimigi * -1; y <= hidarimigi; y++) {
@@ -175,7 +215,7 @@ namespace Dungeon {
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki == $BOTTOM) {
+		} else if ($pc.muki.bit == Kyoutsu.BIT_BOTTOM) {
 			for (y = zenpou; 0 <= y; y--) {
 				let line: string = '';
 				for (x = hidarimigi; hidarimigi * -1 <= x; x--) {
@@ -186,7 +226,7 @@ namespace Dungeon {
 				kiritorimapdata.push(line);
 			}
 
-		} else if ($pc.muki == $LEFT) {
+		} else if ($pc.muki.bit == Kyoutsu.BIT_LEFT) {
 			for (x = zenpou * -1; x <= 0; x++) {
 				let line: string = '';
 				for (y = hidarimigi; hidarimigi * -1 <= y; y--) {
@@ -215,9 +255,9 @@ namespace Dungeon {
 		return c;
 	}
 
-	function charkaiten(c: string, muki: number): string {
+	function charkaiten(c: string, muki: Muki): string {
 		let n: number = parseInt(c, 16);
-		for (let i: number = 0; i < (4 - muki) % 4; i++) {
+		for (let i: number = 0; i < (4 - muki.index) % 4; i++) {
 			n = n * 2;
 			if (16 <= n) {
 				n = n - 16;
@@ -256,13 +296,13 @@ namespace Dungeon {
 			}
 			if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
 				if (kabe == -1 || i <= kabe) {
-					kabetatekaku(context, i + 1, $LEFT);
+					kabetatekaku(context, i + 1, Kyoutsu.BIT_LEFT);
 					hidarikabeflg = 1;
 				}
 			}
 			if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
 				if (kabe == -1 || i <= kabe) {
-					kabetatekaku(context, i + 1, $RIGHT);
+					kabetatekaku(context, i + 1, Kyoutsu.BIT_RIGHT);
 					migikabeflg = 1;
 				}
 			}
@@ -272,7 +312,7 @@ namespace Dungeon {
 			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (hidarikabeflg != 1) {
-						kabeyokokaku(context, i + 1, $LEFT);
+						kabeyokokaku(context, i + 1, Kyoutsu.BIT_LEFT);
 					}
 				}
 			}
@@ -282,7 +322,7 @@ namespace Dungeon {
 			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (migikabeflg != 1) {
-						kabeyokokaku(context, i + 1, $RIGHT);
+						kabeyokokaku(context, i + 1, Kyoutsu.BIT_RIGHT);
 					}
 				}
 			}
@@ -376,10 +416,10 @@ namespace Dungeon {
 		let startx: number;
 		let fugou: number;
 
-		if (side == $LEFT) {
+		if (side == Kyoutsu.BIT_LEFT) {
 			startx = 0;
 			fugou = 1;
-		} else if (side == $RIGHT) {
+		} else if (side == Kyoutsu.BIT_RIGHT) {
 			startx = $DRAW_WIDTH;
 			fugou = -1;
 		} else {
@@ -401,10 +441,10 @@ namespace Dungeon {
 		let startx: number;
 		let fugou: number;
 
-		if (side == $LEFT) {
+		if (side == Kyoutsu.BIT_LEFT) {
 			startx = 0;
 			fugou = 1;
-		} else if (side == $RIGHT) {
+		} else if (side == Kyoutsu.BIT_RIGHT) {
 			startx = $DRAW_WIDTH;
 			fugou = -1;
 		} else {
