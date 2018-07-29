@@ -101,6 +101,7 @@ namespace Dungeon {
 		start_x: number = 0;
 		start_y: number = 0;
 		start_muki: Muki = muki_e;
+		mode: string = '';
 
 		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
 
@@ -120,6 +121,8 @@ namespace Dungeon {
 					if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
 						this.start_muki = createMuki(value);
 					}
+				} else if (attr == 'mode') {
+					this.mode = value;
 				}
 			}
 		}
@@ -249,7 +252,6 @@ namespace Dungeon {
 		submapview();
 
 		let keyboard = new Kyoutsu.Keyboard();
-		keyboard.keyboard.style.top = '320px';
 
 		document.body.appendChild(keyboard.keyboard);
 
@@ -257,6 +259,23 @@ namespace Dungeon {
 		keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
 		keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
+
+		let mode: string = _gameStatus.gameInitter.mode;
+		let div_submap = Kyoutsu.getElementById('div_submap');
+		if (mode == 'debug') {
+			div_map.style.display = '';
+			div_submap.style.display = '';
+			div_submap.style.top = '20px';
+			div_submap.style.left = '424px';
+
+			keyboard.keyboard.style.top = '20px';
+			keyboard.keyboard.style.left = '560px';
+		} else {
+			if (mode == 'easy') {
+				div_submap.style.display = '';
+			}
+			keyboard.keyboard.style.top = '320px';
+		}
 	}
 
 	function keyboardClick(e: Event) {
@@ -325,10 +344,12 @@ namespace Dungeon {
 
 		mapview(div_submap, submapdata, 'sub');
 
-		// デバッグ情報の表示
-		let html: string = div_submap.innerHTML;
-		html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
-		div_submap.innerHTML = html;
+		if (_gameStatus.gameInitter.mode == 'debug') {
+			// デバッグ情報の表示
+			let html: string = div_submap.innerHTML;
+			html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
+			div_submap.innerHTML = html;
+		}
 	}
 
 	function map_kiritori(mapdata: string[], zenpou: number, hidarimigi: number): string[] {

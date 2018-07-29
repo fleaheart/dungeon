@@ -88,6 +88,7 @@ var Dungeon;
             this.start_x = 0;
             this.start_y = 0;
             this.start_muki = muki_e;
+            this.mode = '';
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
         }
         GameInitter.prototype.analize = function (line) {
@@ -108,6 +109,9 @@ var Dungeon;
                     if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
                         this.start_muki = createMuki(value);
                     }
+                }
+                else if (attr == 'mode') {
+                    this.mode = value;
                 }
             }
         };
@@ -211,11 +215,26 @@ var Dungeon;
         nakami.innerHTML = _gameStatus.gameInitter.start_muki.mukiChr;
         submapview();
         var keyboard = new Kyoutsu.Keyboard();
-        keyboard.keyboard.style.top = '320px';
         document.body.appendChild(keyboard.keyboard);
         keyboard.setKeyEvent('click', keyboardClick);
         keyboard.setKeyEvent('touch', function (e) { keyboardClick(e); e.preventDefault(); });
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
+        var mode = _gameStatus.gameInitter.mode;
+        var div_submap = Kyoutsu.getElementById('div_submap');
+        if (mode == 'debug') {
+            div_map.style.display = '';
+            div_submap.style.display = '';
+            div_submap.style.top = '20px';
+            div_submap.style.left = '424px';
+            keyboard.keyboard.style.top = '20px';
+            keyboard.keyboard.style.left = '560px';
+        }
+        else {
+            if (mode == 'easy') {
+                div_submap.style.display = '';
+            }
+            keyboard.keyboard.style.top = '320px';
+        }
     }
     Dungeon.init = init;
     function keyboardClick(e) {
@@ -266,9 +285,11 @@ var Dungeon;
         draw3D(submapdata, zenpou, hidarimigi);
         var div_submap = Kyoutsu.getElementById('div_submap');
         mapview(div_submap, submapdata, 'sub');
-        var html = div_submap.innerHTML;
-        html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
-        div_submap.innerHTML = html;
+        if (_gameStatus.gameInitter.mode == 'debug') {
+            var html = div_submap.innerHTML;
+            html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
+            div_submap.innerHTML = html;
+        }
     }
     function map_kiritori(mapdata, zenpou, hidarimigi) {
         var kiritorimapdata = new Array();
