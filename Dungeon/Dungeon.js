@@ -68,20 +68,14 @@ var Dungeon;
         return Character;
     }());
     var _gameStatus = {
-        player: new Character()
+        player: new Character(),
+        mapdata: new Array()
     };
-    var $mapdata = ['95555513',
-        'A95553AA',
-        'AAD53AAA',
-        'AC556AAA',
-        'C5515406',
-        '93FAD3AB',
-        'AAD452AA',
-        'EC5556C6'];
     function init() {
+        _gameStatus.mapdata = ['95555513', 'A95553AA', 'AAD53AAA', 'AC556AAA', 'C5515406', '93FAD3AB', 'AAD452AA', 'EC5556C6'];
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
-        mapview(div_map, $mapdata);
+        mapview(div_map, _gameStatus.mapdata);
         _gameStatus.player.xpos = 0;
         _gameStatus.player.ypos = 7;
         _gameStatus.player.muki = muki_n;
@@ -106,7 +100,7 @@ var Dungeon;
     function keyOperation(key) {
         var inputCode = Kyoutsu.getInputCode(key);
         if (inputCode == Kyoutsu.INPUT_UP) {
-            var kabeChar = $mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
+            var kabeChar = _gameStatus.mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
             var kabeType = parseInt(kabeChar, 16);
             var xdiff = 0;
             var ydiff = 0;
@@ -140,7 +134,7 @@ var Dungeon;
     function submapview() {
         var zenpou = 3;
         var hidarimigi = 1;
-        var submapdata = map_kiritori($mapdata, zenpou, hidarimigi);
+        var submapdata = map_kiritori(_gameStatus.mapdata, zenpou, hidarimigi);
         draw3D(submapdata, zenpou, hidarimigi);
         var div_submap = Kyoutsu.getElementById('div_submap');
         mapview(div_submap, submapdata);

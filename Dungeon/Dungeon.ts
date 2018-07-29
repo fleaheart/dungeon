@@ -80,26 +80,21 @@ namespace Dungeon {
 
 	interface GameStatus {
 		player: Character;
+		mapdata: Array<string>;
 	}
 	let _gameStatus: GameStatus = {
-		player: new Character()
+		player: new Character(),
+		mapdata: new Array<string>()
 	}
 
-	let $mapdata: string[] = ['95555513',
-		'A95553AA',
-		'AAD53AAA',
-		'AC556AAA',
-		'C5515406',
-		'93FAD3AB',
-		'AAD452AA',
-		'EC5556C6'];
-
 	export function init() {
+
+		_gameStatus.mapdata = ['95555513', 'A95553AA', 'AAD53AAA', 'AC556AAA', 'C5515406', '93FAD3AB', 'AAD452AA', 'EC5556C6'];
 
 		document.addEventListener('keydown', keyDownEvent);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
-		mapview(div_map, $mapdata);
+		mapview(div_map, _gameStatus.mapdata);
 
 		_gameStatus.player.xpos = 0;
 		_gameStatus.player.ypos = 7;
@@ -133,7 +128,7 @@ namespace Dungeon {
 	function keyOperation(key: string) {
 		let inputCode: number = Kyoutsu.getInputCode(key);
 		if (inputCode == Kyoutsu.INPUT_UP) {
-			let kabeChar: string = $mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
+			let kabeChar: string = _gameStatus.mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);
 			let kabeType: number = parseInt(kabeChar, 16);
 
 			let xdiff: number = 0;
@@ -179,7 +174,7 @@ namespace Dungeon {
 		let zenpou: number = 3
 		let hidarimigi: number = 1;
 
-		let submapdata: string[] = map_kiritori($mapdata, zenpou, hidarimigi);
+		let submapdata: string[] = map_kiritori(_gameStatus.mapdata, zenpou, hidarimigi);
 
 		draw3D(submapdata, zenpou, hidarimigi);
 
