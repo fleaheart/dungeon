@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=480,user-scalable=no" />
+
+	<title>コンストラクター</title>
+
+	<style type="text/css">
+		html {
+			touch-action: manipulation;
+		}
+
+		canvas {
+			border: 1px solid black;
+		}
+
+		.map {
+			border: solid 2px black;
+			padding: 0px;
+			background-color: lightgrey;
+			vertical-align: top;
+		}
+
+		.kukaku {
+			display: inline-block;
+			padding: 0px;
+			margin: 0px;
+			background-color: white;
+			vertical-align: top;
+			text-align: center;
+		}
+
+		.nakami {
+			display: table-cell;
+			text-align: center;
+			vertical-align: middle;
+		}
+	</style>
+
+	<script type="text/javascript" src="../Kyoutsu/Kyoutsu.js"></script>
+	<script type="text/javascript" src="Dungeon.js"></script>
+	<script type="text/javascript" src="Constructor.js"></script>
+	<script type="text/javascript">
+		window.addEventListener('load', function () {
+			Dungeon.constructor_init();
+		});
+	</script>
+
+</head>
+
+<body>
+	<div style="float:left;">
+		<textarea id="maptext" rows="12" cols="24"></textarea>
+		<input id="refresh" type="button">
+	</div>
+	<div id="div_partsBoard" style="float:right;">
+
+	</div>
+	<hr style="clear:both;">
+	<div id="div_map" class="map" style="height:400px;">
+	</div>
+
+</body>

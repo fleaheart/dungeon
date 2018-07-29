@@ -472,7 +472,7 @@ namespace Dungeon {
 		}
 	}
 
-	function mapview(div_map: HTMLElement, kakumapdata: string[]): void {
+	export function mapview(div_map: HTMLElement, kakumapdata: string[]): void {
 		let ippen: number = 36;
 		let futosa: number = 2;
 
@@ -507,7 +507,7 @@ namespace Dungeon {
 		}
 	}
 
-	function setStyle(map: HTMLElement, c: string, ippen: number, futosa: number): void {
+	export function setStyle(map: HTMLElement, c: string, ippen: number, futosa: number): void {
 		let n: number = parseInt(c, 16);
 
 		map.style.display = 'inline-block';

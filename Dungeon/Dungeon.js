@@ -427,6 +427,7 @@ var Dungeon;
             div_map.appendChild(br);
         }
     }
+    Dungeon.mapview = mapview;
     function setStyle(map, c, ippen, futosa) {
         var n = parseInt(c, 16);
         map.style.display = 'inline-block';
@@ -463,6 +464,7 @@ var Dungeon;
             map.style.marginLeft = futosa + 'px';
         }
     }
+    Dungeon.setStyle = setStyle;
     function kabemaekaku(context, fukasa) {
         context.beginPath();
         context.moveTo($kabex[fukasa], $kabey[fukasa]);
