@@ -68,10 +68,15 @@ namespace Kyoutsu {
 		return res;
 	};
 
-	export const INPUT_UP: number = 1;
-	export const INPUT_RIGHT: number = 2;
-	export const INPUT_DOWN: number = 4;
-	export const INPUT_LEFT: number = 8;
+	export const BIT_TOP: number = 1;
+	export const BIT_RIGHT: number = 2;
+	export const BIT_BOTTOM: number = 4;
+	export const BIT_LEFT: number = 8;
+
+	export const INPUT_UP: number = BIT_TOP;
+	export const INPUT_RIGHT: number = BIT_RIGHT;
+	export const INPUT_DOWN: number = BIT_BOTTOM;
+	export const INPUT_LEFT: number = BIT_LEFT;
 
 	export const INPUT_ESCAPE: number = 27;
 

@@ -64,10 +64,14 @@ var Kyoutsu;
     }
     Kyoutsu.load = load;
     ;
-    Kyoutsu.INPUT_UP = 1;
-    Kyoutsu.INPUT_RIGHT = 2;
-    Kyoutsu.INPUT_DOWN = 4;
-    Kyoutsu.INPUT_LEFT = 8;
+    Kyoutsu.BIT_TOP = 1;
+    Kyoutsu.BIT_RIGHT = 2;
+    Kyoutsu.BIT_BOTTOM = 4;
+    Kyoutsu.BIT_LEFT = 8;
+    Kyoutsu.INPUT_UP = Kyoutsu.BIT_TOP;
+    Kyoutsu.INPUT_RIGHT = Kyoutsu.BIT_RIGHT;
+    Kyoutsu.INPUT_DOWN = Kyoutsu.BIT_BOTTOM;
+    Kyoutsu.INPUT_LEFT = Kyoutsu.BIT_LEFT;
     Kyoutsu.INPUT_ESCAPE = 27;
     function getInputCode(key) {
         if (key == 'w' || key == 'W') {

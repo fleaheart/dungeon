@@ -29,10 +29,6 @@ namespace Dungeon {
 	const $RIGHT: number = 1;
 	const $BOTTOM: number = 2;
 	const $LEFT: number = 3;
-	const $BIT_TOP: number = 1;
-	const $BIT_RIGHT: number = 2;
-	const $BIT_BOTTOM: number = 4;
-	const $BIT_LEFT: number = 8;
 
 	let $MUKI_CHARACTER: string[] = ['↑', '→', '↓', '←'];
 	let $MUKI_CHARACTER_LENGTH: number = $MUKI_CHARACTER.length;
@@ -82,19 +78,19 @@ namespace Dungeon {
 			let xdiff: number = 0;
 			let ydiff: number = 0;
 			if ($pc.muki == $TOP) {
-				if ((kabeType & $BIT_TOP) == 0) {
+				if ((kabeType & Kyoutsu.BIT_TOP) == 0) {
 					ydiff = -1;
 				}
 			} else if ($pc.muki == $RIGHT) {
-				if ((kabeType & $BIT_RIGHT) == 0) {
+				if ((kabeType & Kyoutsu.BIT_RIGHT) == 0) {
 					xdiff = +1;
 				}
 			} else if ($pc.muki == $BOTTOM) {
-				if ((kabeType & $BIT_BOTTOM) == 0) {
+				if ((kabeType & Kyoutsu.BIT_BOTTOM) == 0) {
 					ydiff = +1;
 				}
 			} else if ($pc.muki == $LEFT) {
-				if ((kabeType & $BIT_LEFT) == 0) {
+				if ((kabeType & Kyoutsu.BIT_LEFT) == 0) {
 					xdiff = -1;
 				}
 			}
@@ -252,19 +248,19 @@ namespace Dungeon {
 			let hidarikabeflg: number = 0;
 			let migikabeflg: number = 0;
 
-			if ((n & $BIT_TOP) == $BIT_TOP) {
+			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i < kabe) {
 					kabemaekaku(context, i + 1);
 					kabe = i;
 				}
 			}
-			if ((n & $BIT_LEFT) == $BIT_LEFT) {
+			if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
 				if (kabe == -1 || i <= kabe) {
 					kabetatekaku(context, i + 1, $LEFT);
 					hidarikabeflg = 1;
 				}
 			}
-			if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
+			if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
 				if (kabe == -1 || i <= kabe) {
 					kabetatekaku(context, i + 1, $RIGHT);
 					migikabeflg = 1;
@@ -273,7 +269,7 @@ namespace Dungeon {
 
 			c = mapdata[zenpou - i].charAt(hidarimigi - 1);
 			n = parseInt(c, 16);
-			if ((n & $BIT_TOP) == $BIT_TOP) {
+			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (hidarikabeflg != 1) {
 						kabeyokokaku(context, i + 1, $LEFT);
@@ -283,7 +279,7 @@ namespace Dungeon {
 
 			c = mapdata[zenpou - i].charAt(hidarimigi + 1);
 			n = parseInt(c, 16);
-			if ((n & $BIT_TOP) == $BIT_TOP) {
+			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (migikabeflg != 1) {
 						kabeyokokaku(context, i + 1, $RIGHT);
@@ -341,23 +337,23 @@ namespace Dungeon {
 		map.style.border = '0px solid black';
 		map.style.backgroundColor = 'white';
 
-		if ((n & $BIT_TOP) == $BIT_TOP) {
+		if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 			map.style.borderTopWidth = futosa + 'px';
 		} else {
 			map.style.marginTop = futosa + 'px';
 		}
 
-		if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
+		if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
 			map.style.borderRightWidth = futosa + 'px';
 		} else {
 			map.style.marginRight = futosa + 'px';
 		}
-		if ((n & $BIT_BOTTOM) == $BIT_BOTTOM) {
+		if ((n & Kyoutsu.BIT_BOTTOM) == Kyoutsu.BIT_BOTTOM) {
 			map.style.borderBottomWidth = futosa + 'px';
 		} else {
 			map.style.marginBottom = futosa + 'px';
 		}
-		if ((n & $BIT_LEFT) == $BIT_LEFT) {
+		if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
 			map.style.borderLeftWidth = futosa + 'px';
 		} else {
 			map.style.marginLeft = futosa + 'px';

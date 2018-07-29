@@ -24,10 +24,6 @@ var Dungeon;
     var $RIGHT = 1;
     var $BOTTOM = 2;
     var $LEFT = 3;
-    var $BIT_TOP = 1;
-    var $BIT_RIGHT = 2;
-    var $BIT_BOTTOM = 4;
-    var $BIT_LEFT = 8;
     var $MUKI_CHARACTER = ['↑', '→', '↓', '←'];
     var $MUKI_CHARACTER_LENGTH = $MUKI_CHARACTER.length;
     function init() {
@@ -63,22 +59,22 @@ var Dungeon;
             var xdiff = 0;
             var ydiff = 0;
             if ($pc.muki == $TOP) {
-                if ((kabeType & $BIT_TOP) == 0) {
+                if ((kabeType & Kyoutsu.BIT_TOP) == 0) {
                     ydiff = -1;
                 }
             }
             else if ($pc.muki == $RIGHT) {
-                if ((kabeType & $BIT_RIGHT) == 0) {
+                if ((kabeType & Kyoutsu.BIT_RIGHT) == 0) {
                     xdiff = +1;
                 }
             }
             else if ($pc.muki == $BOTTOM) {
-                if ((kabeType & $BIT_BOTTOM) == 0) {
+                if ((kabeType & Kyoutsu.BIT_BOTTOM) == 0) {
                     ydiff = +1;
                 }
             }
             else if ($pc.muki == $LEFT) {
-                if ((kabeType & $BIT_LEFT) == 0) {
+                if ((kabeType & Kyoutsu.BIT_LEFT) == 0) {
                     xdiff = -1;
                 }
             }
@@ -215,19 +211,19 @@ var Dungeon;
             var n = parseInt(c, 16);
             var hidarikabeflg = 0;
             var migikabeflg = 0;
-            if ((n & $BIT_TOP) == $BIT_TOP) {
+            if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
                 if (kabe == -1 || i < kabe) {
                     kabemaekaku(context, i + 1);
                     kabe = i;
                 }
             }
-            if ((n & $BIT_LEFT) == $BIT_LEFT) {
+            if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
                 if (kabe == -1 || i <= kabe) {
                     kabetatekaku(context, i + 1, $LEFT);
                     hidarikabeflg = 1;
                 }
             }
-            if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
+            if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
                 if (kabe == -1 || i <= kabe) {
                     kabetatekaku(context, i + 1, $RIGHT);
                     migikabeflg = 1;
@@ -235,7 +231,7 @@ var Dungeon;
             }
             c = mapdata[zenpou - i].charAt(hidarimigi - 1);
             n = parseInt(c, 16);
-            if ((n & $BIT_TOP) == $BIT_TOP) {
+            if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
                 if (kabe == -1 || i <= kabe) {
                     if (hidarikabeflg != 1) {
                         kabeyokokaku(context, i + 1, $LEFT);
@@ -244,7 +240,7 @@ var Dungeon;
             }
             c = mapdata[zenpou - i].charAt(hidarimigi + 1);
             n = parseInt(c, 16);
-            if ((n & $BIT_TOP) == $BIT_TOP) {
+            if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
                 if (kabe == -1 || i <= kabe) {
                     if (migikabeflg != 1) {
                         kabeyokokaku(context, i + 1, $RIGHT);
@@ -291,25 +287,25 @@ var Dungeon;
         map.style.textAlign = 'center';
         map.style.border = '0px solid black';
         map.style.backgroundColor = 'white';
-        if ((n & $BIT_TOP) == $BIT_TOP) {
+        if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
             map.style.borderTopWidth = futosa + 'px';
         }
         else {
             map.style.marginTop = futosa + 'px';
         }
-        if ((n & $BIT_RIGHT) == $BIT_RIGHT) {
+        if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
             map.style.borderRightWidth = futosa + 'px';
         }
         else {
             map.style.marginRight = futosa + 'px';
         }
-        if ((n & $BIT_BOTTOM) == $BIT_BOTTOM) {
+        if ((n & Kyoutsu.BIT_BOTTOM) == Kyoutsu.BIT_BOTTOM) {
             map.style.borderBottomWidth = futosa + 'px';
         }
         else {
             map.style.marginBottom = futosa + 'px';
         }
-        if ((n & $BIT_LEFT) == $BIT_LEFT) {
+        if ((n & Kyoutsu.BIT_LEFT) == Kyoutsu.BIT_LEFT) {
             map.style.borderLeftWidth = futosa + 'px';
         }
         else {
