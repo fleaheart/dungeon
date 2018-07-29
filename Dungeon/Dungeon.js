@@ -51,6 +51,21 @@ var Dungeon;
     }());
     var muki_w = new Muki_W();
     var mukiArray = [muki_n, muki_e, muki_s, muki_w];
+    function createMuki(mukiType) {
+        if (mukiType == 'n') {
+            return muki_n;
+        }
+        else if (mukiType == 'e') {
+            return muki_e;
+        }
+        else if (mukiType == 's') {
+            return muki_s;
+        }
+        else if (mukiType == 'w') {
+            return muki_w;
+        }
+        throw mukiType + ' is illigal argument';
+    }
     function mukiRotation(muki, chokkakuCount) {
         var index = muki.index + chokkakuCount;
         if (index < 0) {
@@ -67,18 +82,131 @@ var Dungeon;
         }
         return Character;
     }());
+    var GameInitter = (function () {
+        function GameInitter() {
+            this.start_floor = 'no define';
+            this.start_x = 0;
+            this.start_y = 0;
+            this.start_muki = muki_e;
+            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+        }
+        GameInitter.prototype.analize = function (line) {
+            var defineData = line.match(this.reg);
+            if (defineData != null) {
+                var attr = defineData[1];
+                var value = defineData[2];
+                if (attr == 'start_floor') {
+                    this.start_floor = value;
+                }
+                else if (attr == 'start_x') {
+                    this.start_x = +value;
+                }
+                else if (attr == 'start_y') {
+                    this.start_y = +value;
+                }
+                else if (attr == 'start_muki') {
+                    if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
+                        this.start_muki = createMuki(value);
+                    }
+                }
+            }
+        };
+        GameInitter.prototype.save = function () {
+        };
+        return GameInitter;
+    }());
+    var FloorInitter = (function () {
+        function FloorInitter() {
+            this.name = 'no define';
+            this.maptext = new Array();
+            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+            this.maptextMode = false;
+        }
+        FloorInitter.prototype.analize = function (line) {
+            if (this.maptextMode) {
+                if (line == ':mapend') {
+                    this.maptextMode = false;
+                }
+                else {
+                    this.maptext.push(line);
+                }
+            }
+            else {
+                var defineData = line.match(this.reg);
+                if (defineData != null) {
+                    var attr = defineData[1];
+                    var value = defineData[2];
+                    if (attr == 'name') {
+                        this.name = value;
+                    }
+                    else if (attr == 'maptext') {
+                        this.maptextMode = true;
+                    }
+                }
+            }
+        };
+        FloorInitter.prototype.save = function () {
+            var floor = { name: this.name, maptext: this.maptext };
+            _floorList.push(floor);
+        };
+        return FloorInitter;
+    }());
     var _gameStatus = {
+        gameInitter: new GameInitter(),
         player: new Character(),
         mapdata: new Array()
     };
+    var _floorList = new Array();
+    function getFloor(name) {
+        for (var i = 0, len = _floorList.length; i < len; i++) {
+            var item = _floorList[i];
+            if (item.name == name) {
+                return item;
+            }
+        }
+        throw name + ' is not found';
+    }
+    function loadData() {
+        var data = Kyoutsu.load('data.txt');
+        var lines = data.split(/[\r\n]+/g);
+        var initter = null;
+        var i = 0;
+        while (true) {
+            var line = lines[i];
+            i++;
+            if (line == undefined) {
+                break;
+            }
+            if (line == '[GAME_INITIALIZE]') {
+                if (initter != null) {
+                    initter.save();
+                }
+                initter = _gameStatus.gameInitter;
+            }
+            else if (line == '[FLOOR]') {
+                if (initter != null) {
+                    initter.save();
+                }
+                initter = new FloorInitter();
+            }
+            if (initter != null) {
+                initter.analize(line);
+            }
+        }
+        if (initter != null) {
+            initter.save();
+        }
+    }
     function init() {
-        _gameStatus.mapdata = ['95555513', 'A95553AA', 'AAD53AAA', 'AC556AAA', 'C5515406', '93FAD3AB', 'AAD452AA', 'EC5556C6'];
+        loadData();
+        var floor = getFloor(_gameStatus.gameInitter.start_floor);
+        _gameStatus.mapdata = floor.maptext;
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
         mapview(div_map, _gameStatus.mapdata);
-        _gameStatus.player.xpos = 0;
-        _gameStatus.player.ypos = 7;
-        _gameStatus.player.muki = muki_n;
+        _gameStatus.player.xpos = _gameStatus.gameInitter.start_x;
+        _gameStatus.player.ypos = _gameStatus.gameInitter.start_y;
+        _gameStatus.player.muki = _gameStatus.gameInitter.start_muki;
         var nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
         nakami.innerHTML = '↑';
         submapview();

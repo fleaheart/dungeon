@@ -62,6 +62,19 @@ namespace Dungeon {
 	let muki_w = new Muki_W();
 	let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
 
+	function createMuki(mukiType: MukiType): Muki {
+		if (mukiType == 'n') {
+			return muki_n;
+		} else if (mukiType == 'e') {
+			return muki_e;
+		} else if (mukiType == 's') {
+			return muki_s;
+		} else if (mukiType == 'w') {
+			return muki_w;
+		}
+		throw mukiType + ' is illigal argument';
+	}
+
 	function mukiRotation(muki: Muki, chokkakuCount: number): Muki {
 		let index = muki.index + chokkakuCount;
 		if (index < 0) {
@@ -78,27 +91,157 @@ namespace Dungeon {
 		muki: Muki = new Muki_N();
 	}
 
+	interface Initter {
+		analize(line: string): void;
+		save(): void;
+	}
+
+	class GameInitter implements Initter {
+		start_floor: string = 'no define';
+		start_x: number = 0;
+		start_y: number = 0;
+		start_muki: Muki = muki_e;
+
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		analize(line: string): void {
+			let defineData: RegExpMatchArray | null = line.match(this.reg);
+			if (defineData != null) {
+				let attr: string = defineData[1];
+				let value: string = defineData[2];
+
+				if (attr == 'start_floor') {
+					this.start_floor = value;
+				} else if (attr == 'start_x') {
+					this.start_x = +value;
+				} else if (attr == 'start_y') {
+					this.start_y = +value;
+				} else if (attr == 'start_muki') {
+					if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
+						this.start_muki = createMuki(value);
+					}
+				}
+			}
+		}
+
+		save(): void {
+			// 全部そろうまでわからないので、ここでは何もしない
+		}
+	}
+
+	class FloorInitter implements Initter {
+		name: string = 'no define';
+		maptext: Array<string> = new Array<string>();
+
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		maptextMode: boolean = false;
+
+		analize(line: string): void {
+			if (this.maptextMode) {
+				if (line == ':mapend') {
+					this.maptextMode = false;
+				} else {
+					this.maptext.push(line);
+				}
+			} else {
+				let defineData: RegExpMatchArray | null = line.match(this.reg);
+				if (defineData != null) {
+					let attr: string = defineData[1];
+					let value: string = defineData[2];
+					if (attr == 'name') {
+						this.name = value;
+					} else if (attr == 'maptext') {
+						this.maptextMode = true;
+					}
+				}
+			}
+		}
+
+		save(): void {
+			let floor: Floor = { name: this.name, maptext: this.maptext };
+			_floorList.push(floor);
+		}
+	}
+
 	interface GameStatus {
+		gameInitter: GameInitter;
 		player: Character;
 		mapdata: Array<string>;
 	}
 	let _gameStatus: GameStatus = {
+		gameInitter: new GameInitter(),
 		player: new Character(),
 		mapdata: new Array<string>()
 	}
 
-	export function init() {
+	interface Floor {
+		name: string;
+		maptext: Array<string>;
+	}
+	let _floorList: Array<Floor> = new Array<Floor>();
 
-		_gameStatus.mapdata = ['95555513', 'A95553AA', 'AAD53AAA', 'AC556AAA', 'C5515406', '93FAD3AB', 'AAD452AA', 'EC5556C6'];
+	function getFloor(name: string): Floor {
+		for (let i = 0, len: number = _floorList.length; i < len; i++) {
+			let item: Floor = _floorList[i];
+			if (item.name == name) {
+				return item;
+			}
+		}
+		throw name + ' is not found';
+	}
+
+	function loadData() {
+		let data: string = Kyoutsu.load('data.txt');
+		let lines: Array<string> = data.split(/[\r\n]+/g);
+
+		let initter: Initter | null = null;
+
+		let i = 0;
+		while (true) {
+			let line: string | undefined = lines[i];
+			i++;
+			if (line == undefined) {
+				break;
+			}
+
+			if (line == '[GAME_INITIALIZE]') {
+				if (initter != null) {
+					initter.save();
+				}
+				// gameInitterだけは、全部そろうまでわからないので、捨てないで使いまわす。
+				initter = _gameStatus.gameInitter;
+
+			} else if (line == '[FLOOR]') {
+				if (initter != null) {
+					initter.save();
+				}
+				initter = new FloorInitter();
+			}
+
+			if (initter != null) {
+				initter.analize(line);
+			}
+		}
+		if (initter != null) {
+			initter.save();
+		}
+	}
+
+	export function init() {
+		loadData();
+
+		let floor: Floor = getFloor(_gameStatus.gameInitter.start_floor);
+		_gameStatus.mapdata = floor.maptext;
 
 		document.addEventListener('keydown', keyDownEvent);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
 		mapview(div_map, _gameStatus.mapdata);
 
-		_gameStatus.player.xpos = 0;
-		_gameStatus.player.ypos = 7;
-		_gameStatus.player.muki = muki_n;
+		_gameStatus.player.xpos = _gameStatus.gameInitter.start_x;
+		_gameStatus.player.ypos = _gameStatus.gameInitter.start_y;
+		_gameStatus.player.muki = _gameStatus.gameInitter.start_muki;
 
 		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
 		nakami.innerHTML = '↑';
