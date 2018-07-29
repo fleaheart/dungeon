@@ -68,7 +68,7 @@ namespace Dungeon {
 		let mapdata = textarea.value.split(/[\r\n]+/g);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
-		mapview(div_map, mapdata);
+		mapview(div_map, mapdata, '');
 	}
 
 	function selectKukaku(e: MouseEvent): void {

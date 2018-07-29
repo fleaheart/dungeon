@@ -203,12 +203,12 @@ var Dungeon;
         _gameStatus.mapdata = floor.maptext;
         document.addEventListener('keydown', keyDownEvent);
         var div_map = Kyoutsu.getElementById('div_map');
-        mapview(div_map, _gameStatus.mapdata);
+        mapview(div_map, _gameStatus.mapdata, '');
         _gameStatus.player.xpos = _gameStatus.gameInitter.start_x;
         _gameStatus.player.ypos = _gameStatus.gameInitter.start_y;
         _gameStatus.player.muki = _gameStatus.gameInitter.start_muki;
         var nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
-        nakami.innerHTML = '↑';
+        nakami.innerHTML = _gameStatus.gameInitter.start_muki.mukiChr;
         submapview();
         var keyboard = new Kyoutsu.Keyboard();
         keyboard.keyboard.style.top = '320px';
@@ -265,7 +265,7 @@ var Dungeon;
         var submapdata = map_kiritori(_gameStatus.mapdata, zenpou, hidarimigi);
         draw3D(submapdata, zenpou, hidarimigi);
         var div_submap = Kyoutsu.getElementById('div_submap');
-        mapview(div_submap, submapdata);
+        mapview(div_submap, submapdata, 'sub');
         var html = div_submap.innerHTML;
         html = html + submapdata[0] + '<br>' + submapdata[1] + '<br>' + submapdata[2] + '<br>' + submapdata[3] + '<br>';
         div_submap.innerHTML = html;
@@ -400,7 +400,7 @@ var Dungeon;
             }
         }
     }
-    function mapview(div_map, kakumapdata) {
+    function mapview(div_map, kakumapdata, header) {
         var ippen = 36;
         var futosa = 2;
         div_map.innerHTML = '';
@@ -415,7 +415,7 @@ var Dungeon;
                 map.id = 'map[' + x + '][' + y + ']';
                 setStyle(map, c, ippen, futosa);
                 var nakami = document.createElement('DIV');
-                nakami.id = 'nakami[' + x + '][' + y + ']';
+                nakami.id = header + 'nakami[' + x + '][' + y + ']';
                 nakami.className = 'nakami';
                 nakami.style.width = ippen + 'px';
                 nakami.style.height = ippen + 'px';

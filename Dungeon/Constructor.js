@@ -53,7 +53,7 @@ var Dungeon;
         var textarea = Kyoutsu.getElementById('maptext');
         var mapdata = textarea.value.split(/[\r\n]+/g);
         var div_map = Kyoutsu.getElementById('div_map');
-        Dungeon.mapview(div_map, mapdata);
+        Dungeon.mapview(div_map, mapdata, '');
     }
     function selectKukaku(e) {
         var element = getParentElement(e, 'kukaku');

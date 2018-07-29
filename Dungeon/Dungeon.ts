@@ -237,14 +237,14 @@ namespace Dungeon {
 		document.addEventListener('keydown', keyDownEvent);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
-		mapview(div_map, _gameStatus.mapdata);
+		mapview(div_map, _gameStatus.mapdata, '');
 
 		_gameStatus.player.xpos = _gameStatus.gameInitter.start_x;
 		_gameStatus.player.ypos = _gameStatus.gameInitter.start_y;
 		_gameStatus.player.muki = _gameStatus.gameInitter.start_muki;
 
 		let nakami: HTMLElement = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
-		nakami.innerHTML = '↑';
+		nakami.innerHTML = _gameStatus.gameInitter.start_muki.mukiChr;
 
 		submapview();
 
@@ -323,7 +323,7 @@ namespace Dungeon {
 
 		let div_submap: HTMLElement = Kyoutsu.getElementById('div_submap');
 
-		mapview(div_submap, submapdata);
+		mapview(div_submap, submapdata, 'sub');
 
 		// デバッグ情報の表示
 		let html: string = div_submap.innerHTML;
@@ -472,7 +472,7 @@ namespace Dungeon {
 		}
 	}
 
-	export function mapview(div_map: HTMLElement, kakumapdata: string[]): void {
+	export function mapview(div_map: HTMLElement, kakumapdata: string[], header: string): void {
 		let ippen: number = 36;
 		let futosa: number = 2;
 
@@ -492,7 +492,7 @@ namespace Dungeon {
 				setStyle(map, c, ippen, futosa);
 
 				let nakami: HTMLElement = document.createElement('DIV');
-				nakami.id = 'nakami[' + x + '][' + y + ']';
+				nakami.id = header + 'nakami[' + x + '][' + y + ']';
 				nakami.className = 'nakami';
 				nakami.style.width = ippen + 'px';
 				nakami.style.height = ippen + 'px';
