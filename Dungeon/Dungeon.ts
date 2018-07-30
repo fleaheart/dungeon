@@ -1,13 +1,10 @@
 namespace Dungeon {
 
-	let $kabex: number[] = [5, 40, 114, 155, 180];
-	let $kabey: number[] = [5, 31, 85, 115, 134];
+	let $kabex: number[] = [0, 40, 114, 155, 180];
+	let $kabey: number[] = [0, 31, 85, 115, 134];
 
 	let $SCREEN_WIDTH: number = 400;
 	let $SCREEN_HEIGHT: number = 300;
-
-	let $DRAW_WIDTH: number = $SCREEN_WIDTH - $kabex[0] - $kabex[0];
-	let $DRAW_HEIGHT: number = $SCREEN_HEIGHT - $kabey[0] - $kabey[0];
 
 	interface XY {
 		x: number;
@@ -329,7 +326,6 @@ namespace Dungeon {
 
 			submapview();
 		}
-
 	}
 
 	function submapview(): void {
@@ -434,7 +430,7 @@ namespace Dungeon {
 	}
 
 	function draw3D(mapdata: string[], zenpou: number, hidarimigi: number): void {
-		let cvs: HTMLCanvasElement = <HTMLCanvasElement>Kyoutsu.getElementById('map3d');;
+		let cvs: HTMLCanvasElement = <HTMLCanvasElement>Kyoutsu.getElementById('map3d');
 		let context: CanvasRenderingContext2D | null = cvs.getContext('2d');
 		if (context == null) {
 			return;
@@ -444,6 +440,9 @@ namespace Dungeon {
 		context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
 
 		let kabe: number = -1;
+
+		let hidarikabe: Array<number> = new Array<number>(zenpou);
+		let migikabe: Array<number> = new Array<number>(zenpou);
 
 		for (let i: number = 0; i <= zenpou; i++) {
 			let c: string = mapdata[zenpou - i].charAt(hidarimigi);
@@ -464,19 +463,23 @@ namespace Dungeon {
 					hidarikabeflg = 1;
 				}
 			}
+			hidarikabe[i] = hidarikabeflg;
+
 			if ((n & Kyoutsu.BIT_RIGHT) == Kyoutsu.BIT_RIGHT) {
 				if (kabe == -1 || i <= kabe) {
 					kabetatekaku(context, i + 1, Kyoutsu.BIT_RIGHT);
 					migikabeflg = 1;
 				}
 			}
+			migikabe[i] = migikabeflg;
 
 			c = mapdata[zenpou - i].charAt(hidarimigi - 1);
 			n = parseInt(c, 16);
 			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (hidarikabeflg != 1) {
-						kabeyokokaku(context, i + 1, Kyoutsu.BIT_LEFT);
+						kabeyokokaku(context, i + 1, hidarikabe, Kyoutsu.BIT_LEFT);
+						hidarikabe[i] += 2;
 					}
 				}
 			}
@@ -486,7 +489,8 @@ namespace Dungeon {
 			if ((n & Kyoutsu.BIT_TOP) == Kyoutsu.BIT_TOP) {
 				if (kabe == -1 || i <= kabe) {
 					if (migikabeflg != 1) {
-						kabeyokokaku(context, i + 1, Kyoutsu.BIT_RIGHT);
+						kabeyokokaku(context, i + 1, migikabe, Kyoutsu.BIT_RIGHT);
+						migikabe[i] += 2;
 					}
 				}
 			}
@@ -568,9 +572,9 @@ namespace Dungeon {
 		context.beginPath();
 
 		context.moveTo($kabex[fukasa], $kabey[fukasa]);
-		context.lineTo($DRAW_WIDTH - $kabex[fukasa], $kabey[fukasa]);
-		context.lineTo($DRAW_WIDTH - $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
-		context.lineTo($kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
+		context.lineTo($SCREEN_WIDTH - $kabex[fukasa], $kabey[fukasa]);
+		context.lineTo($SCREEN_WIDTH - $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
+		context.lineTo($kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
 
 		context.closePath();
 		context.stroke();
@@ -584,7 +588,7 @@ namespace Dungeon {
 			startx = 0;
 			fugou = 1;
 		} else if (side == Kyoutsu.BIT_RIGHT) {
-			startx = $DRAW_WIDTH;
+			startx = $SCREEN_WIDTH;
 			fugou = -1;
 		} else {
 			return;
@@ -594,14 +598,14 @@ namespace Dungeon {
 
 		context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa - 1]);
 		context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);
-		context.lineTo(startx + fugou * $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
-		context.lineTo(startx + fugou * $kabex[fukasa - 1], $DRAW_HEIGHT - $kabey[fukasa - 1]);
+		context.lineTo(startx + fugou * $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
+		context.lineTo(startx + fugou * $kabex[fukasa - 1], $SCREEN_HEIGHT - $kabey[fukasa - 1]);
 
 		context.closePath();
 		context.stroke();
 	}
 
-	function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, side: number): void {
+	function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, kabeArray: Array<number>, side: number): void {
 		let startx: number;
 		let fugou: number;
 
@@ -609,18 +613,26 @@ namespace Dungeon {
 			startx = 0;
 			fugou = 1;
 		} else if (side == Kyoutsu.BIT_RIGHT) {
-			startx = $DRAW_WIDTH;
+			startx = $SCREEN_WIDTH;
 			fugou = -1;
 		} else {
 			return;
 		}
 
+		let nagasa = $kabex[fukasa - 1];
+		if (kabeArray[fukasa - 2] == 0) {
+			nagasa = $kabex[fukasa - 2];
+			if (kabeArray[fukasa - 3] == 0) {
+				nagasa = $kabex[fukasa - 3];
+			}
+		}
+
 		context.beginPath();
 
-		context.moveTo(startx + fugou * $kabex[fukasa - 1], $kabey[fukasa]);
+		context.moveTo(startx + fugou * nagasa, $kabey[fukasa]);
 		context.lineTo(startx + fugou * $kabex[fukasa], $kabey[fukasa]);
-		context.lineTo(startx + fugou * $kabex[fukasa], $DRAW_HEIGHT - $kabey[fukasa]);
-		context.lineTo(startx + fugou * $kabex[fukasa - 1], $DRAW_HEIGHT - $kabey[fukasa]);
+		context.lineTo(startx + fugou * $kabex[fukasa], $SCREEN_HEIGHT - $kabey[fukasa]);
+		context.lineTo(startx + fugou * nagasa, $SCREEN_HEIGHT - $kabey[fukasa]);
 
 		context.closePath();
 		context.stroke();
