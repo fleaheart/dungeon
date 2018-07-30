@@ -65,10 +65,10 @@ namespace Dungeon {
 
 	function refresh(): void {
 		let textarea = <HTMLTextAreaElement>Kyoutsu.getElementById('maptext');
-		let mapdata = textarea.value.split(/[\r\n]+/g);
+		_mapdata = textarea.value.split(/[\r\n]+/g);
 
 		let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
-		mapview(div_map, mapdata, '');
+		mapview(div_map, _mapdata, '');
 	}
 
 	function selectKukaku(e: MouseEvent): void {
@@ -171,7 +171,9 @@ namespace Dungeon {
 			_mapdata[y] = line;
 
 			(<HTMLTextAreaElement>document.getElementById('maptext')).value = _mapdata.join('\r\n');
-			refresh();
+
+			let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
+			mapview(div_map, _mapdata, '');
 		}
 
 		document.body.removeChild(_dragObject);

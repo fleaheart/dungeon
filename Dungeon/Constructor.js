@@ -51,9 +51,9 @@ var Dungeon;
     var _mapdata = new Array();
     function refresh() {
         var textarea = Kyoutsu.getElementById('maptext');
-        var mapdata = textarea.value.split(/[\r\n]+/g);
+        _mapdata = textarea.value.split(/[\r\n]+/g);
         var div_map = Kyoutsu.getElementById('div_map');
-        Dungeon.mapview(div_map, mapdata, '');
+        Dungeon.mapview(div_map, _mapdata, '');
     }
     function selectKukaku(e) {
         var element = getParentElement(e, 'kukaku');
@@ -129,7 +129,8 @@ var Dungeon;
             line = line.substr(0, x) + c + line.substr(x + 1);
             _mapdata[y] = line;
             document.getElementById('maptext').value = _mapdata.join('\r\n');
-            refresh();
+            var div_map = Kyoutsu.getElementById('div_map');
+            Dungeon.mapview(div_map, _mapdata, '');
         }
         document.body.removeChild(_dragObject);
         _dragObject = null;
