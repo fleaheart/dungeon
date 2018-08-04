@@ -240,7 +240,7 @@ namespace Aao {
 
 						this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
 
-						if (muki.over(this.gameStatus.player)) {
+						if (gamenOver(this.gameStatus.player, muki)) {
 							let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
 							if (nextName != null) {
 								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
@@ -341,7 +341,7 @@ namespace Aao {
 				_gameBoard.current.backGround.style.left = '0px';
 				_gameBoard.next.backGround.style.display = 'none';
 
-				this.muki.scrollEndAdgust(this.gameStatus.player);
+				scrollEndAdgust(this.gameStatus.player, this.muki);
 
 				for (let i = 0; i < _gameBoard.current.maptext.length; i++) {
 					_gameBoard.current.maptext[i] = _gameBoard.next.maptext[i];
@@ -385,78 +385,40 @@ namespace Aao {
 
 	type MukiType = 'n' | 'e' | 's' | 'w';
 
-	interface Muki {
-		mukiType: MukiType;
-		nextXY: XY;
-		frameEnd: number;
-		over(character: Character): boolean;
-		scrollEndAdgust(character: Character): void;
-	}
-
 	interface XY {
 		x: number;
 		y: number;
 	}
 
-	class Muki_N implements Muki {
-		readonly mukiType: MukiType = 'n';
-		readonly nextXY: XY = { x: 0, y: -1 };
-		readonly frameEnd: number = 30;
-
-		over(character: Character): boolean {
-			return character.y <= 0;
-		}
-
-		scrollEndAdgust(character: Character): void {
-			character.moveTo(character.x, 480 - 32, this);
-		}
+	interface Muki {
+		mukiType: MukiType;
+		nextXY: XY;
+		frameEnd: number;
 	}
-	let muki_n = new Muki_N();
 
-	class Muki_E implements Muki {
-		readonly mukiType: MukiType = 'e';
-		readonly nextXY: XY = { x: 1, y: 0 };
-		readonly frameEnd: number = 40;
-
-		over(character: Character): boolean {
-			return 640 - 32 <= character.x;
-		}
-
-		scrollEndAdgust(character: Character): void {
-			character.moveTo(0, character.y, this);
-		}
+	let muki_n: Muki = {
+		mukiType: 'n',
+		nextXY: { x: 0, y: -1 },
+		frameEnd: 30
 	}
-	let muki_e = new Muki_E();
 
-	class Muki_S implements Muki {
-		readonly mukiType: MukiType = 's';
-		readonly nextXY: XY = { x: 0, y: 1 };
-		readonly frameEnd: number = 30;
-
-		over(character: Character): boolean {
-			return 480 - 32 <= character.y;
-		}
-
-		scrollEndAdgust(character: Character): void {
-			character.moveTo(character.x, 0, this);
-		}
+	let muki_e: Muki = {
+		mukiType: 'e',
+		nextXY: { x: 1, y: 0 },
+		frameEnd: 40
 	}
-	let muki_s = new Muki_S();
 
-	class Muki_W implements Muki {
-		readonly mukiType: MukiType = 'w';
-		readonly nextXY: XY = { x: -1, y: 0 };
-		readonly frameEnd: number = 40;
-
-		over(character: Character): boolean {
-			return character.x <= 0;
-		}
-
-		scrollEndAdgust(character: Character): void {
-			character.moveTo(640 - 32, character.y, this);
-		}
+	let muki_s: Muki = {
+		mukiType: 's',
+		nextXY: { x: 0, y: 1 },
+		frameEnd: 30
 	}
-	let muki_w = new Muki_W();
+
+	let muki_w: Muki = {
+		mukiType: 'w',
+		nextXY: { x: -1, y: 0 },
+		frameEnd: 40
+	}
 
 	function createMuki(mukiType: MukiType): Muki {
 		if (mukiType == 'n') {
@@ -469,6 +431,37 @@ namespace Aao {
 			return muki_w;
 		}
 		throw mukiType + ' is illigal argument';
+	}
+
+	function gamenOver(character: Character, muki: Muki): boolean {
+		if (muki.nextXY.y < 0) {
+			return character.y <= 0;
+		}
+		if (0 < muki.nextXY.x) {
+			return 640 - 32 <= character.x;
+		}
+		if (0 < muki.nextXY.y) {
+			return 480 - 32 <= character.y;
+		}
+		if (muki.nextXY.x < 0) {
+			return character.x <= 0;
+		}
+		throw 'unreachable';
+	}
+
+	function scrollEndAdgust(character: Character, muki: Muki): void {
+		if (muki.nextXY.y < 0) {
+			character.moveTo(character.x, 480 - 32, muki);
+		}
+		if (0 < muki.nextXY.x) {
+			character.moveTo(0, character.y, muki);
+		}
+		if (0 < muki.nextXY.y) {
+			character.moveTo(character.x, 0, muki);
+		}
+		if (muki.nextXY.x < 0) {
+			character.moveTo(640 - 32, character.y, muki);
+		}
 	}
 
 	export function init(): void {

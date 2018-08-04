@@ -177,7 +177,7 @@ var Aao;
                     if (koudou.type == 'idou') {
                         var muki = koudou.muki;
                         this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
-                        if (muki.over(this.gameStatus.player)) {
+                        if (gamenOver(this.gameStatus.player, muki)) {
                             var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
                             if (nextName != null) {
                                 var nextGameFieldGamen = getGameFieldGamen(nextName);
@@ -260,7 +260,7 @@ var Aao;
                 _gameBoard.current.backGround.style.top = '0px';
                 _gameBoard.current.backGround.style.left = '0px';
                 _gameBoard.next.backGround.style.display = 'none';
-                this.muki.scrollEndAdgust(this.gameStatus.player);
+                scrollEndAdgust(this.gameStatus.player, this.muki);
                 for (var i = 0; i < _gameBoard.current.maptext.length; i++) {
                     _gameBoard.current.maptext[i] = _gameBoard.next.maptext[i];
                 }
@@ -292,66 +292,26 @@ var Aao;
         gameStatus.gameMode.do();
         setTimeout(frameCheck, FRAME_TIMING);
     }
-    var Muki_N = (function () {
-        function Muki_N() {
-            this.mukiType = 'n';
-            this.nextXY = { x: 0, y: -1 };
-            this.frameEnd = 30;
-        }
-        Muki_N.prototype.over = function (character) {
-            return character.y <= 0;
-        };
-        Muki_N.prototype.scrollEndAdgust = function (character) {
-            character.moveTo(character.x, 480 - 32, this);
-        };
-        return Muki_N;
-    }());
-    var muki_n = new Muki_N();
-    var Muki_E = (function () {
-        function Muki_E() {
-            this.mukiType = 'e';
-            this.nextXY = { x: 1, y: 0 };
-            this.frameEnd = 40;
-        }
-        Muki_E.prototype.over = function (character) {
-            return 640 - 32 <= character.x;
-        };
-        Muki_E.prototype.scrollEndAdgust = function (character) {
-            character.moveTo(0, character.y, this);
-        };
-        return Muki_E;
-    }());
-    var muki_e = new Muki_E();
-    var Muki_S = (function () {
-        function Muki_S() {
-            this.mukiType = 's';
-            this.nextXY = { x: 0, y: 1 };
-            this.frameEnd = 30;
-        }
-        Muki_S.prototype.over = function (character) {
-            return 480 - 32 <= character.y;
-        };
-        Muki_S.prototype.scrollEndAdgust = function (character) {
-            character.moveTo(character.x, 0, this);
-        };
-        return Muki_S;
-    }());
-    var muki_s = new Muki_S();
-    var Muki_W = (function () {
-        function Muki_W() {
-            this.mukiType = 'w';
-            this.nextXY = { x: -1, y: 0 };
-            this.frameEnd = 40;
-        }
-        Muki_W.prototype.over = function (character) {
-            return character.x <= 0;
-        };
-        Muki_W.prototype.scrollEndAdgust = function (character) {
-            character.moveTo(640 - 32, character.y, this);
-        };
-        return Muki_W;
-    }());
-    var muki_w = new Muki_W();
+    var muki_n = {
+        mukiType: 'n',
+        nextXY: { x: 0, y: -1 },
+        frameEnd: 30
+    };
+    var muki_e = {
+        mukiType: 'e',
+        nextXY: { x: 1, y: 0 },
+        frameEnd: 40
+    };
+    var muki_s = {
+        mukiType: 's',
+        nextXY: { x: 0, y: 1 },
+        frameEnd: 30
+    };
+    var muki_w = {
+        mukiType: 'w',
+        nextXY: { x: -1, y: 0 },
+        frameEnd: 40
+    };
     function createMuki(mukiType) {
         if (mukiType == 'n') {
             return muki_n;
@@ -366,6 +326,35 @@ var Aao;
             return muki_w;
         }
         throw mukiType + ' is illigal argument';
+    }
+    function gamenOver(character, muki) {
+        if (muki.nextXY.y < 0) {
+            return character.y <= 0;
+        }
+        if (0 < muki.nextXY.x) {
+            return 640 - 32 <= character.x;
+        }
+        if (0 < muki.nextXY.y) {
+            return 480 - 32 <= character.y;
+        }
+        if (muki.nextXY.x < 0) {
+            return character.x <= 0;
+        }
+        throw 'unreachable';
+    }
+    function scrollEndAdgust(character, muki) {
+        if (muki.nextXY.y < 0) {
+            character.moveTo(character.x, 480 - 32, muki);
+        }
+        if (0 < muki.nextXY.x) {
+            character.moveTo(0, character.y, muki);
+        }
+        if (0 < muki.nextXY.y) {
+            character.moveTo(character.x, 0, muki);
+        }
+        if (muki.nextXY.x < 0) {
+            character.moveTo(640 - 32, character.y, muki);
+        }
     }
     function init() {
         initMainBoard();
