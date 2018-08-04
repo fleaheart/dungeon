@@ -469,14 +469,12 @@ namespace Aao {
 		initMainBoard();
 
 		document.addEventListener('keydown', (e: KeyboardEvent): void => {
-			_gameStatus.lastInputCode = Kyoutsu.getInputCode(e.key);
+			documentKeydown(e.key);
 		});
 
 		document.addEventListener('keyup', (e: KeyboardEvent): void => {
 			let inputCode = Kyoutsu.getInputCode(e.key);
-			if (inputCode == _gameStatus.lastInputCode) {
-				_gameStatus.lastInputCode = 0;
-			}
+			documentKeyup(inputCode);
 		});
 
 		let gameInitter: GameInitter = new GameInitter();
@@ -499,10 +497,11 @@ namespace Aao {
 
 		_gameBoard.fieldGraph.appendChild(player.img);
 
+		_gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
+
 		for (let i = 0; i < gameFieldGamen.maptext.length; i++) {
 			_gameBoard.current.maptext.push(gameFieldGamen.maptext[i]);
 		}
-		_gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
 
 		player.moveTo(gameInitter.start_x * 16, gameInitter.start_y * 32, gameInitter.start_muki);
 		put(player);
@@ -510,6 +509,17 @@ namespace Aao {
 
 		setTimeout(frameCheck, FRAME_TIMING);
 	};
+
+	function documentKeydown(key: string) {
+		_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+	}
+
+	function documentKeyup(inputCode: number) {
+		if (inputCode == 0 || inputCode == _gameStatus.lastInputCode) {
+			_gameStatus.lastInputCode = 0;
+		}
+	}
+
 
 	function initMainBoard(): void {
 		let mainBoard: HTMLElement = Kyoutsu.getElementById('mainBoard');
@@ -572,11 +582,11 @@ namespace Aao {
 
 	function keyboardMousedown(e: MouseEvent): void {
 		let key = Kyoutsu.getKeytop(e.target);
-		_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+		documentKeydown(key);
 	}
 
 	function keyboardMouseup() {
-		_gameStatus.lastInputCode = 0;
+		documentKeyup(0);
 	}
 
 	class PlayerInitter implements Initter {

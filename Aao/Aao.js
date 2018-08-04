@@ -362,13 +362,11 @@ var Aao;
     function init() {
         initMainBoard();
         document.addEventListener('keydown', function (e) {
-            _gameStatus.lastInputCode = Kyoutsu.getInputCode(e.key);
+            documentKeydown(e.key);
         });
         document.addEventListener('keyup', function (e) {
             var inputCode = Kyoutsu.getInputCode(e.key);
-            if (inputCode == _gameStatus.lastInputCode) {
-                _gameStatus.lastInputCode = 0;
-            }
+            documentKeyup(inputCode);
         });
         var gameInitter = new GameInitter();
         loadData(gameInitter);
@@ -383,10 +381,10 @@ var Aao;
         _gameStatus.player = player;
         _gameStatus.gameFieldGamen = gameFieldGamen;
         _gameBoard.fieldGraph.appendChild(player.img);
+        _gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
         for (var i = 0; i < gameFieldGamen.maptext.length; i++) {
             _gameBoard.current.maptext.push(gameFieldGamen.maptext[i]);
         }
-        _gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
         player.moveTo(gameInitter.start_x * 16, gameInitter.start_y * 32, gameInitter.start_muki);
         put(player);
         display();
@@ -394,6 +392,14 @@ var Aao;
     }
     Aao.init = init;
     ;
+    function documentKeydown(key) {
+        _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+    }
+    function documentKeyup(inputCode) {
+        if (inputCode == 0 || inputCode == _gameStatus.lastInputCode) {
+            _gameStatus.lastInputCode = 0;
+        }
+    }
     function initMainBoard() {
         var mainBoard = Kyoutsu.getElementById('mainBoard');
         {
@@ -438,10 +444,10 @@ var Aao;
     }
     function keyboardMousedown(e) {
         var key = Kyoutsu.getKeytop(e.target);
-        _gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
+        documentKeydown(key);
     }
     function keyboardMouseup() {
-        _gameStatus.lastInputCode = 0;
+        documentKeyup(0);
     }
     var PlayerInitter = (function () {
         function PlayerInitter(gameInitter) {
