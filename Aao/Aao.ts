@@ -59,7 +59,6 @@ namespace Aao {
 			this.img.style.left = this.x + 'px';
 			this.img.style.top = this.y + 'px';
 		}
-
 	}
 
 	class GameField {
@@ -216,7 +215,7 @@ namespace Aao {
 		name: string;
 		gameStatus: GameStatus;
 
-		do: Function;
+		do(): void;
 	}
 
 	class FreeGameMode implements GameMode {
@@ -227,7 +226,7 @@ namespace Aao {
 			this.gameStatus = gameStatus;
 		}
 
-		do() {
+		do(): void {
 			if (this.gameStatus.frameCount % 2 != 0) {
 				return;
 			}
@@ -301,7 +300,6 @@ namespace Aao {
 				}
 			}
 		}
-
 	}
 
 	class ScrollGameMode implements GameMode {
@@ -320,7 +318,7 @@ namespace Aao {
 			this.frame = 0;
 		}
 
-		do() {
+		do(): void {
 			if (this.frame == 0) {
 				_gameBoard.next.maptext = this.nextGameFieldGamen.maptext;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
@@ -390,8 +388,8 @@ namespace Aao {
 	interface Muki {
 		muki: MukiType;
 		nextXY: XY;
-		over: Function;
 		frameEnd: number;
+		over(character: Character): boolean;
 		scrollEndAdgust(character: Character): void;
 	}
 
@@ -401,7 +399,7 @@ namespace Aao {
 	}
 
 	class Muki_N implements Muki {
-		muki: MukiType = 'n';
+		readonly muki: MukiType = 'n';
 		readonly nextXY: XY = { x: 0, y: -1 };
 		readonly frameEnd: number = 30;
 
@@ -416,7 +414,7 @@ namespace Aao {
 	let muki_n = new Muki_N();
 
 	class Muki_E implements Muki {
-		muki: MukiType = 'e';
+		readonly muki: MukiType = 'e';
 		readonly nextXY: XY = { x: 1, y: 0 };
 		readonly frameEnd: number = 40;
 
@@ -431,7 +429,7 @@ namespace Aao {
 	let muki_e = new Muki_E();
 
 	class Muki_S implements Muki {
-		muki: MukiType = 's';
+		readonly muki: MukiType = 's';
 		readonly nextXY: XY = { x: 0, y: 1 };
 		readonly frameEnd: number = 30;
 
@@ -446,7 +444,7 @@ namespace Aao {
 	let muki_s = new Muki_S();
 
 	class Muki_W implements Muki {
-		muki: MukiType = 'w';
+		readonly muki: MukiType = 'w';
 		readonly nextXY: XY = { x: -1, y: 0 };
 		readonly frameEnd: number = 40;
 
