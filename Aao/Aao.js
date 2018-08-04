@@ -176,7 +176,7 @@ var Aao;
                 if (koudou != undefined) {
                     if (koudou.type == 'idou') {
                         var muki = koudou.muki;
-                        this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
+                        this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
                         if (gamenOver(this.gameStatus.player, muki)) {
                             var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
                             if (nextName != null) {
@@ -208,8 +208,8 @@ var Aao;
         };
         FreeGameMode.prototype.move = function (muki) {
             var character = this.gameStatus.player;
-            var next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextXY.x;
-            var next_ascii_y = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextXY.y;
+            var next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextX;
+            var next_ascii_y = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextY;
             var check_c1 = get(next_ascii_x, next_ascii_y);
             var check_c2 = get(next_ascii_x + 1, next_ascii_y);
             var check_offet;
@@ -250,11 +250,11 @@ var Aao;
                 put(this.gameStatus.player, ' ');
             }
             this.frame++;
-            _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextXY.y) + 'px';
-            _gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextXY.x) + 'px';
-            _gameBoard.next.backGround.style.top = String(480 * this.muki.nextXY.y + this.frame * -16 * this.muki.nextXY.y) + 'px';
-            _gameBoard.next.backGround.style.left = String(640 * this.muki.nextXY.x + this.frame * -16 * this.muki.nextXY.x) + 'px';
-            this.gameStatus.player.moveBy(-15.2 * this.muki.nextXY.x, -15 * this.muki.nextXY.y, this.muki);
+            _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextY) + 'px';
+            _gameBoard.current.backGround.style.left = String(this.frame * -16 * this.muki.nextX) + 'px';
+            _gameBoard.next.backGround.style.top = String(480 * this.muki.nextY + this.frame * -16 * this.muki.nextY) + 'px';
+            _gameBoard.next.backGround.style.left = String(640 * this.muki.nextX + this.frame * -16 * this.muki.nextX) + 'px';
+            this.gameStatus.player.moveBy(-15.2 * this.muki.nextX, -15 * this.muki.nextY, this.muki);
             if (this.muki.frameEnd <= this.frame) {
                 _gameBoard.current.backGround.src = _gameBoard.next.backGround.src;
                 _gameBoard.current.backGround.style.top = '0px';
@@ -294,22 +294,26 @@ var Aao;
     }
     var muki_n = {
         mukiType: 'n',
-        nextXY: { x: 0, y: -1 },
+        nextX: 0,
+        nextY: -1,
         frameEnd: 30
     };
     var muki_e = {
         mukiType: 'e',
-        nextXY: { x: 1, y: 0 },
+        nextX: 1,
+        nextY: 0,
         frameEnd: 40
     };
     var muki_s = {
         mukiType: 's',
-        nextXY: { x: 0, y: 1 },
+        nextX: 0,
+        nextY: 1,
         frameEnd: 30
     };
     var muki_w = {
         mukiType: 'w',
-        nextXY: { x: -1, y: 0 },
+        nextX: -1,
+        nextY: 0,
         frameEnd: 40
     };
     function createMuki(mukiType) {
@@ -328,31 +332,31 @@ var Aao;
         throw mukiType + ' is illigal argument';
     }
     function gamenOver(character, muki) {
-        if (muki.nextXY.y < 0) {
+        if (muki.nextY < 0) {
             return character.y <= 0;
         }
-        if (0 < muki.nextXY.x) {
+        if (0 < muki.nextX) {
             return 640 - 32 <= character.x;
         }
-        if (0 < muki.nextXY.y) {
+        if (0 < muki.nextY) {
             return 480 - 32 <= character.y;
         }
-        if (muki.nextXY.x < 0) {
+        if (muki.nextX < 0) {
             return character.x <= 0;
         }
         throw 'unreachable';
     }
     function scrollEndAdgust(character, muki) {
-        if (muki.nextXY.y < 0) {
+        if (muki.nextY < 0) {
             character.moveTo(character.x, 480 - 32, muki);
         }
-        if (0 < muki.nextXY.x) {
+        if (0 < muki.nextX) {
             character.moveTo(0, character.y, muki);
         }
-        if (0 < muki.nextXY.y) {
+        if (0 < muki.nextY) {
             character.moveTo(character.x, 0, muki);
         }
-        if (muki.nextXY.x < 0) {
+        if (muki.nextX < 0) {
             character.moveTo(640 - 32, character.y, muki);
         }
     }
