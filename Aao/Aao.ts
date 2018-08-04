@@ -11,7 +11,7 @@ namespace Aao {
 		x: number;
 		y: number;
 		frame: number;
-		muki: MukiType;
+		mukiType: MukiType;
 		mukiListGroup: MukiListGroup = {}
 
 		constructor(chr: string, mukiListGroup?: MukiListGroup) {
@@ -21,7 +21,7 @@ namespace Aao {
 			this.x = 0;
 			this.y = 0;
 			this.frame = 0;
-			this.muki = 'e'
+			this.mukiType = 'e'
 			if (mukiListGroup != undefined) {
 				this.mukiListGroup = mukiListGroup;
 			}
@@ -36,7 +36,7 @@ namespace Aao {
 		}
 
 		moveBy(dx: number, dy: number, muki: Muki): void {
-			let array: Array<string> = this.mukiListGroup[muki.muki];
+			let array: Array<string> = this.mukiListGroup[muki.mukiType];
 			let currentFlame: number = this.frame % array.length;
 
 			this.img.src = array[currentFlame];
@@ -241,10 +241,10 @@ namespace Aao {
 						this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
 
 						if (muki.over(this.gameStatus.player)) {
-							let nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
+							let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
 							if (nextName != null) {
 								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
-								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
+								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.mukiType, nextGameFieldGamen);
 								return;
 							}
 						}
@@ -283,20 +283,20 @@ namespace Aao {
 			let check_c2 = get(next_ascii_x + 1, next_ascii_y);
 
 			let check_offet: string;
-			if (muki.muki == 'n' || muki.muki == 's') {
+			if (muki.mukiType == 'n' || muki.mukiType == 's') {
 				check_offet = character.x % 16 == 0 ? ' ' : get(next_ascii_x + 2, next_ascii_y);
-			} else if (muki.muki == 'e' || muki.muki == 'w') {
+			} else if (muki.mukiType == 'e' || muki.mukiType == 'w') {
 				check_offet = character.y % 32 == 0 ? ' ' : get(next_ascii_x + 1, next_ascii_y + 1);
 			} else {
 				throw 'unreachable';
 			}
 
 			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if (character.muki == muki.muki) {
+				if (character.mukiType == muki.mukiType) {
 					put(character, ' ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
 				} else {
-					character.muki = muki.muki;
+					character.mukiType = muki.mukiType;
 				}
 			}
 		}
@@ -386,7 +386,7 @@ namespace Aao {
 	type MukiType = 'n' | 'e' | 's' | 'w';
 
 	interface Muki {
-		muki: MukiType;
+		mukiType: MukiType;
 		nextXY: XY;
 		frameEnd: number;
 		over(character: Character): boolean;
@@ -399,7 +399,7 @@ namespace Aao {
 	}
 
 	class Muki_N implements Muki {
-		readonly muki: MukiType = 'n';
+		readonly mukiType: MukiType = 'n';
 		readonly nextXY: XY = { x: 0, y: -1 };
 		readonly frameEnd: number = 30;
 
@@ -414,7 +414,7 @@ namespace Aao {
 	let muki_n = new Muki_N();
 
 	class Muki_E implements Muki {
-		readonly muki: MukiType = 'e';
+		readonly mukiType: MukiType = 'e';
 		readonly nextXY: XY = { x: 1, y: 0 };
 		readonly frameEnd: number = 40;
 
@@ -429,7 +429,7 @@ namespace Aao {
 	let muki_e = new Muki_E();
 
 	class Muki_S implements Muki {
-		readonly muki: MukiType = 's';
+		readonly mukiType: MukiType = 's';
 		readonly nextXY: XY = { x: 0, y: 1 };
 		readonly frameEnd: number = 30;
 
@@ -444,7 +444,7 @@ namespace Aao {
 	let muki_s = new Muki_S();
 
 	class Muki_W implements Muki {
-		readonly muki: MukiType = 'w';
+		readonly mukiType: MukiType = 'w';
 		readonly nextXY: XY = { x: -1, y: 0 };
 		readonly frameEnd: number = 40;
 

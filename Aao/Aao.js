@@ -10,7 +10,7 @@ var Aao;
             this.x = 0;
             this.y = 0;
             this.frame = 0;
-            this.muki = 'e';
+            this.mukiType = 'e';
             if (mukiListGroup != undefined) {
                 this.mukiListGroup = mukiListGroup;
             }
@@ -23,7 +23,7 @@ var Aao;
             this.y = y;
         };
         Character.prototype.moveBy = function (dx, dy, muki) {
-            var array = this.mukiListGroup[muki.muki];
+            var array = this.mukiListGroup[muki.mukiType];
             var currentFlame = this.frame % array.length;
             this.img.src = array[currentFlame];
             this.x += dx;
@@ -178,10 +178,10 @@ var Aao;
                         var muki = koudou.muki;
                         this.gameStatus.player.moveBy(muki.nextXY.x * 4, muki.nextXY.y * 4, muki);
                         if (muki.over(this.gameStatus.player)) {
-                            var nextName = this.gameStatus.gameFieldGamen.over[muki.muki];
+                            var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
                             if (nextName != null) {
                                 var nextGameFieldGamen = getGameFieldGamen(nextName);
-                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
+                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.mukiType, nextGameFieldGamen);
                                 return;
                             }
                         }
@@ -213,22 +213,22 @@ var Aao;
             var check_c1 = get(next_ascii_x, next_ascii_y);
             var check_c2 = get(next_ascii_x + 1, next_ascii_y);
             var check_offet;
-            if (muki.muki == 'n' || muki.muki == 's') {
+            if (muki.mukiType == 'n' || muki.mukiType == 's') {
                 check_offet = character.x % 16 == 0 ? ' ' : get(next_ascii_x + 2, next_ascii_y);
             }
-            else if (muki.muki == 'e' || muki.muki == 'w') {
+            else if (muki.mukiType == 'e' || muki.mukiType == 'w') {
                 check_offet = character.y % 32 == 0 ? ' ' : get(next_ascii_x + 1, next_ascii_y + 1);
             }
             else {
                 throw 'unreachable';
             }
             if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-                if (character.muki == muki.muki) {
+                if (character.mukiType == muki.mukiType) {
                     put(character, ' ');
                     this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
                 }
                 else {
-                    character.muki = muki.muki;
+                    character.mukiType = muki.mukiType;
                 }
             }
         };
@@ -294,7 +294,7 @@ var Aao;
     }
     var Muki_N = (function () {
         function Muki_N() {
-            this.muki = 'n';
+            this.mukiType = 'n';
             this.nextXY = { x: 0, y: -1 };
             this.frameEnd = 30;
         }
@@ -309,7 +309,7 @@ var Aao;
     var muki_n = new Muki_N();
     var Muki_E = (function () {
         function Muki_E() {
-            this.muki = 'e';
+            this.mukiType = 'e';
             this.nextXY = { x: 1, y: 0 };
             this.frameEnd = 40;
         }
@@ -324,7 +324,7 @@ var Aao;
     var muki_e = new Muki_E();
     var Muki_S = (function () {
         function Muki_S() {
-            this.muki = 's';
+            this.mukiType = 's';
             this.nextXY = { x: 0, y: 1 };
             this.frameEnd = 30;
         }
@@ -339,7 +339,7 @@ var Aao;
     var muki_s = new Muki_S();
     var Muki_W = (function () {
         function Muki_W() {
-            this.muki = 'w';
+            this.mukiType = 'w';
             this.nextXY = { x: -1, y: 0 };
             this.frameEnd = 40;
         }
