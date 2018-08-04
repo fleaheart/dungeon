@@ -159,47 +159,8 @@ namespace Aao {
 		muki: Muki;
 	}
 
-	interface Initter {
-		analize(line: string): void;
-		save(): void;
-	}
-
-	class GameInitter implements Initter {
-		start_field: string = 'no define';
-		start_x: number = 0;
-		start_y: number = 0;
-		start_muki: Muki = muki_e;
-
-		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
-
-		analize(line: string): void {
-			let defineData: RegExpMatchArray | null = line.match(this.reg);
-			if (defineData != null) {
-				let attr: string = defineData[1];
-				let value: string = defineData[2];
-
-				if (attr == 'start_field') {
-					this.start_field = value;
-				} else if (attr == 'start_x') {
-					this.start_x = +value;
-				} else if (attr == 'start_y') {
-					this.start_y = +value;
-				} else if (attr == 'start_muki') {
-					if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
-						this.start_muki = createMuki(value);
-					}
-				}
-			}
-		}
-
-		save(): void {
-			// 全部そろうまでわからないので、ここでは何もしない
-		}
-	}
-
 	class GameStatus {
 		gameMode: GameMode | null = null;
-		gameInitter: GameInitter = new GameInitter();
 		player: Character = new Character('');
 
 		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
@@ -346,7 +307,6 @@ namespace Aao {
 				for (let i = 0; i < _gameBoard.current.maptext.length; i++) {
 					_gameBoard.current.maptext[i] = _gameBoard.next.maptext[i];
 				}
-				display();
 
 				this.gameStatus.gameFieldGamen = this.nextGameFieldGamen;
 				this.gameStatus.gameMode = new FreeGameMode(this.gameStatus);
@@ -464,6 +424,47 @@ namespace Aao {
 		}
 	}
 
+	interface Initter {
+		analize(line: string): void;
+		save(): void;
+	}
+
+	class GameInitter implements Initter {
+		start_field: string = 'no define';
+		player: Character | null;
+		start_x: number = 0;
+		start_y: number = 0;
+		start_muki: Muki | null = null;
+
+		gameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
+
+		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		analize(line: string): void {
+			let defineData: RegExpMatchArray | null = line.match(this.reg);
+			if (defineData != null) {
+				let attr: string = defineData[1];
+				let value: string = defineData[2];
+
+				if (attr == 'start_field') {
+					this.start_field = value;
+				} else if (attr == 'start_x') {
+					this.start_x = +value;
+				} else if (attr == 'start_y') {
+					this.start_y = +value;
+				} else if (attr == 'start_muki') {
+					if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
+						this.start_muki = createMuki(value);
+					}
+				}
+			}
+		}
+
+		save(): void {
+			// 全部そろうまでわからないので、ここでは何もしない
+		}
+	}
+
 	export function init(): void {
 		initMainBoard();
 
@@ -478,21 +479,33 @@ namespace Aao {
 			}
 		});
 
-		loadData();
+		let gameInitter: GameInitter = new GameInitter();
 
-		let player = _gameStatus.player;
-		player.moveTo(_gameStatus.gameInitter.start_x * 16, _gameStatus.gameInitter.start_y * 32, _gameStatus.gameInitter.start_muki);
+		loadData(gameInitter);
+
+		if (gameInitter.player == null || gameInitter.start_muki == null) {
+			throw 'illigal data file';
+		}
+
+		let player = gameInitter.player;
+
+		for (let i = 0, len: number = gameInitter.gameFieldGamenList.length; i < len; i++) {
+			_GameFieldGamenList.push(gameInitter.gameFieldGamenList[i]);
+		}
+		let gameFieldGamen: GameFieldGamen = getGameFieldGamen(gameInitter.start_field);
+
+		_gameStatus.player = player;
+		_gameStatus.gameFieldGamen = gameFieldGamen;
+
 		_gameBoard.fieldGraph.appendChild(player.img);
 
-		_gameStatus.gameFieldGamen = getGameFieldGamen(_gameStatus.gameInitter.start_field);
-
-		for (let i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
-			_gameBoard.current.maptext.push(_gameStatus.gameFieldGamen.maptext[i]);
+		for (let i = 0; i < gameFieldGamen.maptext.length; i++) {
+			_gameBoard.current.maptext.push(gameFieldGamen.maptext[i]);
 		}
-		_gameBoard.current.backGround.src = _gameStatus.gameFieldGamen.imgsrc;
+		_gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
 
+		player.moveTo(gameInitter.start_x * 16, gameInitter.start_y * 32, gameInitter.start_muki);
 		put(player);
-
 		display();
 
 		setTimeout(frameCheck, FRAME_TIMING);
@@ -567,6 +580,7 @@ namespace Aao {
 	}
 
 	class PlayerInitter implements Initter {
+		private gameInitter: GameInitter;
 		chr: string = 'no define';
 
 		mukiList_n: Array<string> = new Array<string>();
@@ -575,6 +589,10 @@ namespace Aao {
 		mukiList_w: Array<string> = new Array<string>();
 
 		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+
+		constructor(gameInitter: GameInitter) {
+			this.gameInitter = gameInitter;
+		}
 
 		analize(line: string): void {
 			let defineData: RegExpMatchArray | null = line.match(this.reg);
@@ -598,11 +616,12 @@ namespace Aao {
 		save(): void {
 			let mukiListGroup: MukiListGroup = { 'n': this.mukiList_n, 'e': this.mukiList_e, 's': this.mukiList_s, 'w': this.mukiList_w };
 			let player = new Character(this.chr, mukiListGroup);
-			_gameStatus.player = player;
+			this.gameInitter.player = player;
 		}
 	}
 
 	class GameFieldGamenInitter implements Initter {
+		private gameInitter: GameInitter;
 		name: string = 'no define';
 		maptext: Array<string> = new Array<string>();
 		imgsrc: string = 'no define';
@@ -615,6 +634,10 @@ namespace Aao {
 
 		maptextMode: boolean = false;
 		maptextCount: number = 0;
+
+		constructor(gameInitter: GameInitter) {
+			this.gameInitter = gameInitter;
+		}
 
 		analize(line: string): void {
 			if (this.maptextMode) {
@@ -648,11 +671,11 @@ namespace Aao {
 		}
 
 		save(): void {
-			_GameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
+			this.gameInitter.gameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
 		}
 	}
 
-	function loadData() {
+	function loadData(gameInitter: GameInitter): void {
 		let data: string = Kyoutsu.load('data.txt');
 		let lines: Array<string> = data.split(/[\r\n]+/g);
 
@@ -671,19 +694,19 @@ namespace Aao {
 					initter.save();
 				}
 				// gameInitterだけは、全部そろうまでわからないので、捨てないで使いまわす。
-				initter = _gameStatus.gameInitter;
+				initter = gameInitter;
 
 			} else if (line == '[PLAYER]') {
 				if (initter != null) {
 					initter.save();
 				}
-				initter = new PlayerInitter();
+				initter = new PlayerInitter(gameInitter);
 
 			} else if (line == '[FIELD]') {
 				if (initter != null) {
 					initter.save();
 				}
-				initter = new GameFieldGamenInitter();
+				initter = new GameFieldGamenInitter(gameInitter);
 			}
 
 			if (initter != null) {

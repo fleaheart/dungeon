@@ -116,43 +116,9 @@ var Aao;
             _gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
         }
     }
-    var GameInitter = (function () {
-        function GameInitter() {
-            this.start_field = 'no define';
-            this.start_x = 0;
-            this.start_y = 0;
-            this.start_muki = muki_e;
-            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
-        }
-        GameInitter.prototype.analize = function (line) {
-            var defineData = line.match(this.reg);
-            if (defineData != null) {
-                var attr = defineData[1];
-                var value = defineData[2];
-                if (attr == 'start_field') {
-                    this.start_field = value;
-                }
-                else if (attr == 'start_x') {
-                    this.start_x = +value;
-                }
-                else if (attr == 'start_y') {
-                    this.start_y = +value;
-                }
-                else if (attr == 'start_muki') {
-                    if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
-                        this.start_muki = createMuki(value);
-                    }
-                }
-            }
-        };
-        GameInitter.prototype.save = function () {
-        };
-        return GameInitter;
-    }());
     var GameStatus = (function () {
         function GameStatus() {
             this.gameMode = null;
-            this.gameInitter = new GameInitter();
             this.player = new Character('');
             this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
             this.frameCount = 0;
@@ -264,7 +230,6 @@ var Aao;
                 for (var i = 0; i < _gameBoard.current.maptext.length; i++) {
                     _gameBoard.current.maptext[i] = _gameBoard.next.maptext[i];
                 }
-                display();
                 this.gameStatus.gameFieldGamen = this.nextGameFieldGamen;
                 this.gameStatus.gameMode = new FreeGameMode(this.gameStatus);
             }
@@ -360,6 +325,40 @@ var Aao;
             character.moveTo(640 - 32, character.y, muki);
         }
     }
+    var GameInitter = (function () {
+        function GameInitter() {
+            this.start_field = 'no define';
+            this.start_x = 0;
+            this.start_y = 0;
+            this.start_muki = null;
+            this.gameFieldGamenList = new Array();
+            this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+        }
+        GameInitter.prototype.analize = function (line) {
+            var defineData = line.match(this.reg);
+            if (defineData != null) {
+                var attr = defineData[1];
+                var value = defineData[2];
+                if (attr == 'start_field') {
+                    this.start_field = value;
+                }
+                else if (attr == 'start_x') {
+                    this.start_x = +value;
+                }
+                else if (attr == 'start_y') {
+                    this.start_y = +value;
+                }
+                else if (attr == 'start_muki') {
+                    if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
+                        this.start_muki = createMuki(value);
+                    }
+                }
+            }
+        };
+        GameInitter.prototype.save = function () {
+        };
+        return GameInitter;
+    }());
     function init() {
         initMainBoard();
         document.addEventListener('keydown', function (e) {
@@ -371,15 +370,24 @@ var Aao;
                 _gameStatus.lastInputCode = 0;
             }
         });
-        loadData();
-        var player = _gameStatus.player;
-        player.moveTo(_gameStatus.gameInitter.start_x * 16, _gameStatus.gameInitter.start_y * 32, _gameStatus.gameInitter.start_muki);
-        _gameBoard.fieldGraph.appendChild(player.img);
-        _gameStatus.gameFieldGamen = getGameFieldGamen(_gameStatus.gameInitter.start_field);
-        for (var i = 0; i < _gameStatus.gameFieldGamen.maptext.length; i++) {
-            _gameBoard.current.maptext.push(_gameStatus.gameFieldGamen.maptext[i]);
+        var gameInitter = new GameInitter();
+        loadData(gameInitter);
+        if (gameInitter.player == null || gameInitter.start_muki == null) {
+            throw 'illigal data file';
         }
-        _gameBoard.current.backGround.src = _gameStatus.gameFieldGamen.imgsrc;
+        var player = gameInitter.player;
+        for (var i = 0, len = gameInitter.gameFieldGamenList.length; i < len; i++) {
+            _GameFieldGamenList.push(gameInitter.gameFieldGamenList[i]);
+        }
+        var gameFieldGamen = getGameFieldGamen(gameInitter.start_field);
+        _gameStatus.player = player;
+        _gameStatus.gameFieldGamen = gameFieldGamen;
+        _gameBoard.fieldGraph.appendChild(player.img);
+        for (var i = 0; i < gameFieldGamen.maptext.length; i++) {
+            _gameBoard.current.maptext.push(gameFieldGamen.maptext[i]);
+        }
+        _gameBoard.current.backGround.src = gameFieldGamen.imgsrc;
+        player.moveTo(gameInitter.start_x * 16, gameInitter.start_y * 32, gameInitter.start_muki);
         put(player);
         display();
         setTimeout(frameCheck, FRAME_TIMING);
@@ -436,13 +444,14 @@ var Aao;
         _gameStatus.lastInputCode = 0;
     }
     var PlayerInitter = (function () {
-        function PlayerInitter() {
+        function PlayerInitter(gameInitter) {
             this.chr = 'no define';
             this.mukiList_n = new Array();
             this.mukiList_e = new Array();
             this.mukiList_s = new Array();
             this.mukiList_w = new Array();
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
+            this.gameInitter = gameInitter;
         }
         PlayerInitter.prototype.analize = function (line) {
             var defineData = line.match(this.reg);
@@ -469,12 +478,12 @@ var Aao;
         PlayerInitter.prototype.save = function () {
             var mukiListGroup = { 'n': this.mukiList_n, 'e': this.mukiList_e, 's': this.mukiList_s, 'w': this.mukiList_w };
             var player = new Character(this.chr, mukiListGroup);
-            _gameStatus.player = player;
+            this.gameInitter.player = player;
         };
         return PlayerInitter;
     }());
     var GameFieldGamenInitter = (function () {
-        function GameFieldGamenInitter() {
+        function GameFieldGamenInitter(gameInitter) {
             this.name = 'no define';
             this.maptext = new Array();
             this.imgsrc = 'no define';
@@ -485,6 +494,7 @@ var Aao;
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
             this.maptextMode = false;
             this.maptextCount = 0;
+            this.gameInitter = gameInitter;
         }
         GameFieldGamenInitter.prototype.analize = function (line) {
             if (this.maptextMode) {
@@ -524,11 +534,11 @@ var Aao;
             }
         };
         GameFieldGamenInitter.prototype.save = function () {
-            _GameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
+            this.gameInitter.gameFieldGamenList.push(new GameFieldGamen(this.name, this.maptext, this.imgsrc, this.over_n, this.over_e, this.over_s, this.over_w));
         };
         return GameFieldGamenInitter;
     }());
-    function loadData() {
+    function loadData(gameInitter) {
         var data = Kyoutsu.load('data.txt');
         var lines = data.split(/[\r\n]+/g);
         var initter = null;
@@ -543,19 +553,19 @@ var Aao;
                 if (initter != null) {
                     initter.save();
                 }
-                initter = _gameStatus.gameInitter;
+                initter = gameInitter;
             }
             else if (line == '[PLAYER]') {
                 if (initter != null) {
                     initter.save();
                 }
-                initter = new PlayerInitter();
+                initter = new PlayerInitter(gameInitter);
             }
             else if (line == '[FIELD]') {
                 if (initter != null) {
                     initter.save();
                 }
-                initter = new GameFieldGamenInitter();
+                initter = new GameFieldGamenInitter(gameInitter);
             }
             if (initter != null) {
                 initter.analize(line);
