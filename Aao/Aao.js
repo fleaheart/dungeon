@@ -10,7 +10,7 @@ var Aao;
             this.x = 0;
             this.y = 0;
             this.frame = 0;
-            this.mukiType = 'e';
+            this.muki = muki_e;
             if (mukiListGroup != undefined) {
                 this.mukiListGroup = mukiListGroup;
             }
@@ -181,7 +181,7 @@ var Aao;
                             var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
                             if (nextName != null) {
                                 var nextGameFieldGamen = getGameFieldGamen(nextName);
-                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.mukiType, nextGameFieldGamen);
+                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
                                 return;
                             }
                         }
@@ -223,22 +223,22 @@ var Aao;
                 throw 'unreachable';
             }
             if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-                if (character.mukiType == muki.mukiType) {
+                if (character.muki.mukiType == muki.mukiType) {
                     put(character, ' ');
                     this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
                 }
                 else {
-                    character.mukiType = muki.mukiType;
+                    character.muki = muki;
                 }
             }
         };
         return FreeGameMode;
     }());
     var ScrollGameMode = (function () {
-        function ScrollGameMode(gameStatus, mukiType, nextGameFieldGamen) {
+        function ScrollGameMode(gameStatus, muki, nextGameFieldGamen) {
             this.name = 'scrl';
             this.gameStatus = gameStatus;
-            this.muki = createMuki(mukiType);
+            this.muki = muki;
             this.nextGameFieldGamen = nextGameFieldGamen;
             this.frame = 0;
         }

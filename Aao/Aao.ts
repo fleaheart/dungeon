@@ -11,7 +11,7 @@ namespace Aao {
 		x: number;
 		y: number;
 		frame: number;
-		mukiType: MukiType;
+		muki: Muki;
 		mukiListGroup: MukiListGroup = {}
 
 		constructor(chr: string, mukiListGroup?: MukiListGroup) {
@@ -21,7 +21,7 @@ namespace Aao {
 			this.x = 0;
 			this.y = 0;
 			this.frame = 0;
-			this.mukiType = 'e'
+			this.muki = muki_e;
 			if (mukiListGroup != undefined) {
 				this.mukiListGroup = mukiListGroup;
 			}
@@ -244,7 +244,7 @@ namespace Aao {
 							let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
 							if (nextName != null) {
 								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
-								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.mukiType, nextGameFieldGamen);
+								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
 								return;
 							}
 						}
@@ -292,11 +292,11 @@ namespace Aao {
 			}
 
 			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
-				if (character.mukiType == muki.mukiType) {
+				if (character.muki.mukiType == muki.mukiType) {
 					put(character, ' ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
 				} else {
-					character.mukiType = muki.mukiType;
+					character.muki = muki;
 				}
 			}
 		}
@@ -310,9 +310,9 @@ namespace Aao {
 		nextGameFieldGamen: GameFieldGamen;
 		frame: number;
 
-		constructor(gameStatus: GameStatus, mukiType: MukiType, nextGameFieldGamen: GameFieldGamen) {
+		constructor(gameStatus: GameStatus, muki: Muki, nextGameFieldGamen: GameFieldGamen) {
 			this.gameStatus = gameStatus;
-			this.muki = createMuki(mukiType);
+			this.muki = muki;
 			this.nextGameFieldGamen = nextGameFieldGamen;
 
 			this.frame = 0;
