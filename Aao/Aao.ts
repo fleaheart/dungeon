@@ -349,43 +349,32 @@ namespace Aao {
 		frameEnd: number;
 	}
 
-	let muki_n: Muki = {
-		mukiType: 'n',
-		nextX: 0,
-		nextY: -1,
-		frameEnd: 30
+	class MukiClass implements Muki {
+		mukiType: MukiType;
+		nextX: number;
+		nextY: number;
+		frameEnd: number;
+
+		constructor(mukiType: MukiType, nextX: number, nextY: number, frameEnd: number) {
+			this.mukiType = mukiType;
+			this.nextX = nextX;
+			this.nextY = nextY;
+			this.frameEnd = frameEnd;
+		}
 	}
 
-	let muki_e: Muki = {
-		mukiType: 'e',
-		nextX: 1,
-		nextY: 0,
-		frameEnd: 40
-	}
-
-	let muki_s: Muki = {
-		mukiType: 's',
-		nextX: 0,
-		nextY: 1,
-		frameEnd: 30
-	}
-
-	let muki_w: Muki = {
-		mukiType: 'w',
-		nextX: -1,
-		nextY: 0,
-		frameEnd: 40
-	}
+	let muki_n: Muki = new MukiClass('n', 0, -1, 30);
+	let muki_e: Muki = new MukiClass('e', 1, 0, 40);
+	let muki_s: Muki = new MukiClass('s', 0, 1, 30);
+	let muki_w: Muki = new MukiClass('w', -1, 0, 40);
+	let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
 
 	function createMuki(mukiType: MukiType): Muki {
-		if (mukiType == 'n') {
-			return muki_n;
-		} else if (mukiType == 'e') {
-			return muki_e;
-		} else if (mukiType == 's') {
-			return muki_s;
-		} else if (mukiType == 'w') {
-			return muki_w;
+		for (let i = 0, len: number = mukiArray.length; i < len; i++) {
+			let muki: Muki = mukiArray[i];
+			if (muki.mukiType == mukiType) {
+				return muki;
+			}
 		}
 		throw mukiType + ' is illigal argument';
 	}

@@ -255,42 +255,26 @@ var Aao;
         gameStatus.gameMode.do();
         setTimeout(frameCheck, FRAME_TIMING);
     }
-    var muki_n = {
-        mukiType: 'n',
-        nextX: 0,
-        nextY: -1,
-        frameEnd: 30
-    };
-    var muki_e = {
-        mukiType: 'e',
-        nextX: 1,
-        nextY: 0,
-        frameEnd: 40
-    };
-    var muki_s = {
-        mukiType: 's',
-        nextX: 0,
-        nextY: 1,
-        frameEnd: 30
-    };
-    var muki_w = {
-        mukiType: 'w',
-        nextX: -1,
-        nextY: 0,
-        frameEnd: 40
-    };
+    var MukiClass = (function () {
+        function MukiClass(mukiType, nextX, nextY, frameEnd) {
+            this.mukiType = mukiType;
+            this.nextX = nextX;
+            this.nextY = nextY;
+            this.frameEnd = frameEnd;
+        }
+        return MukiClass;
+    }());
+    var muki_n = new MukiClass('n', 0, -1, 30);
+    var muki_e = new MukiClass('e', 1, 0, 40);
+    var muki_s = new MukiClass('s', 0, 1, 30);
+    var muki_w = new MukiClass('w', -1, 0, 40);
+    var mukiArray = [muki_n, muki_e, muki_s, muki_w];
     function createMuki(mukiType) {
-        if (mukiType == 'n') {
-            return muki_n;
-        }
-        else if (mukiType == 'e') {
-            return muki_e;
-        }
-        else if (mukiType == 's') {
-            return muki_s;
-        }
-        else if (mukiType == 'w') {
-            return muki_w;
+        for (var i = 0, len = mukiArray.length; i < len; i++) {
+            var muki = mukiArray[i];
+            if (muki.mukiType == mukiType) {
+                return muki;
+            }
         }
         throw mukiType + ' is illigal argument';
     }
