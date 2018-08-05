@@ -192,27 +192,24 @@ namespace Aao {
 				return;
 			}
 
-			if (0 < this.gameStatus.koudouArray.length) {
+			let koudou = this.gameStatus.koudouArray.shift();
+			if (koudou != undefined) {
+				if (koudou.type == 'idou') {
+					let muki: Muki = koudou.muki;
 
-				let koudou = this.gameStatus.koudouArray.shift();
-				if (koudou != undefined) {
-					if (koudou.type == 'idou') {
-						let muki: Muki = koudou.muki;
+					this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
 
-						this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
-
-						if (gamenOver(this.gameStatus.player, muki)) {
-							let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
-							if (nextName != null) {
-								let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
-								this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
-								return;
-							}
+					if (gamenOver(this.gameStatus.player, muki)) {
+						let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
+						if (nextName != null) {
+							let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
+							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
+							return;
 						}
 					}
-					if (koudou.type == 'jump') {
-						// 未実装
-					}
+				}
+				if (koudou.type == 'jump') {
+					// 未実装
 				}
 			}
 

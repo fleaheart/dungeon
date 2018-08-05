@@ -137,23 +137,21 @@ var Aao;
             if (this.gameStatus.frameCount % 2 != 0) {
                 return;
             }
-            if (0 < this.gameStatus.koudouArray.length) {
-                var koudou = this.gameStatus.koudouArray.shift();
-                if (koudou != undefined) {
-                    if (koudou.type == 'idou') {
-                        var muki = koudou.muki;
-                        this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
-                        if (gamenOver(this.gameStatus.player, muki)) {
-                            var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
-                            if (nextName != null) {
-                                var nextGameFieldGamen = getGameFieldGamen(nextName);
-                                this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
-                                return;
-                            }
+            var koudou = this.gameStatus.koudouArray.shift();
+            if (koudou != undefined) {
+                if (koudou.type == 'idou') {
+                    var muki = koudou.muki;
+                    this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
+                    if (gamenOver(this.gameStatus.player, muki)) {
+                        var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
+                        if (nextName != null) {
+                            var nextGameFieldGamen = getGameFieldGamen(nextName);
+                            this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
+                            return;
                         }
                     }
-                    if (koudou.type == 'jump') {
-                    }
+                }
+                if (koudou.type == 'jump') {
                 }
             }
             put(this.gameStatus.player);
