@@ -538,15 +538,17 @@ namespace Aao {
 		setTimeout(frameCheck, FRAME_TIMING);
 	}
 
-	function put(obj: Character, chr?: string): void {
-		let x: number = obj.ascii_x;
-		let y: number = obj.ascii_y;
+	function put(character: Character, chr?: string): void {
+		let x: number = character.ascii_x;
+		let y: number = character.ascii_y;
 		if (chr == undefined) {
-			chr = obj.chr;
+			chr = character.chr;
 		}
 
+		chr = (chr + '..').substr(0, 2);
+
 		let swp = _gameBoard.asciiPosition[y];
-		swp = swp.substr(0, x) + chr + swp.substr(x + 1);
+		swp = swp.substr(0, x) + chr + swp.substr(x + 2);
 		_gameBoard.asciiPosition[y] = swp;
 	}
 
@@ -641,7 +643,7 @@ namespace Aao {
 
 			if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
 				if (character.muki.mukiType == muki.mukiType) {
-					put(character, ' ');
+					put(character, '  ');
 					this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
 				} else {
 					character.muki = muki;
@@ -687,7 +689,6 @@ namespace Aao {
 				_gameBoard.next.maptext = this.nextGameFieldGamen.maptext;
 				_gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
 				_gameBoard.next.backGround.style.display = '';
-				put(this.gameStatus.player, ' ');
 			}
 
 			this.frame++;

@@ -418,14 +418,15 @@ var Aao;
         gameStatus.gameMode.do();
         setTimeout(frameCheck, FRAME_TIMING);
     }
-    function put(obj, chr) {
-        var x = obj.ascii_x;
-        var y = obj.ascii_y;
+    function put(character, chr) {
+        var x = character.ascii_x;
+        var y = character.ascii_y;
         if (chr == undefined) {
-            chr = obj.chr;
+            chr = character.chr;
         }
+        chr = (chr + '..').substr(0, 2);
         var swp = _gameBoard.asciiPosition[y];
-        swp = swp.substr(0, x) + chr + swp.substr(x + 1);
+        swp = swp.substr(0, x) + chr + swp.substr(x + 2);
         _gameBoard.asciiPosition[y] = swp;
     }
     function get(x, y) {
@@ -505,7 +506,7 @@ var Aao;
             }
             if (check_c1 == ' ' && check_c2 == ' ' && check_offet == ' ') {
                 if (character.muki.mukiType == muki.mukiType) {
-                    put(character, ' ');
+                    put(character, '  ');
                     this.gameStatus.koudouArray.push({ type: 'idou', muki: muki });
                 }
                 else {
@@ -543,7 +544,6 @@ var Aao;
                 _gameBoard.next.maptext = this.nextGameFieldGamen.maptext;
                 _gameBoard.next.backGround.src = this.nextGameFieldGamen.imgsrc;
                 _gameBoard.next.backGround.style.display = '';
-                put(this.gameStatus.player, ' ');
             }
             this.frame++;
             _gameBoard.current.backGround.style.top = String(this.frame * -16 * this.muki.nextY) + 'px';
