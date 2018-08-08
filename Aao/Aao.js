@@ -32,6 +32,8 @@ var Aao;
             this.img.style.position = 'absolute';
             this.x = 0;
             this.y = 0;
+            this.ascii_x = 0;
+            this.ascii_y = 0;
             this.frame = 0;
             this.muki = muki_e;
             if (mukiListGroup != undefined) {
@@ -44,6 +46,12 @@ var Aao;
             this.moveBy(dx, dy, muki);
             this.x = x;
             this.y = y;
+            if (dy < 0) {
+                this.ascii_y = Math.floor(this.y / 32);
+            }
+            else if (0 < dy) {
+                this.ascii_y = Math.ceil(this.y / 32);
+            }
         };
         Character.prototype.moveBy = function (dx, dy, muki) {
             var array = this.mukiListGroup[muki.mukiType];
@@ -52,13 +60,22 @@ var Aao;
             this.x += dx;
             this.y += dy;
             this.refrectStyle();
+            this.asciiPos(dx, dy);
             this.frame++;
         };
-        Character.prototype.asciiPosX = function () {
-            return Math.floor((this.x) / 16);
-        };
-        Character.prototype.asciiPosY = function () {
-            return Math.floor((this.y) / 32);
+        Character.prototype.asciiPos = function (dx, dy) {
+            if (dx < 0) {
+                this.ascii_x = Math.floor(this.x / 16);
+            }
+            else if (0 < dx) {
+                this.ascii_x = Math.ceil(this.x / 16);
+            }
+            if (dy < 0) {
+                this.ascii_y = Math.floor(this.y / 32);
+            }
+            else if (0 < dy) {
+                this.ascii_y = Math.ceil(this.y / 32);
+            }
         };
         Character.prototype.refrectStyle = function () {
             this.img.style.left = this.x + 'px';
@@ -393,7 +410,7 @@ var Aao;
                     + '<br>' + gameStatus.lastInputCode
                     + '<br>' + gameStatus.gameFieldGamen.name
                     + '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
-                    + '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY();
+                    + '<br>' + gameStatus.player.ascii_x + ',' + gameStatus.player.ascii_y;
         }
         if (gameStatus.lastInputCode == Kyoutsu.INPUT_ESCAPE) {
             return;
@@ -402,8 +419,8 @@ var Aao;
         setTimeout(frameCheck, FRAME_TIMING);
     }
     function put(obj, chr) {
-        var x = obj.asciiPosX();
-        var y = obj.asciiPosY();
+        var x = obj.ascii_x;
+        var y = obj.ascii_y;
         if (chr == undefined) {
             chr = obj.chr;
         }

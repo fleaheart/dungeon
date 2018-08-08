@@ -49,6 +49,8 @@ namespace Aao {
 		img: HTMLImageElement;
 		x: number;
 		y: number;
+		ascii_x: number;
+		ascii_y: number;
 		frame: number;
 		muki: Muki;
 		mukiListGroup: MukiListGroup = {}
@@ -59,6 +61,8 @@ namespace Aao {
 			this.img.style.position = 'absolute';
 			this.x = 0;
 			this.y = 0;
+			this.ascii_x = 0;
+			this.ascii_y = 0;
 			this.frame = 0;
 			this.muki = muki_e;
 			if (mukiListGroup != undefined) {
@@ -72,6 +76,12 @@ namespace Aao {
 			this.moveBy(dx, dy, muki);
 			this.x = x;
 			this.y = y;
+
+			if (dy < 0) {
+				this.ascii_y = Math.floor(this.y / 32);
+			} else if (0 < dy) {
+				this.ascii_y = Math.ceil(this.y / 32);
+			}
 		}
 
 		moveBy(dx: number, dy: number, muki: Muki): void {
@@ -83,15 +93,21 @@ namespace Aao {
 			this.y += dy;
 			this.refrectStyle();
 
+			this.asciiPos(dx, dy);
 			this.frame++;
 		}
 
-		asciiPosX(): number {
-			return Math.floor((this.x) / 16);
-		}
-
-		asciiPosY(): number {
-			return Math.floor((this.y) / 32);
+		asciiPos(dx: number, dy: number): void {
+			if (dx < 0) {
+				this.ascii_x = Math.floor(this.x / 16);
+			} else if (0 < dx) {
+				this.ascii_x = Math.ceil(this.x / 16);
+			}
+			if (dy < 0) {
+				this.ascii_y = Math.floor(this.y / 32);
+			} else if (0 < dy) {
+				this.ascii_y = Math.ceil(this.y / 32);
+			}
 		}
 
 		private refrectStyle(): void {
@@ -509,7 +525,7 @@ namespace Aao {
 				+ '<br>' + gameStatus.lastInputCode
 				+ '<br>' + gameStatus.gameFieldGamen.name
 				+ '<br>' + gameStatus.player.x + ',' + gameStatus.player.y
-				+ '<br>' + gameStatus.player.asciiPosX() + ',' + gameStatus.player.asciiPosY()
+				+ '<br>' + gameStatus.player.ascii_x + ',' + gameStatus.player.ascii_y
 				;
 		}
 
@@ -523,8 +539,8 @@ namespace Aao {
 	}
 
 	function put(obj: Character, chr?: string): void {
-		let x: number = obj.asciiPosX();
-		let y: number = obj.asciiPosY();
+		let x: number = obj.ascii_x;
+		let y: number = obj.ascii_y;
 		if (chr == undefined) {
 			chr = obj.chr;
 		}
