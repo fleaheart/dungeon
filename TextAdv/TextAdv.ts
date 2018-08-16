@@ -1,6 +1,7 @@
 namespace TextAdv {
-    export const MODE_MAKIMONO: string = 'makimono';
-    export const MODE_KAMISHIBAI: string = 'kamishibai';
+    type DisplyMode = 'makimono' | 'kamishibai';
+    export const MODE_MAKIMONO: DisplyMode = 'makimono';
+    export const MODE_KAMISHIBAI: DisplyMode = 'kamishibai';
 
     class Link {
         linkNo: number;
@@ -12,25 +13,25 @@ namespace TextAdv {
         text: string;
         title: string;
         html: string;
-        links: Link[];
+        links: Array<Link>;
     }
 
     let $linkColor: string = 'blue';
     let $selectColor: string = 'red';
 
-    let $trace: number[] = new Array();  // 遷移順配列
-    let $mode: string = MODE_MAKIMONO;
+    let $trace = new Array<number>();  // 遷移順配列
+    let $mode: DisplyMode = MODE_MAKIMONO;
 
     let $display: HTMLElement;
-    let $scenes: Scene[];
+    let $scenes: Array<Scene>;
 
-    function analize(source: string): Scene[] {
-        let scenes: Scene[] = new Array();
+    function analize(source: string): Array<Scene> {
+        let scenes: Array<Scene> = new Array<Scene>();
 
         let result: string = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        let lines: string[] = result.split('\n');
+        let lines: Array<string> = result.split('\n');
 
-        for (let i: number = 0, len: number = lines.length; i < len; i++) {
+        for (let i = 0, len: number = lines.length; i < len; i++) {
             lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (m: string | null, g1: string): string => {
                 if (m != null) {
                     m = null;    // mは捨てる warning回避コード
@@ -40,8 +41,8 @@ namespace TextAdv {
             });
         }
 
-        let sceneWorks: string[] = lines.join('\n').split(/<>/);
-        for (let i: number = 0, len: number = sceneWorks.length; i < len; i++) {
+        let sceneWorks: Array<string> = lines.join('\n').split(/<>/);
+        for (let i = 0, len: number = sceneWorks.length; i < len; i++) {
             let res: RegExpMatchArray | null = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             if (res != null) {
                 let idx: number = +res[1];
@@ -68,17 +69,17 @@ namespace TextAdv {
         let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
 
         text = text.replace(regDaikakkoCheck, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
-        let blocks: string[] = text.split('##BLOCK##');
+        let blocks: Array<string> = text.split('##BLOCK##');
 
         /*
          * BLOCKごとにcreateContextualFragmentしようとしたが、アンカーをまたぐタグに対応できなかったので、アンカーも文字列で対応
          */
-        let blockHTMLs: string[] = new Array();
+        let blockHTMLs = new Array<string>();
 
-        let links: Link[] = new Array();
-        let linkCount: number = 0;
+        let links = new Array<Link>();
+        let linkCount = 0;
 
-        for (let i: number = 0, len: number = blocks.length; i < len; i++) {
+        for (let i = 0, len: number = blocks.length; i < len; i++) {
             let block: string = blocks[i];
             if (block.match(regDaikakkoCheck)) {
                 // [msg → 000]
@@ -116,7 +117,7 @@ namespace TextAdv {
         }
 
         let html: string = blockHTMLs.join('');
-        let titlehtml: string[] = html.split('◇');
+        let titlehtml: Array<string> = html.split('◇');
         if (2 <= titlehtml.length) {
             scene.title = titlehtml[0];
             scene.html = titlehtml[1];
@@ -145,7 +146,7 @@ namespace TextAdv {
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
         let sceneElm: HTMLElement | null = null;
-        let step: number = 0;
+        let step = 0;
         if (selectedElm != null) {
             // 選択されたものを赤くする
             if ($mode == MODE_MAKIMONO) {
@@ -158,9 +159,9 @@ namespace TextAdv {
                 sceneElm.id.match(/^sc(\d+)$/);
                 step = +RegExp.$1;
 
-                let linkElms: HTMLElement[] = new Array();
+                let linkElms = new Array<HTMLElement>();
                 pickupElements(sceneElm, 'link', linkElms);
-                for (let i: number = 0; i < linkElms.length; i++) {
+                for (let i = 0; i < linkElms.length; i++) {
                     linkElms[i].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
@@ -200,10 +201,10 @@ namespace TextAdv {
         }
 
         if (sceneDiv != null) {
-            let linkElms: HTMLElement[] = new Array();
+            let linkElms = new Array<HTMLElement>();
             pickupElements(sceneDiv, 'link', linkElms);
 
-            for (let i: number = 0, len: number = linkElms.length; i < len; i++) {
+            for (let i = 0, len: number = linkElms.length; i < len; i++) {
                 let linkElm: HTMLElement = linkElms[i];
                 if (linkElm.className == 'link') {
                     linkElm.style.color = 'blue';
@@ -242,7 +243,7 @@ namespace TextAdv {
     }
 
     function searchUpperElement(elm: HTMLElement, className: string): HTMLElement | null {
-        let parent: HTMLElement = <HTMLElement>elm.parentNode;
+        let parent = <HTMLElement>elm.parentNode;
         if (parent == null) {
             return null;
         }
@@ -254,14 +255,14 @@ namespace TextAdv {
         return searchUpperElement(parent, className);
     }
 
-    function pickupElements(parentElm: HTMLElement, className: string, pickupElms: HTMLElement[]): void {
+    function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
         if (pickupElms == null) {
             return;
         }
 
         let childElms: NodeList = parentElm.childNodes;
-        for (let i: number = 0; i < childElms.length; i++) {
-            let elm: HTMLElement = <HTMLElement>childElms.item(i);
+        for (let i = 0; i < childElms.length; i++) {
+            let elm = <HTMLElement>childElms.item(i);
 
             if (0 < elm.childNodes.length) {
                 pickupElements(elm, className, pickupElms);
@@ -329,8 +330,8 @@ namespace TextAdv {
 }
 
 window.addEventListener('load', (): void => {
-    let displayElm: HTMLDivElement = <HTMLDivElement>document.getElementById('display');
-    let sourceElm: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById('source');
+    let displayElm = <HTMLDivElement>document.getElementById('display');
+    let sourceElm = <HTMLTextAreaElement>document.getElementById('source');
     if (sourceElm != null && displayElm != null) {
         TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
