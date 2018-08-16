@@ -147,7 +147,7 @@ namespace TextAdv {
     export function go(idx: number, selectedElm?: HTMLElement): void {
         let sceneElm: HTMLElement | null = null;
         let step = 0;
-        if (selectedElm != null) {
+        if (selectedElm != undefined) {
             // 選択されたものを赤くする
             if ($mode == MODE_MAKIMONO) {
                 sceneElm = searchUpperElement(selectedElm, 'scene');
@@ -229,7 +229,11 @@ namespace TextAdv {
 
         // 画面をスクロールする
         if ($mode == MODE_MAKIMONO) {
-            scrollStart(selectedElm);
+            if (selectedElm == undefined) {
+                return;
+            }
+
+            (new ScrollCtrl($display, selectedElm)).scroll();
         }
 
     }
@@ -263,7 +267,6 @@ namespace TextAdv {
         let childElms: NodeList = parentElm.childNodes;
         for (let i = 0; i < childElms.length; i++) {
             let elm = <HTMLElement>childElms.item(i);
-
             if (0 < elm.childNodes.length) {
                 pickupElements(elm, className, pickupElms);
             }
@@ -274,58 +277,58 @@ namespace TextAdv {
         }
     }
 
-    let $timer: number;
-    let $interval: number = 5;
-    let $dy: number = 10;
-    let $base: HTMLElement | null = null;
-    let $selectedElm: HTMLElement | null = null;
-    let $lastTop: number = 0;
+    class ScrollCtrl {
+        private timer: number;
+        private interval: number;
+        private dy: number;
+        private base: HTMLElement;
+        private selectedElm: HTMLElement;
+        private lastTop: number;
 
-    function scrollStart(selectedElm?: HTMLElement) {
-        if (selectedElm == undefined) {
-            return;
-        }
+        constructor(display: HTMLElement, selectedElm: HTMLElement) {
+            this.timer = 0;
+            this.interval = 5;
+            this.dy = 10;
+            this.base = display;
+            this.selectedElm = selectedElm;
+            this.lastTop = 0;
 
-        // スクロールするelementの決定 height指定のあるもの
-        if ($base == null) {
-            $base = $display;
-            while ($base.style.height == '') {
-                if ($base.tagName == 'BODY') {
+            // スクロールするelementの決定 height指定のあるもの
+            while (this.base.style.height == '') {
+                if (this.base.tagName == 'BODY') {
                     break;
                 }
-                let elm: Node | null = $base.parentNode;
+                let elm: Node | null = this.base.parentNode;
                 if (elm == null) {
                     break;
                 } else {
-                    $base = <HTMLElement>elm;
+                    this.base = <HTMLElement>elm;
                 }
             }
-        }
-        $selectedElm = selectedElm;
-        let rect: ClientRect = $selectedElm.getBoundingClientRect();
-        $lastTop = rect.top + 1;
 
-        scroll();
-    }
-
-    function scroll(): void {
-        if ($base == null || $selectedElm == null) {
-            return;
+            let rect: ClientRect = this.selectedElm.getBoundingClientRect();
+            this.lastTop = rect.top + 1;
         }
 
-        let rect: ClientRect = $selectedElm.getBoundingClientRect();
-        if (rect.top < $lastTop && 20 < rect.top) {
-            if ($base.tagName == 'BODY') {
-                window.scrollBy(0, $dy);
-            } else {
-                $base.scrollTop = $base.scrollTop + $dy;
+        scroll = (): void => {
+            if (this.base == null || this.selectedElm == null) {
+                return;
             }
-            $timer = setTimeout(arguments.callee, $interval);
-            $lastTop = rect.top;
-            return;
+
+            let rect: ClientRect = this.selectedElm.getBoundingClientRect();
+            if (rect.top < this.lastTop && 20 < rect.top) {
+                if (this.base.tagName == 'BODY') {
+                    window.scrollBy(0, this.dy);
+                } else {
+                    this.base.scrollTop = this.base.scrollTop + this.dy;
+                }
+                this.timer = setTimeout(this.scroll, this.interval);
+                this.lastTop = rect.top;
+                return;
+            }
+
+            clearTimeout(this.timer);
         }
-        clearTimeout($timer);
-        $selectedElm = null;
     }
 }
 

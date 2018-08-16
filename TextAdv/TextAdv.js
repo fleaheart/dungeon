@@ -116,7 +116,7 @@ var TextAdv;
     function go(idx, selectedElm) {
         var sceneElm = null;
         var step = 0;
-        if (selectedElm != null) {
+        if (selectedElm != undefined) {
             if ($mode == TextAdv.MODE_MAKIMONO) {
                 sceneElm = searchUpperElement(selectedElm, 'scene');
             }
@@ -180,7 +180,10 @@ var TextAdv;
         }
         $trace.push(idx);
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            scrollStart(selectedElm);
+            if (selectedElm == undefined) {
+                return;
+            }
+            (new ScrollCtrl($display, selectedElm)).scroll();
         }
     }
     TextAdv.go = go;
@@ -217,55 +220,50 @@ var TextAdv;
             }
         }
     }
-    var $timer;
-    var $interval = 5;
-    var $dy = 10;
-    var $base = null;
-    var $selectedElm = null;
-    var $lastTop = 0;
-    function scrollStart(selectedElm) {
-        if (selectedElm == undefined) {
-            return;
-        }
-        if ($base == null) {
-            $base = $display;
-            while ($base.style.height == '') {
-                if ($base.tagName == 'BODY') {
+    var ScrollCtrl = (function () {
+        function ScrollCtrl(display, selectedElm) {
+            var _this = this;
+            this.scroll = function () {
+                if (_this.base == null || _this.selectedElm == null) {
+                    return;
+                }
+                var rect = _this.selectedElm.getBoundingClientRect();
+                if (rect.top < _this.lastTop && 20 < rect.top) {
+                    if (_this.base.tagName == 'BODY') {
+                        window.scrollBy(0, _this.dy);
+                    }
+                    else {
+                        _this.base.scrollTop = _this.base.scrollTop + _this.dy;
+                    }
+                    _this.timer = setTimeout(_this.scroll, _this.interval);
+                    _this.lastTop = rect.top;
+                    return;
+                }
+                clearTimeout(_this.timer);
+            };
+            this.timer = 0;
+            this.interval = 5;
+            this.dy = 10;
+            this.base = display;
+            this.selectedElm = selectedElm;
+            this.lastTop = 0;
+            while (this.base.style.height == '') {
+                if (this.base.tagName == 'BODY') {
                     break;
                 }
-                var elm = $base.parentNode;
+                var elm = this.base.parentNode;
                 if (elm == null) {
                     break;
                 }
                 else {
-                    $base = elm;
+                    this.base = elm;
                 }
             }
+            var rect = this.selectedElm.getBoundingClientRect();
+            this.lastTop = rect.top + 1;
         }
-        $selectedElm = selectedElm;
-        var rect = $selectedElm.getBoundingClientRect();
-        $lastTop = rect.top + 1;
-        scroll();
-    }
-    function scroll() {
-        if ($base == null || $selectedElm == null) {
-            return;
-        }
-        var rect = $selectedElm.getBoundingClientRect();
-        if (rect.top < $lastTop && 20 < rect.top) {
-            if ($base.tagName == 'BODY') {
-                window.scrollBy(0, $dy);
-            }
-            else {
-                $base.scrollTop = $base.scrollTop + $dy;
-            }
-            $timer = setTimeout(arguments.callee, $interval);
-            $lastTop = rect.top;
-            return;
-        }
-        clearTimeout($timer);
-        $selectedElm = null;
-    }
+        return ScrollCtrl;
+    }());
 })(TextAdv || (TextAdv = {}));
 window.addEventListener('load', function () {
     var displayElm = document.getElementById('display');
