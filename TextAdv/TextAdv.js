@@ -115,39 +115,46 @@ var TextAdv;
     }
     TextAdv.start = start;
     function go(idx, selectedElm) {
-        var sceneElm = null;
         var step = 0;
         if (selectedElm != undefined) {
+            var sceneElm = null;
             if ($mode == TextAdv.MODE_MAKIMONO) {
                 sceneElm = searchUpperElement(selectedElm, 'scene');
             }
-            else {
+            else if ($mode == TextAdv.MODE_KAMISHIBAI) {
                 sceneElm = $display;
             }
+            else {
+                throw 'unreachable';
+            }
             if (sceneElm != null) {
-                sceneElm.id.match(/^sc(\d+)$/);
-                step = +RegExp.$1;
+                var res = sceneElm.id.match(/^sc(\d+)$/);
+                if (res != null) {
+                    step = +RegExp.$1;
+                }
                 var linkElms_1 = new Array();
                 pickupElements(sceneElm, 'link', linkElms_1);
-                for (var i_1 = 0; i_1 < linkElms_1.length; i_1++) {
-                    linkElms_1[i_1].style.color = $linkColor;
+                for (var i = 0; i < linkElms_1.length; i++) {
+                    linkElms_1[i].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
             }
         }
-        var i = step + 1;
-        while (true) {
-            var elm = document.getElementById('sc' + i);
-            if (elm == null) {
-                break;
+        if ($mode == TextAdv.MODE_MAKIMONO) {
+            var i = step + 1;
+            while (true) {
+                var elm = document.getElementById('sc' + i);
+                if (elm == null) {
+                    break;
+                }
+                $display.removeChild(elm);
+                i++;
             }
-            $display.removeChild(elm);
-            i++;
         }
         var scene = $scenes[idx];
-        step++;
         var sceneDiv;
         if ($mode == TextAdv.MODE_MAKIMONO) {
+            step++;
             sceneDiv = document.createElement('DIV');
             sceneDiv.id = 'sc' + step;
             sceneDiv.className = 'scene';
@@ -163,18 +170,19 @@ var TextAdv;
         }
         var linkElms = new Array();
         pickupElements(sceneDiv, 'link', linkElms);
-        for (var i_2 = 0, len = linkElms.length; i_2 < len; i_2++) {
-            var linkElm = linkElms[i_2];
+        var _loop_1 = function (i, len) {
+            var linkElm = linkElms[i];
             if (linkElm.className == 'link') {
                 linkElm.style.color = 'blue';
                 linkElm.style.textDecoration = 'underline';
                 linkElm.style.cursor = 'pointer';
-                (function (toIdx, linkElm) {
-                    linkElm.addEventListener('click', function () {
-                        go(toIdx, linkElm);
-                    });
-                })(scene.links[i_2].toIdx, linkElm);
+                linkElm.addEventListener('click', function () {
+                    go(scene.links[i].toIdx, linkElm);
+                });
             }
+        };
+        for (var i = 0, len = linkElms.length; i < len; i++) {
+            _loop_1(i, len);
         }
         if (scene.title != null) {
             document.title = scene.title;
@@ -210,9 +218,6 @@ var TextAdv;
         return searchUpperElement(parent, className);
     }
     function pickupElements(parentElm, className, pickupElms) {
-        if (pickupElms == null) {
-            return;
-        }
         var childElms = parentElm.childNodes;
         for (var i = 0; i < childElms.length; i++) {
             var elm = childElms.item(i);

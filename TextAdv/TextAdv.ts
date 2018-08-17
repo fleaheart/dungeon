@@ -146,19 +146,23 @@ namespace TextAdv {
     }
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
-        let sceneElm: HTMLElement | null = null;
-        let step = 0;
+        let step = 0;   // MODE_MAKIMONO用
         if (selectedElm != undefined) {
             // 選択されたものを赤くする
+            let sceneElm: HTMLElement | null = null;
             if ($mode == MODE_MAKIMONO) {
                 sceneElm = searchUpperElement(selectedElm, 'scene');
-            } else {
+            } else if ($mode == MODE_KAMISHIBAI) {
                 sceneElm = $display;
+            } else {
+                throw 'unreachable';
             }
 
             if (sceneElm != null) {
-                sceneElm.id.match(/^sc(\d+)$/);
-                step = +RegExp.$1;
+                let res: RegExpMatchArray | null = sceneElm.id.match(/^sc(\d+)$/);
+                if (res != null) {
+                    step = +RegExp.$1;
+                }
 
                 let linkElms = new Array<HTMLElement>();
                 pickupElements(sceneElm, 'link', linkElms);
@@ -169,24 +173,25 @@ namespace TextAdv {
             }
         }
 
-        // 次に表示する用にすでに表示しているものを消す
-        let i: number = step + 1;
-        while (true) {
-            let elm: HTMLElement | null = document.getElementById('sc' + i);
-            if (elm == null) {
-                break;
+        if ($mode == MODE_MAKIMONO) {
+            // 次に表示する用にすでに表示しているものを消す
+            let i: number = step + 1;
+            while (true) {
+                let elm: HTMLElement | null = document.getElementById('sc' + i);
+                if (elm == null) {
+                    break;
+                }
+                $display.removeChild(elm);
+                i++;
             }
-            $display.removeChild(elm);
-
-            i++;
         }
 
         let scene: Scene = $scenes[idx];
 
         // HTML化
-        step++;
         let sceneDiv: HTMLElement;
         if ($mode == MODE_MAKIMONO) {
+            step++;
             // divを作成し終端に取り付ける
             sceneDiv = document.createElement('DIV');
             sceneDiv.id = 'sc' + step;
@@ -201,6 +206,7 @@ namespace TextAdv {
             throw 'unreachable';
         }
 
+        // リンクにアンカーをつける
         let linkElms = new Array<HTMLElement>();
         pickupElements(sceneDiv, 'link', linkElms);
 
@@ -211,11 +217,9 @@ namespace TextAdv {
                 linkElm.style.textDecoration = 'underline';
                 linkElm.style.cursor = 'pointer';
 
-                ((toIdx: number, linkElm: HTMLElement): void => {
-                    linkElm.addEventListener('click', (): void => {
-                        go(toIdx, linkElm);
-                    });
-                })(scene.links[i].toIdx, linkElm);
+                linkElm.addEventListener('click', (): void => {
+                    go(scene.links[i].toIdx, linkElm);
+                });
             }
         }
 
@@ -262,10 +266,6 @@ namespace TextAdv {
     }
 
     function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
-        if (pickupElms == null) {
-            return;
-        }
-
         let childElms: NodeList = parentElm.childNodes;
         for (let i = 0; i < childElms.length; i++) {
             let elm = <HTMLElement>childElms.item(i);
