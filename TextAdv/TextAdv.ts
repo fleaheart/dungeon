@@ -24,6 +24,7 @@ namespace TextAdv {
 
     let $display: HTMLElement;
     let $scenes: Array<Scene>;
+    let $scrlctrl: ScrollCtrl | null = null;
 
     function analize(source: string): Array<Scene> {
         let scenes: Array<Scene> = new Array<Scene>();
@@ -233,9 +234,12 @@ namespace TextAdv {
                 return;
             }
 
-            (new ScrollCtrl($display, selectedElm)).scroll();
+            if ($scrlctrl == null) {
+                $scrlctrl = new ScrollCtrl($display);
+            }
+    
+            $scrlctrl.scroll(selectedElm);
         }
-
     }
 
     export function back(): void {
@@ -282,15 +286,15 @@ namespace TextAdv {
         private interval: number;
         private dy: number;
         private base: HTMLElement;
-        private selectedElm: HTMLElement;
+        private selectedElm: HTMLElement | null;
         private lastTop: number;
 
-        constructor(display: HTMLElement, selectedElm: HTMLElement) {
+        constructor(display: HTMLElement) {
             this.timer = 0;
             this.interval = 5;
             this.dy = 10;
             this.base = display;
-            this.selectedElm = selectedElm;
+            this.selectedElm = null;
             this.lastTop = 0;
 
             // スクロールするelementの決定 height指定のあるもの
@@ -305,12 +309,17 @@ namespace TextAdv {
                     this.base = <HTMLElement>elm;
                 }
             }
-
-            let rect: ClientRect = this.selectedElm.getBoundingClientRect();
-            this.lastTop = rect.top + 1;
         }
 
-        scroll = (): void => {
+        scroll(selectedElm: HTMLElement): void {
+            this.selectedElm = selectedElm;
+            let rect: ClientRect = this.selectedElm.getBoundingClientRect();
+            this.lastTop = rect.top + 1;
+
+            this.scrolling();
+        }
+
+        scrolling = (): void => {
             if (this.base == null || this.selectedElm == null) {
                 return;
             }
@@ -322,12 +331,14 @@ namespace TextAdv {
                 } else {
                     this.base.scrollTop = this.base.scrollTop + this.dy;
                 }
-                this.timer = setTimeout(this.scroll, this.interval);
+                this.timer = setTimeout(this.scrolling, this.interval);
                 this.lastTop = rect.top;
                 return;
             }
 
+            // release
             clearTimeout(this.timer);
+            this.selectedElm = null;
         }
     }
 }

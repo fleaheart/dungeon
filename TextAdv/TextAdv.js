@@ -18,6 +18,7 @@ var TextAdv;
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display;
     var $scenes;
+    var $scrlctrl = null;
     function analize(source) {
         var scenes = new Array();
         var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -183,7 +184,10 @@ var TextAdv;
             if (selectedElm == undefined) {
                 return;
             }
-            (new ScrollCtrl($display, selectedElm)).scroll();
+            if ($scrlctrl == null) {
+                $scrlctrl = new ScrollCtrl($display);
+            }
+            $scrlctrl.scroll(selectedElm);
         }
     }
     TextAdv.go = go;
@@ -221,9 +225,9 @@ var TextAdv;
         }
     }
     var ScrollCtrl = (function () {
-        function ScrollCtrl(display, selectedElm) {
+        function ScrollCtrl(display) {
             var _this = this;
-            this.scroll = function () {
+            this.scrolling = function () {
                 if (_this.base == null || _this.selectedElm == null) {
                     return;
                 }
@@ -235,17 +239,18 @@ var TextAdv;
                     else {
                         _this.base.scrollTop = _this.base.scrollTop + _this.dy;
                     }
-                    _this.timer = setTimeout(_this.scroll, _this.interval);
+                    _this.timer = setTimeout(_this.scrolling, _this.interval);
                     _this.lastTop = rect.top;
                     return;
                 }
                 clearTimeout(_this.timer);
+                _this.selectedElm = null;
             };
             this.timer = 0;
             this.interval = 5;
             this.dy = 10;
             this.base = display;
-            this.selectedElm = selectedElm;
+            this.selectedElm = null;
             this.lastTop = 0;
             while (this.base.style.height == '') {
                 if (this.base.tagName == 'BODY') {
@@ -259,9 +264,13 @@ var TextAdv;
                     this.base = elm;
                 }
             }
+        }
+        ScrollCtrl.prototype.scroll = function (selectedElm) {
+            this.selectedElm = selectedElm;
             var rect = this.selectedElm.getBoundingClientRect();
             this.lastTop = rect.top + 1;
-        }
+            this.scrolling();
+        };
         return ScrollCtrl;
     }());
 })(TextAdv || (TextAdv = {}));
