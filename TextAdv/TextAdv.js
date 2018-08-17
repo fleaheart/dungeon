@@ -127,10 +127,10 @@ var TextAdv;
             if (sceneElm != null) {
                 sceneElm.id.match(/^sc(\d+)$/);
                 step = +RegExp.$1;
-                var linkElms = new Array();
-                pickupElements(sceneElm, 'link', linkElms);
-                for (var i_1 = 0; i_1 < linkElms.length; i_1++) {
-                    linkElms[i_1].style.color = $linkColor;
+                var linkElms_1 = new Array();
+                pickupElements(sceneElm, 'link', linkElms_1);
+                for (var i_1 = 0; i_1 < linkElms_1.length; i_1++) {
+                    linkElms_1[i_1].style.color = $linkColor;
                 }
                 selectedElm.style.color = $selectColor;
             }
@@ -146,34 +146,34 @@ var TextAdv;
         }
         var scene = $scenes[idx];
         step++;
-        var sceneDiv = null;
+        var sceneDiv;
         if ($mode == TextAdv.MODE_MAKIMONO) {
-            var elementId = 'sc' + step;
-            var div = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
-            var r = document.createRange();
-            r.selectNode($display);
-            $display.appendChild(r.createContextualFragment(div));
-            sceneDiv = document.getElementById(elementId);
+            sceneDiv = document.createElement('DIV');
+            sceneDiv.id = 'sc' + step;
+            sceneDiv.className = 'scene';
+            sceneDiv.innerHTML = scene.html;
+            $display.appendChild(sceneDiv);
         }
         else if ($mode == TextAdv.MODE_KAMISHIBAI) {
             $display.innerHTML = scene.html;
             sceneDiv = $display;
         }
-        if (sceneDiv != null) {
-            var linkElms = new Array();
-            pickupElements(sceneDiv, 'link', linkElms);
-            for (var i_2 = 0, len = linkElms.length; i_2 < len; i_2++) {
-                var linkElm = linkElms[i_2];
-                if (linkElm.className == 'link') {
-                    linkElm.style.color = 'blue';
-                    linkElm.style.textDecoration = 'underline';
-                    linkElm.style.cursor = 'pointer';
-                    (function (toIdx, linkElm) {
-                        linkElm.addEventListener('click', function () {
-                            go(toIdx, linkElm);
-                        });
-                    })(scene.links[i_2].toIdx, linkElm);
-                }
+        else {
+            throw 'unreachable';
+        }
+        var linkElms = new Array();
+        pickupElements(sceneDiv, 'link', linkElms);
+        for (var i_2 = 0, len = linkElms.length; i_2 < len; i_2++) {
+            var linkElm = linkElms[i_2];
+            if (linkElm.className == 'link') {
+                linkElm.style.color = 'blue';
+                linkElm.style.textDecoration = 'underline';
+                linkElm.style.cursor = 'pointer';
+                (function (toIdx, linkElm) {
+                    linkElm.addEventListener('click', function () {
+                        go(toIdx, linkElm);
+                    });
+                })(scene.links[i_2].toIdx, linkElm);
             }
         }
         if (scene.title != null) {

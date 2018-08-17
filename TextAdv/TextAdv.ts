@@ -185,39 +185,37 @@ namespace TextAdv {
 
         // HTML化
         step++;
-        let sceneDiv: HTMLElement | null = null;
+        let sceneDiv: HTMLElement;
         if ($mode == MODE_MAKIMONO) {
-            // HTMLとしてdivを作成し終端に取り付ける
-            let elementId = 'sc' + step;
-            let div: string = '<div id="' + elementId + '" class="scene">' + scene.html + '</div><p>';
-            let r = document.createRange();
-            r.selectNode($display);
-            $display.appendChild(r.createContextualFragment(div));
-            sceneDiv = document.getElementById(elementId);
-
+            // divを作成し終端に取り付ける
+            sceneDiv = document.createElement('DIV');
+            sceneDiv.id = 'sc' + step;
+            sceneDiv.className = 'scene';
+            sceneDiv.innerHTML = scene.html;
+            $display.appendChild(sceneDiv);
         } else if ($mode == MODE_KAMISHIBAI) {
             // 中身を取り替える
             $display.innerHTML = scene.html;
             sceneDiv = $display;
+        } else {
+            throw 'unreachable';
         }
 
-        if (sceneDiv != null) {
-            let linkElms = new Array<HTMLElement>();
-            pickupElements(sceneDiv, 'link', linkElms);
+        let linkElms = new Array<HTMLElement>();
+        pickupElements(sceneDiv, 'link', linkElms);
 
-            for (let i = 0, len: number = linkElms.length; i < len; i++) {
-                let linkElm: HTMLElement = linkElms[i];
-                if (linkElm.className == 'link') {
-                    linkElm.style.color = 'blue';
-                    linkElm.style.textDecoration = 'underline';
-                    linkElm.style.cursor = 'pointer';
+        for (let i = 0, len: number = linkElms.length; i < len; i++) {
+            let linkElm: HTMLElement = linkElms[i];
+            if (linkElm.className == 'link') {
+                linkElm.style.color = 'blue';
+                linkElm.style.textDecoration = 'underline';
+                linkElm.style.cursor = 'pointer';
 
-                    ((toIdx: number, linkElm: HTMLElement): void => {
-                        linkElm.addEventListener('click', (): void => {
-                            go(toIdx, linkElm);
-                        });
-                    })(scene.links[i].toIdx, linkElm);
-                }
+                ((toIdx: number, linkElm: HTMLElement): void => {
+                    linkElm.addEventListener('click', (): void => {
+                        go(toIdx, linkElm);
+                    });
+                })(scene.links[i].toIdx, linkElm);
             }
         }
 
@@ -237,7 +235,7 @@ namespace TextAdv {
             if ($scrlctrl == null) {
                 $scrlctrl = new ScrollCtrl($display);
             }
-    
+
             $scrlctrl.scroll(selectedElm);
         }
     }
