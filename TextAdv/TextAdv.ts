@@ -3,17 +3,25 @@ namespace TextAdv {
     export const MODE_MAKIMONO: DisplyMode = 'makimono';
     export const MODE_KAMISHIBAI: DisplyMode = 'kamishibai';
 
-    class Link {
-        linkNo: number;
-        toIdx: number;
+    export class Link {
+        linkNo: number = 0;
+        toIdx: number = 0;
+
+        constructor(linkNo: number, toIdx: number) {
+            this.linkNo = linkNo;
+            this.toIdx = toIdx;
+        }
     }
 
-    class Scene {
-        idx: number;
-        text: string;
-        title: string;
-        html: string;
-        links: Array<Link>;
+    export class Scene {
+        idx: number = 0;
+        text: string = '';
+        title: string = '';
+        html: string = '';
+        links: Array<Link> = new Array<Link>();
+        // 妥当性用
+        checked: boolean = false;
+        steps: Array<number> = new Array<number>();
     }
 
     let $linkColor: string = 'blue';
@@ -26,7 +34,7 @@ namespace TextAdv {
     let $scenes: Array<Scene>;
     let $scrlctrl: ScrollCtrl | null = null;
 
-    function analize(source: string): Array<Scene> {
+    export function analize(source: string): Array<Scene> {
         let scenes: Array<Scene> = new Array<Scene>();
 
         let result: string = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -93,7 +101,7 @@ namespace TextAdv {
                     let link: string = ' <span class="link">' + msg + '</span>';
 
                     blockHTMLs.push(link);
-                    links.push({ linkNo, toIdx });
+                    links.push(new Link(linkNo, toIdx));
                 }
             } else {
                 // 「それ以外」
@@ -109,7 +117,7 @@ namespace TextAdv {
                     let link: string = ' <span class="link">' + msg + '</span>';
 
                     block = block.replace(regYajirushiOnly, link);
-                    links.push({ linkNo, toIdx });
+                    links.push(new Link(linkNo, toIdx));
                 }
 
                 block = block.replace(/⇒ /g, '→ ');
@@ -141,8 +149,10 @@ namespace TextAdv {
     }
 
     export function start(): void {
-        $display.innerHTML = '';
-        go(0);
+        if ($scenes[0] != undefined) {
+            $display.innerHTML = '';
+            go(0);
+        }
     }
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
@@ -338,6 +348,148 @@ namespace TextAdv {
             clearTimeout(this.timer);
             this.selectedElm = null;
         }
+    }
+
+    // ソース妥当性チェック部
+    class CheckSourceResult {
+        log: string = '';
+        mugenStopper: number = 0;
+        sceneCount: number = 0;
+        maxIdx: number = 0;
+        nukeIdxs: Array<number> = new Array<number>();
+        existsStartScene: boolean = false;
+        errorMessages: Array<string> = new Array<string>();
+
+        logging(text: string): void {
+            this.log += text;
+        }
+    }
+    export let $result: CheckSourceResult = new CheckSourceResult();
+
+    export function checkSource(source: string) {
+        $result = new CheckSourceResult();
+
+        let analyzeScenes = analize(source);
+
+        // undefinedをつめる
+        let scenes = new Array<Scene>();
+        analyzeScenes.forEach(scene => {
+            if (scene != undefined) {
+                $result.sceneCount++;
+                let idx: number = scene.idx;
+                if ($result.maxIdx < idx) {
+                    $result.maxIdx = idx;
+                }
+                scenes.push(scene);
+            }
+        });
+
+        scenes.sort((a: Scene, b: Scene): number => { return a.idx - b.idx; });
+
+        $result.logging('シーン数: ' + $result.sceneCount + ' (' + analyzeScenes.length + ', ' + scenes.length + ')<br>');
+        $result.logging('最大シーンインデックス: ' + $result.maxIdx + '<br>');
+
+        $result.logging('シーンインデックス:');
+        let nukeCheckIdx = 0;
+        for (let i = 0, len: number = scenes.length; i < len; i++) {
+            let scene: Scene = scenes[i];
+            $result.logging(' ' + scene.idx);
+            if (scene.idx == 0) {
+                $result.existsStartScene = true;
+            }
+            while (nukeCheckIdx < scene.idx) {
+                $result.nukeIdxs.push(nukeCheckIdx);
+                nukeCheckIdx++
+            }
+            nukeCheckIdx++;
+        }
+        $result.logging('<br>');
+        $result.logging('インデックス抜け: ' + $result.nukeIdxs + '<br>');
+
+        if ($result.existsStartScene) {
+            let steps = new Array<number>();
+            checkScene(scenes, 0, steps);
+            $result.logging(' 無限ストッパーカウント: ' + $result.mugenStopper + '<br>');
+        } else {
+            $result.logging('スタートシーン[0]が存在しません<br>');
+            $result.errorMessages.push('スタートシーン[0]が存在しません');
+        }
+
+        scenes.forEach(scene => {
+            if (!scene.checked) {
+                $result.errorMessages.push('シーン[' + scene.idx + ']はどこからも呼び出されていません');
+            }
+        });
+
+        $result.errorMessages.forEach(message => {
+            $result.logging(message + '<br>');
+        });
+    }
+
+    function checkScene(scenes: Array<Scene>, idx: number, steps: Array<number>) {
+        if (10000 < $result.mugenStopper) { return; } $result.mugenStopper++;
+
+        steps.push(idx);
+
+        let scene: Scene | null = pickupScene(scenes, idx);
+        if (scene == null) {
+            $result.logging('シーン[' + idx + ']はみつからないのにチェックしようとしました<br>');
+            $result.errorMessages.push('シーン[' + idx + ']はみつからないのにチェックしようとしました');
+            return;
+        }
+
+        scene.steps = steps;
+
+        for (let j = 0, jlen: number = scene.links.length; j < jlen; j++) {
+            let link: Link = scene.links[j];
+            let toIdx = link.toIdx;
+            $result.logging(scene.steps + ' →[' + toIdx + ']');
+
+            let toScene: Scene | null = pickupScene(scenes, toIdx);
+
+            if (toScene == null) {
+                $result.logging(' リンク先がみつかりません<br>');
+                $result.errorMessages.push('シーン[' + scene.idx + ']のリンク先[' + link.toIdx + ']がみつかりません');
+            } else {
+                if (!toScene.checked) {
+                    let hit = false;
+                    for (let i = 0, len: number = steps.length; i < len; i++) {
+                        if (steps[i] == toIdx) {
+                            $result.logging(' 無限ループを検出しました');
+                            $result.errorMessages.push('シーン[' + scene.idx + ']のリンク（→' + link.toIdx + '）はここまでの到達ステップ(' + scene.steps + ')のいずれかに戻ります');
+                            hit = true;
+                            break;
+                        }
+                    }
+                    $result.logging('<br>');
+                    if (!hit) {
+                        checkScene(scenes, toIdx, arrayClone(steps));
+                    }
+                } else {
+                    $result.logging(' チェック済です<br>');
+                }
+            }
+        }
+
+        scene.checked = true;
+    }
+
+    function pickupScene(scenes: Array<Scene>, idx: number): Scene | null {
+        for (let i = 0, len = scenes.length; i < len; i++) {
+            let scene: Scene = scenes[i];
+            if (scene != undefined && scene.idx == idx) {
+                return scene;
+            }
+        }
+        return null;
+    }
+
+    function arrayClone<T>(array: Array<T>): Array<T> {
+        let cloneArray = new Array<T>();
+        array.forEach(value => {
+            cloneArray.push(value);
+        });
+        return cloneArray;
     }
 }
 

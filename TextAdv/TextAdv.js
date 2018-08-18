@@ -3,15 +3,28 @@ var TextAdv;
     TextAdv.MODE_MAKIMONO = 'makimono';
     TextAdv.MODE_KAMISHIBAI = 'kamishibai';
     var Link = (function () {
-        function Link() {
+        function Link(linkNo, toIdx) {
+            this.linkNo = 0;
+            this.toIdx = 0;
+            this.linkNo = linkNo;
+            this.toIdx = toIdx;
         }
         return Link;
     }());
+    TextAdv.Link = Link;
     var Scene = (function () {
         function Scene() {
+            this.idx = 0;
+            this.text = '';
+            this.title = '';
+            this.html = '';
+            this.links = new Array();
+            this.checked = false;
+            this.steps = new Array();
         }
         return Scene;
     }());
+    TextAdv.Scene = Scene;
     var $linkColor = 'blue';
     var $selectColor = 'red';
     var $trace = new Array();
@@ -44,6 +57,7 @@ var TextAdv;
         }
         return scenes;
     }
+    TextAdv.analize = analize;
     function analizeScene(idx, text) {
         var scene = new Scene();
         scene.idx = idx;
@@ -67,7 +81,7 @@ var TextAdv;
                     var linkNo = linkCount;
                     var link = ' <span class="link">' + msg + '</span>';
                     blockHTMLs.push(link);
-                    links.push({ linkNo: linkNo, toIdx: toIdx });
+                    links.push(new Link(linkNo, toIdx));
                 }
             }
             else {
@@ -82,7 +96,7 @@ var TextAdv;
                     var linkNo = linkCount;
                     var link = ' <span class="link">' + msg + '</span>';
                     block = block.replace(regYajirushiOnly, link);
-                    links.push({ linkNo: linkNo, toIdx: toIdx });
+                    links.push(new Link(linkNo, toIdx));
                 }
                 block = block.replace(/⇒ /g, '→ ');
                 blockHTMLs.push(block);
@@ -110,8 +124,10 @@ var TextAdv;
     }
     TextAdv.initialize = initialize;
     function start() {
-        $display.innerHTML = '';
-        go(0);
+        if ($scenes[0] != undefined) {
+            $display.innerHTML = '';
+            go(0);
+        }
     }
     TextAdv.start = start;
     function go(idx, selectedElm) {
@@ -278,6 +294,135 @@ var TextAdv;
         };
         return ScrollCtrl;
     }());
+    var CheckSourceResult = (function () {
+        function CheckSourceResult() {
+            this.log = '';
+            this.mugenStopper = 0;
+            this.sceneCount = 0;
+            this.maxIdx = 0;
+            this.nukeIdxs = new Array();
+            this.existsStartScene = false;
+            this.errorMessages = new Array();
+        }
+        CheckSourceResult.prototype.logging = function (text) {
+            this.log += text;
+        };
+        return CheckSourceResult;
+    }());
+    TextAdv.$result = new CheckSourceResult();
+    function checkSource(source) {
+        TextAdv.$result = new CheckSourceResult();
+        var analyzeScenes = analize(source);
+        var scenes = new Array();
+        analyzeScenes.forEach(function (scene) {
+            if (scene != undefined) {
+                TextAdv.$result.sceneCount++;
+                var idx = scene.idx;
+                if (TextAdv.$result.maxIdx < idx) {
+                    TextAdv.$result.maxIdx = idx;
+                }
+                scenes.push(scene);
+            }
+        });
+        scenes.sort(function (a, b) { return a.idx - b.idx; });
+        TextAdv.$result.logging('シーン数: ' + TextAdv.$result.sceneCount + ' (' + analyzeScenes.length + ', ' + scenes.length + ')<br>');
+        TextAdv.$result.logging('最大シーンインデックス: ' + TextAdv.$result.maxIdx + '<br>');
+        TextAdv.$result.logging('シーンインデックス:');
+        var nukeCheckIdx = 0;
+        for (var i = 0, len = scenes.length; i < len; i++) {
+            var scene = scenes[i];
+            TextAdv.$result.logging(' ' + scene.idx);
+            if (scene.idx == 0) {
+                TextAdv.$result.existsStartScene = true;
+            }
+            while (nukeCheckIdx < scene.idx) {
+                TextAdv.$result.nukeIdxs.push(nukeCheckIdx);
+                nukeCheckIdx++;
+            }
+            nukeCheckIdx++;
+        }
+        TextAdv.$result.logging('<br>');
+        TextAdv.$result.logging('インデックス抜け: ' + TextAdv.$result.nukeIdxs + '<br>');
+        if (TextAdv.$result.existsStartScene) {
+            var steps = new Array();
+            checkScene(scenes, 0, steps);
+            TextAdv.$result.logging(' 無限ストッパーカウント: ' + TextAdv.$result.mugenStopper + '<br>');
+        }
+        else {
+            TextAdv.$result.logging('スタートシーン[0]が存在しません<br>');
+            TextAdv.$result.errorMessages.push('スタートシーン[0]が存在しません');
+        }
+        scenes.forEach(function (scene) {
+            if (!scene.checked) {
+                TextAdv.$result.errorMessages.push('シーン[' + scene.idx + ']はどこからも呼び出されていません');
+            }
+        });
+        TextAdv.$result.errorMessages.forEach(function (message) {
+            TextAdv.$result.logging(message + '<br>');
+        });
+    }
+    TextAdv.checkSource = checkSource;
+    function checkScene(scenes, idx, steps) {
+        if (10000 < TextAdv.$result.mugenStopper) {
+            return;
+        }
+        TextAdv.$result.mugenStopper++;
+        steps.push(idx);
+        var scene = pickupScene(scenes, idx);
+        if (scene == null) {
+            TextAdv.$result.logging('シーン[' + idx + ']はみつからないのにチェックしようとしました<br>');
+            TextAdv.$result.errorMessages.push('シーン[' + idx + ']はみつからないのにチェックしようとしました');
+            return;
+        }
+        scene.steps = steps;
+        for (var j = 0, jlen = scene.links.length; j < jlen; j++) {
+            var link = scene.links[j];
+            var toIdx = link.toIdx;
+            TextAdv.$result.logging(scene.steps + ' →[' + toIdx + ']');
+            var toScene = pickupScene(scenes, toIdx);
+            if (toScene == null) {
+                TextAdv.$result.logging(' リンク先がみつかりません<br>');
+                TextAdv.$result.errorMessages.push('シーン[' + scene.idx + ']のリンク先[' + link.toIdx + ']がみつかりません');
+            }
+            else {
+                if (!toScene.checked) {
+                    var hit = false;
+                    for (var i = 0, len = steps.length; i < len; i++) {
+                        if (steps[i] == toIdx) {
+                            TextAdv.$result.logging(' 無限ループを検出しました');
+                            TextAdv.$result.errorMessages.push('シーン[' + scene.idx + ']のリンク（→' + link.toIdx + '）はここまでの到達ステップ(' + scene.steps + ')のいずれかに戻ります');
+                            hit = true;
+                            break;
+                        }
+                    }
+                    TextAdv.$result.logging('<br>');
+                    if (!hit) {
+                        checkScene(scenes, toIdx, arrayClone(steps));
+                    }
+                }
+                else {
+                    TextAdv.$result.logging(' チェック済です<br>');
+                }
+            }
+        }
+        scene.checked = true;
+    }
+    function pickupScene(scenes, idx) {
+        for (var i = 0, len = scenes.length; i < len; i++) {
+            var scene = scenes[i];
+            if (scene != undefined && scene.idx == idx) {
+                return scene;
+            }
+        }
+        return null;
+    }
+    function arrayClone(array) {
+        var cloneArray = new Array();
+        array.forEach(function (value) {
+            cloneArray.push(value);
+        });
+        return cloneArray;
+    }
 })(TextAdv || (TextAdv = {}));
 window.addEventListener('load', function () {
     var displayElm = document.getElementById('display');

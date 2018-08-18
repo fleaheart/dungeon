@@ -18,13 +18,19 @@ window.addEventListener('load', function () {
         TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
     });
+    document.getElementById('checkBtn').addEventListener('click', function() {
+        var sourceElm = document.getElementById('source');
+        TextAdv.checkSource(sourceElm.value);
+        document.getElementById('display').innerHTML = TextAdv.$result.log;
+    });
 });
 </script>
 <body>
 
 <textarea id="source" rows="8" cols="60"></textarea>
 <hr>
-<button id="testBtn">テスト</button><br>
+<button id="testBtn">テスト</button>
+<button id="checkBtn">チェック</button>
 <hr>
 <div id="display" style="width:800px;border: solid 1px black;">
 </div>
