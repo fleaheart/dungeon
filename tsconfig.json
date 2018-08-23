@@ -2,11 +2,18 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "commonjs",
-        "noImplicitAny": true,
+        "strict": true,
+        "alwaysStrict": true, // strict
+        "forceConsistentCasingInFileNames": true,
+        "keyofStringsOnly": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true, // strict
         "noImplicitReturns": true,
+        "noImplicitThis": true, // strict
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "strictNullChecks": true,
-        "sourceMap": true
+        "strictFunctionTypes": true, // strict
+        "strictNullChecks": true, // strict
+        "strictPropertyInitialization": true // strict
     }
 }
