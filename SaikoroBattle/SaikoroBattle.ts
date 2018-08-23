@@ -360,7 +360,7 @@ namespace SaikoroBattle {
 		readonly name: string = 'ActionSetTask';
 		mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-		private actionList: Array<Action>;
+		private actionList: Array<Action> = new Array<Action>();
 		private tasks = new Task.ParallelTasks();
 
 		constructor(gameStatus: GameStatus) {

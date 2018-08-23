@@ -133,6 +133,7 @@ var Aao;
     var GameInitter = (function () {
         function GameInitter() {
             this.start_field = 'no define';
+            this.player = null;
             this.start_x = 0;
             this.start_y = 0;
             this.start_muki = null;
@@ -379,11 +380,11 @@ var Aao;
         keyboard.setKeyEvent('mouseup', keyboardMouseup);
         keyboard.setKeytops([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
     }
-    function keyboardMousedown(e) {
-        var key = Kyoutsu.getKeytop(e.target);
+    function keyboardMousedown(evt) {
+        var key = Kyoutsu.getKeytop(evt.target);
         documentKeydown(key);
     }
-    function keyboardMouseup() {
+    function keyboardMouseup(_evt) {
         documentKeyup(0);
     }
     var GameStatus = (function () {

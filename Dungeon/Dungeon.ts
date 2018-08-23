@@ -83,8 +83,8 @@ namespace Dungeon {
 	}
 
 	class Character {
-		xpos: number;
-		ypos: number;
+		xpos: number = 0;
+		ypos: number = 0;
 		muki: Muki = new Muki_N();
 	}
 

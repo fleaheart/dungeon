@@ -185,7 +185,7 @@ namespace Aao {
 
 	class GameInitter implements Initter {
 		start_field: string = 'no define';
-		player: Character | null;
+		player: Character | null = null;
 		start_x: number = 0;
 		start_y: number = 0;
 		start_muki: Muki | null = null;
@@ -475,12 +475,12 @@ namespace Aao {
 		keyboard.setKeytops([' ', 'w', ' ', 'a', 's', 'd', ' ', 'Escape', ' ']);
 	}
 
-	function keyboardMousedown(e: MouseEvent): void {
-		let key = Kyoutsu.getKeytop(e.target);
+	function keyboardMousedown(evt: Event): void {
+		let key = Kyoutsu.getKeytop(evt.target);
 		documentKeydown(key);
 	}
 
-	function keyboardMouseup() {
+	function keyboardMouseup(_evt: Event): void {
 		documentKeyup(0);
 	}
 

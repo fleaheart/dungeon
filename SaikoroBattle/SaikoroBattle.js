@@ -275,6 +275,7 @@ var SaikoroBattle;
         function ActionSetTask(gameStatus) {
             this.name = 'ActionSetTask';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.actionList = new Array();
             this.tasks = new Task.ParallelTasks();
             for (var i = 0, len = gameStatus.players.length; i < len; i++) {
                 var player = gameStatus.players[i];

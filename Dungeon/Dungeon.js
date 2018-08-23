@@ -77,6 +77,8 @@ var Dungeon;
     }
     var Character = (function () {
         function Character() {
+            this.xpos = 0;
+            this.ypos = 0;
             this.muki = new Muki_N();
         }
         return Character;
