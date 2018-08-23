@@ -1,3 +1,4 @@
+"use strict";
 var Kyoutsu;
 (function (Kyoutsu) {
     function getElementById(elementId) {

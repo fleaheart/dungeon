@@ -1,3 +1,4 @@
+"use strict";
 var SaikoroBattle;
 (function (SaikoroBattle) {
     var _message = new Kyoutsu.Message();

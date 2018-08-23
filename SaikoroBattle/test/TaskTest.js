@@ -1,3 +1,4 @@
+"use strict";
 var TaskTest;
 (function (TaskTest) {
     function getElementById(elementId) {

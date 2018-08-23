@@ -1,3 +1,4 @@
+"use strict";
 var Dungeon;
 (function (Dungeon) {
     function getParentElement(e, className) {

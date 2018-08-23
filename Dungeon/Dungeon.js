@@ -1,3 +1,4 @@
+"use strict";
 var Dungeon;
 (function (Dungeon) {
     var $kabex = [0, 40, 114, 155, 180];

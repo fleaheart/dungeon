@@ -1,3 +1,4 @@
+"use strict";
 var Task;
 (function (Task) {
     var TaskCtrl = (function () {

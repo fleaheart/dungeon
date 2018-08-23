@@ -1,3 +1,4 @@
+"use strict";
 var TextAdv;
 (function (TextAdv) {
     TextAdv.MODE_MAKIMONO = 'makimono';

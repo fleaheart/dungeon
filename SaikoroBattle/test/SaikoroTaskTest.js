@@ -1,3 +1,4 @@
+"use strict";
 var SaikoroTaskTest;
 (function (SaikoroTaskTest) {
     function init() {

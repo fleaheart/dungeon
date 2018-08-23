@@ -1,3 +1,4 @@
+"use strict";
 var Aao;
 (function (Aao) {
     var FRAME_TIMING = 16;
