@@ -158,7 +158,7 @@ namespace TextAdv {
             // 選択されたものを赤くする
             let sceneElm: HTMLElement | null = null;
             if ($mode == MODE_MAKIMONO) {
-                sceneElm = searchUpperElement(selectedElm, 'scene');
+                sceneElm = searchParentElement(selectedElm, 'scene');
             } else if ($mode == MODE_KAMISHIBAI) {
                 sceneElm = $display;
             } else {
@@ -259,18 +259,26 @@ namespace TextAdv {
         }
     }
 
-    function searchUpperElement(elm: HTMLElement, className: string): HTMLElement | null {
-        let parent = <HTMLElement>elm.parentNode;
-        if (parent == null) {
-            return null;
-        }
+    /**
+     * Kyoutsu.searchParentElementと一緒
+     */
+    function searchParentElement(target: HTMLElement, className: string): HTMLElement | null {
+		let element: HTMLElement | Node | null = target;
 
-        if (parent.className == className) {
-            return parent;
-        }
+		while (true) {
+			if (element == null) {
+				break;
+			}
+			if (element instanceof HTMLElement) {
+				if (element.classList.contains(className)) {
+					return element;
+				}
+			}
+			element = element.parentNode;
+		}
 
-        return searchUpperElement(parent, className);
-    }
+		return null;
+	}
 
     function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
         let childElms: NodeList = parentElm.childNodes;

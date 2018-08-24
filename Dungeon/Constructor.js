@@ -1,23 +1,6 @@
 "use strict";
 var Dungeon;
 (function (Dungeon) {
-    function getParentElement(e, className) {
-        var target = e.target;
-        if (target == null) {
-            return null;
-        }
-        var element = target;
-        while (true) {
-            if (element == null) {
-                break;
-            }
-            if (element.classList.contains(className)) {
-                return element;
-            }
-            element = element.parentNode;
-        }
-        return null;
-    }
     var ippen = 36;
     function constructor_init() {
         Kyoutsu.getElementById('refresh').addEventListener('click', refresh);
@@ -57,7 +40,7 @@ var Dungeon;
         Dungeon.mapview(div_map, _mapdata, '');
     }
     function selectKukaku(e) {
-        var element = getParentElement(e, 'kukaku');
+        var element = Kyoutsu.searchParentElement(e.target, 'kukaku');
         if (element == null) {
             return;
         }

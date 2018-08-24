@@ -1,23 +1,5 @@
 namespace Dungeon {
 
-	function getParentElement(e: Event, className: string): HTMLElement | null {
-		let target: EventTarget | null = e.target;
-		if (target == null) {
-			return null;
-		}
-		let element: HTMLElement | Node | null = <HTMLElement>target;
-		while (true) {
-			if (element == null) {
-				break;
-			}
-			if ((<HTMLElement>element).classList.contains(className)) {
-				return <HTMLElement>element;
-			}
-			element = element.parentNode;
-		}
-		return null;
-	}
-
 	const ippen = 36;
 
 	export function constructor_init(): void {
@@ -72,7 +54,7 @@ namespace Dungeon {
 	}
 
 	function selectKukaku(e: MouseEvent): void {
-		let element: HTMLElement | null = getParentElement(e, 'kukaku');
+		let element: HTMLElement | null = Kyoutsu.searchParentElement(<HTMLElement>e.target, 'kukaku');
 		if (element == null) {
 			return;
 		}

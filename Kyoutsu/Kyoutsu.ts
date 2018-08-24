@@ -8,6 +8,27 @@ namespace Kyoutsu {
 		return elm;
 	}
 
+	/**
+	 * クラス名を持つ親エレメントをさがす
+	 */
+	export function searchParentElement(target: HTMLElement, className: string): HTMLElement | null {
+		let element: HTMLElement | Node | null = target;
+
+		while (true) {
+			if (element == null) {
+				break;
+			}
+			if (element instanceof HTMLElement) {
+				if (element.classList.contains(className)) {
+					return element;
+				}
+			}
+			element = element.parentNode;
+		}
+
+		return null;
+	}
+
 	export class Message {
 		board: HTMLDivElement | undefined = undefined;
 
@@ -152,17 +173,7 @@ namespace Kyoutsu {
 	}
 
 	export function getKeytop(target: EventTarget | HTMLElement | null): string {
-		let element: HTMLElement | Node | null = <HTMLElement>target;
-
-		while (true) {
-			if (element == null) {
-				break;
-			}
-			if ((<HTMLElement>element).classList.contains('sofwareKey')) {
-				break;
-			}
-			element = element.parentNode;
-		}
+		let element: HTMLElement | null = searchParentElement(<HTMLElement>target, 'sofwareKey');
 		if (element == null) {
 			return '';
 		}

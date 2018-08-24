@@ -9,6 +9,22 @@ var Kyoutsu;
         return elm;
     }
     Kyoutsu.getElementById = getElementById;
+    function searchParentElement(target, className) {
+        var element = target;
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element instanceof HTMLElement) {
+                if (element.classList.contains(className)) {
+                    return element;
+                }
+            }
+            element = element.parentNode;
+        }
+        return null;
+    }
+    Kyoutsu.searchParentElement = searchParentElement;
     var Message = (function () {
         function Message() {
             var _this = this;
@@ -141,16 +157,7 @@ var Kyoutsu;
     }());
     Kyoutsu.Keyboard = Keyboard;
     function getKeytop(target) {
-        var element = target;
-        while (true) {
-            if (element == null) {
-                break;
-            }
-            if (element.classList.contains('sofwareKey')) {
-                break;
-            }
-            element = element.parentNode;
-        }
+        var element = searchParentElement(target, 'sofwareKey');
         if (element == null) {
             return '';
         }

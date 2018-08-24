@@ -133,7 +133,7 @@ var TextAdv;
         if (selectedElm != undefined) {
             var sceneElm = null;
             if ($mode == TextAdv.MODE_MAKIMONO) {
-                sceneElm = searchUpperElement(selectedElm, 'scene');
+                sceneElm = searchParentElement(selectedElm, 'scene');
             }
             else if ($mode == TextAdv.MODE_KAMISHIBAI) {
                 sceneElm = $display;
@@ -221,15 +221,20 @@ var TextAdv;
         }
     }
     TextAdv.back = back;
-    function searchUpperElement(elm, className) {
-        var parent = elm.parentNode;
-        if (parent == null) {
-            return null;
+    function searchParentElement(target, className) {
+        var element = target;
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element instanceof HTMLElement) {
+                if (element.classList.contains(className)) {
+                    return element;
+                }
+            }
+            element = element.parentNode;
         }
-        if (parent.className == className) {
-            return parent;
-        }
-        return searchUpperElement(parent, className);
+        return null;
     }
     function pickupElements(parentElm, className, pickupElms) {
         var childElms = parentElm.childNodes;
