@@ -6,11 +6,6 @@ namespace Dungeon {
 	let $SCREEN_WIDTH: number = 400;
 	let $SCREEN_HEIGHT: number = 300;
 
-	interface XY {
-		x: number;
-		y: number;
-	}
-
 	type MukiType = 'n' | 'e' | 's' | 'w';
 	type MukiChr = '↑' | '→' | '↓' | '←';
 
@@ -19,7 +14,8 @@ namespace Dungeon {
 		mukiType: MukiType;
 		mukiChr: MukiChr;
 		bit: number;
-		nextXY: XY;
+		nextX: number;
+		nextY: number;
 	}
 
 	class Muki_N implements Muki {
@@ -27,7 +23,8 @@ namespace Dungeon {
 		readonly mukiType: MukiType = 'n';
 		readonly mukiChr: MukiChr = '↑';
 		readonly bit: number = Kyoutsu.BIT_TOP;
-		readonly nextXY: XY = { x: 0, y: -1 };
+		readonly nextX: number = 0;
+		readonly nextY: number = -1;
 	}
 	let muki_n = new Muki_N();
 
@@ -36,7 +33,8 @@ namespace Dungeon {
 		readonly mukiType: MukiType = 'e';
 		readonly mukiChr: MukiChr = '→';
 		readonly bit: number = Kyoutsu.BIT_RIGHT;
-		readonly nextXY: XY = { x: 1, y: 0 };
+		readonly nextX: number = 1;
+		readonly nextY: number = 0;
 	}
 	let muki_e = new Muki_E();
 
@@ -45,7 +43,8 @@ namespace Dungeon {
 		readonly mukiType: MukiType = 's';
 		readonly mukiChr: MukiChr = '↓';
 		readonly bit: number = Kyoutsu.BIT_BOTTOM;
-		readonly nextXY: XY = { x: 0, y: 1 };
+		readonly nextX: number = 0;
+		readonly nextY: number = 1;
 	}
 	let muki_s = new Muki_S();
 
@@ -54,7 +53,8 @@ namespace Dungeon {
 		readonly mukiType: MukiType = 'w';
 		readonly mukiChr: MukiChr = '←';
 		readonly bit: number = Kyoutsu.BIT_LEFT;
-		readonly nextXY: XY = { x: -1, y: 0 };
+		readonly nextX: number = -1;
+		readonly nextY: number = 0;
 	}
 	let muki_w = new Muki_W();
 	let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
@@ -294,8 +294,8 @@ namespace Dungeon {
 			let ydiff: number = 0;
 
 			let muki: Muki = _gameStatus.player.muki;
-			xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
-			ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
+			xdiff = (kabeType & muki.bit) == 0 ? muki.nextX : 0;
+			ydiff = (kabeType & muki.bit) == 0 ? muki.nextY : 0;
 
 			if (xdiff != 0 || ydiff != 0) {
 				let nakami: HTMLElement;

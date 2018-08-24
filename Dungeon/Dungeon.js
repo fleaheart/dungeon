@@ -11,7 +11,8 @@ var Dungeon;
             this.mukiType = 'n';
             this.mukiChr = '↑';
             this.bit = Kyoutsu.BIT_TOP;
-            this.nextXY = { x: 0, y: -1 };
+            this.nextX = 0;
+            this.nextY = -1;
         }
         return Muki_N;
     }());
@@ -22,7 +23,8 @@ var Dungeon;
             this.mukiType = 'e';
             this.mukiChr = '→';
             this.bit = Kyoutsu.BIT_RIGHT;
-            this.nextXY = { x: 1, y: 0 };
+            this.nextX = 1;
+            this.nextY = 0;
         }
         return Muki_E;
     }());
@@ -33,7 +35,8 @@ var Dungeon;
             this.mukiType = 's';
             this.mukiChr = '↓';
             this.bit = Kyoutsu.BIT_BOTTOM;
-            this.nextXY = { x: 0, y: 1 };
+            this.nextX = 0;
+            this.nextY = 1;
         }
         return Muki_S;
     }());
@@ -44,7 +47,8 @@ var Dungeon;
             this.mukiType = 'w';
             this.mukiChr = '←';
             this.bit = Kyoutsu.BIT_LEFT;
-            this.nextXY = { x: -1, y: 0 };
+            this.nextX = -1;
+            this.nextY = 0;
         }
         return Muki_W;
     }());
@@ -253,8 +257,8 @@ var Dungeon;
             var xdiff = 0;
             var ydiff = 0;
             var muki = _gameStatus.player.muki;
-            xdiff = (kabeType & muki.bit) == 0 ? muki.nextXY.x : 0;
-            ydiff = (kabeType & muki.bit) == 0 ? muki.nextXY.y : 0;
+            xdiff = (kabeType & muki.bit) == 0 ? muki.nextX : 0;
+            ydiff = (kabeType & muki.bit) == 0 ? muki.nextY : 0;
             if (xdiff != 0 || ydiff != 0) {
                 var nakami = void 0;
                 nakami = Kyoutsu.getElementById('nakami[' + _gameStatus.player.xpos + '][' + _gameStatus.player.ypos + ']');
