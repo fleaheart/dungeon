@@ -9,21 +9,21 @@ namespace Kyoutsu {
 	}
 
 	export class Message {
-		board: HTMLDivElement | null = null;
+		board: HTMLDivElement | undefined = undefined;
 
 		set(board: HTMLDivElement): void {
 			this.board = board;
 		}
 
 		clear = (): void => {
-			if (this.board == null) {
+			if (this.board == undefined) {
 				return;
 			}
 			this.board.innerHTML = '';
 		}
 
 		add = (text: string): void => {
-			if (this.board == null) {
+			if (this.board == undefined) {
 				return;
 			}
 			let html = this.board.innerHTML;
@@ -36,7 +36,7 @@ namespace Kyoutsu {
 		}
 
 		writeLine = (text: string): void => {
-			if (this.board == null) {
+			if (this.board == undefined) {
 				return;
 			}
 			let html = this.board.innerHTML;

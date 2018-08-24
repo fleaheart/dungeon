@@ -72,13 +72,13 @@ var Dungeon;
         document.body.appendChild(mover);
         dragStart(e, mover);
     }
-    var _dragObject = null;
+    var _dragObject = undefined;
     var _startTop = 0;
     var _startLeft = 0;
     var _startX = 0;
     var _startY = 0;
     function dragStart(e, element) {
-        if (_dragObject != null) {
+        if (_dragObject != undefined) {
             return;
         }
         _dragObject = element;
@@ -88,7 +88,7 @@ var Dungeon;
         _startY = e.clientY;
     }
     function drag(e) {
-        if (_dragObject == null) {
+        if (_dragObject == undefined) {
             return;
         }
         var x = _startLeft - (_startX - e.clientX);
@@ -97,7 +97,7 @@ var Dungeon;
         _dragObject.style.top = y + 'px';
     }
     function dragStop(e) {
-        if (_dragObject == null) {
+        if (_dragObject == undefined) {
             return;
         }
         var dropx = _startLeft - (_startX - e.clientX);
@@ -134,7 +134,7 @@ var Dungeon;
             Dungeon.mapview(div_map, _mapdata, '');
         }
         document.body.removeChild(_dragObject);
-        _dragObject = null;
+        _dragObject = undefined;
         _startTop = 0;
         _startY = 0;
     }

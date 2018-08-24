@@ -23,7 +23,7 @@ var TaskTest;
     var GameStatus = (function () {
         function GameStatus() {
             this.count = 0;
-            this.gameMode = null;
+            this.gameMode = undefined;
             this.me = -1;
             this.players = [-1, -1, -1, -1, -1, -1, -1];
         }
@@ -123,7 +123,7 @@ var TaskTest;
             this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
-                _this.gameStatus.gameMode = null;
+                _this.gameStatus.gameMode = undefined;
             };
             this.gameStatus = gameStatus;
             var me = gameStatus.me;
@@ -168,7 +168,7 @@ var TaskTest;
         return NaibuTasks;
     }());
     function susumeruGame() {
-        if (_gameStatus.gameMode == null) {
+        if (_gameStatus.gameMode == undefined) {
             _gameStatus.gameMode = new IdleGameMode();
         }
         dbg('susumeruGame :' + _gameStatus.gameMode.name);
@@ -293,7 +293,7 @@ var TaskTest;
         return KougekiJunjoHandanMode;
     }());
     function susumeruGame2() {
-        if (_gameStatus.gameMode == null) {
+        if (_gameStatus.gameMode == undefined) {
             _gameStatus.gameMode = new IdleGameMode();
         }
         dbg('susumeruGame1 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');

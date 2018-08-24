@@ -13,7 +13,7 @@ namespace SaikoroBattle {
 	let _gameDeifine = new GameDeifine();
 
 	class GameStatus {
-		gameMode: GameMode | null = null;
+		gameMode: GameMode | undefined = undefined;
 		players: Array<Player> = new Array<Player>();
 		actionStack: Array<number> = new Array<number>();
 		attacker: Player = NullCharacter;
@@ -298,7 +298,7 @@ namespace SaikoroBattle {
 	}
 
 	export function susumeruGame() {
-		if (_gameStatus.gameMode == null) {
+		if (_gameStatus.gameMode == undefined) {
 			_gameStatus.gameMode = new InitGameMode(_gameStatus);
 		}
 

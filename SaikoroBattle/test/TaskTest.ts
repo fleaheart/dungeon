@@ -23,7 +23,7 @@ namespace TaskTest {
 
 	class GameStatus {
 		public count: number = 0;
-		public gameMode: GameMode | null = null;
+		public gameMode: GameMode | undefined = undefined;
 		public me: number = -1;
 		public players: Array<any> = [-1, -1, -1, -1, -1, -1, -1];
 	}
@@ -183,7 +183,7 @@ namespace TaskTest {
 
 		public finish = (): void => {
 			Task.TaskCtrl.finish(this);
-			this.gameStatus.gameMode = null;
+			this.gameStatus.gameMode = undefined;
 		}
 
 	}
@@ -224,7 +224,7 @@ namespace TaskTest {
 	}
 
 	function susumeruGame() {
-		if (_gameStatus.gameMode == null) {
+		if (_gameStatus.gameMode == undefined) {
 			_gameStatus.gameMode = new IdleGameMode();
 		}
 		dbg('susumeruGame :' + _gameStatus.gameMode.name);
@@ -375,7 +375,7 @@ namespace TaskTest {
 	}
 
 	function susumeruGame2() {
-		if (_gameStatus.gameMode == null) {
+		if (_gameStatus.gameMode == undefined) {
 			_gameStatus.gameMode = new IdleGameMode();
 		}
 		dbg('susumeruGame1 :' + _gameStatus.gameMode.name + ' (' + _gameStatus.gameMode.mode + ')');

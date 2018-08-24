@@ -12,15 +12,15 @@ var Kyoutsu;
     var Message = (function () {
         function Message() {
             var _this = this;
-            this.board = null;
+            this.board = undefined;
             this.clear = function () {
-                if (_this.board == null) {
+                if (_this.board == undefined) {
                     return;
                 }
                 _this.board.innerHTML = '';
             };
             this.add = function (text) {
-                if (_this.board == null) {
+                if (_this.board == undefined) {
                     return;
                 }
                 var html = _this.board.innerHTML;
@@ -33,7 +33,7 @@ var Kyoutsu;
                 _this.board.innerHTML = html;
             };
             this.writeLine = function (text) {
-                if (_this.board == null) {
+                if (_this.board == undefined) {
                     return;
                 }
                 var html = _this.board.innerHTML;

@@ -32,7 +32,7 @@ namespace TextAdv {
 
     let $display: HTMLElement;
     let $scenes: Array<Scene>;
-    let $scrlctrl: ScrollCtrl | null = null;
+    let $scrlctrl: ScrollCtrl | undefined = undefined;
 
     export function analize(source: string): Array<Scene> {
         let scenes: Array<Scene> = new Array<Scene>();
@@ -41,10 +41,7 @@ namespace TextAdv {
         let lines: Array<string> = result.split('\n');
 
         for (let i = 0, len: number = lines.length; i < len; i++) {
-            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (m: string | null, g1: string): string => {
-                if (m != null) {
-                    m = null;    // mは捨てる warning回避コード
-                }
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (_m: string | null, g1: string): string => {
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
@@ -233,7 +230,7 @@ namespace TextAdv {
             }
         }
 
-        if (scene.title != null) {
+        if (scene.title != '') {
             document.title = scene.title;
         }
 
@@ -246,7 +243,7 @@ namespace TextAdv {
                 return;
             }
 
-            if ($scrlctrl == null) {
+            if ($scrlctrl == undefined) {
                 $scrlctrl = new ScrollCtrl($display);
             }
 
@@ -294,7 +291,7 @@ namespace TextAdv {
         private interval: number;
         private dy: number;
         private base: HTMLElement;
-        private selectedElm: HTMLElement | null;
+        private selectedElm: HTMLElement | undefined;
         private lastTop: number;
 
         constructor(display: HTMLElement) {
@@ -302,7 +299,7 @@ namespace TextAdv {
             this.interval = 5;
             this.dy = 10;
             this.base = display;
-            this.selectedElm = null;
+            this.selectedElm = undefined;
             this.lastTop = 0;
 
             // スクロールするelementの決定 height指定のあるもの
@@ -328,7 +325,7 @@ namespace TextAdv {
         }
 
         scrolling = (): void => {
-            if (this.base == null || this.selectedElm == null) {
+            if (this.selectedElm == undefined) {
                 return;
             }
 
@@ -346,7 +343,7 @@ namespace TextAdv {
 
             // release
             clearTimeout(this.timer);
-            this.selectedElm = null;
+            this.selectedElm = undefined;
         }
     }
 

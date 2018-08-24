@@ -195,7 +195,7 @@ namespace Dungeon {
 		let data: string = Kyoutsu.load('data.txt');
 		let lines: Array<string> = data.split(/[\r\n]+/g);
 
-		let initter: Initter | null = null;
+		let initter: Initter | undefined = undefined;
 
 		let i = 0;
 		while (true) {
@@ -206,24 +206,24 @@ namespace Dungeon {
 			}
 
 			if (line == '[GAME_INITIALIZE]') {
-				if (initter != null) {
+				if (initter != undefined) {
 					initter.save();
 				}
 				// gameInitterだけは、全部そろうまでわからないので、捨てないで使いまわす。
 				initter = _gameStatus.gameInitter;
 
 			} else if (line == '[FLOOR]') {
-				if (initter != null) {
+				if (initter != undefined) {
 					initter.save();
 				}
 				initter = new FloorInitter();
 			}
 
-			if (initter != null) {
+			if (initter != undefined) {
 				initter.analize(line);
 			}
 		}
-		if (initter != null) {
+		if (initter != undefined) {
 			initter.save();
 		}
 	}

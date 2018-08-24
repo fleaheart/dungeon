@@ -15,7 +15,7 @@ var SaikoroBattle;
     var _gameDeifine = new GameDeifine();
     var GameStatus = (function () {
         function GameStatus() {
-            this.gameMode = null;
+            this.gameMode = undefined;
             this.players = new Array();
             this.actionStack = new Array();
             this.attacker = NullCharacter;
@@ -226,7 +226,7 @@ var SaikoroBattle;
     }());
     var NullCharacter = new Player(new Character(-1, 'NULL', 'NULL'));
     function susumeruGame() {
-        if (_gameStatus.gameMode == null) {
+        if (_gameStatus.gameMode == undefined) {
             _gameStatus.gameMode = new InitGameMode(_gameStatus);
         }
         if (_gameStatus.gameMode.mode == 'running') {

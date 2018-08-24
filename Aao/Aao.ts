@@ -128,10 +128,10 @@ namespace Aao {
 
 	class GameBoard {
 		fieldGraph: HTMLDivElement;
-		fieldAscii: HTMLDivElement | null = null;
-		objectAscii: HTMLDivElement | null = null;
+		fieldAscii: HTMLDivElement | undefined = undefined;
+		objectAscii: HTMLDivElement | undefined = undefined;
 		asciiPosition: Array<string>;
-		debug: HTMLDivElement | null = null;
+		debug: HTMLDivElement | undefined = undefined;
 
 		current: GameField;
 		next: GameField;
@@ -154,9 +154,9 @@ namespace Aao {
 		maptext: Array<string>;
 		imgsrc: string;
 
-		over: { [mukiType: string]: string | null } = {};
+		over: { [mukiType: string]: string | undefined } = {};
 
-		constructor(name: string, maptext: Array<string>, imgsrc: string, over_n: string | null, over_e: string | null, over_s: string | null, over_w: string | null) {
+		constructor(name: string, maptext: Array<string>, imgsrc: string, over_n: string | undefined, over_e: string | undefined, over_s: string | undefined, over_w: string | undefined) {
 			this.name = name;
 			this.maptext = maptext;
 			this.imgsrc = imgsrc;
@@ -185,10 +185,10 @@ namespace Aao {
 
 	class GameInitter implements Initter {
 		start_field: string = 'no define';
-		player: Character | null = null;
+		player: Character | undefined = undefined;
 		start_x: number = 0;
 		start_y: number = 0;
-		start_muki: Muki | null = null;
+		start_muki: Muki | undefined = undefined;
 
 		gameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
 
@@ -265,10 +265,10 @@ namespace Aao {
 		name: string = 'no define';
 		maptext: Array<string> = new Array<string>();
 		imgsrc: string = 'no define';
-		over_n: string | null = null;
-		over_e: string | null = null;
-		over_s: string | null = null;
-		over_w: string | null = null;
+		over_n: string | undefined = undefined;
+		over_e: string | undefined = undefined;
+		over_s: string | undefined = undefined;
+		over_w: string | undefined = undefined;
 
 		reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
 
@@ -319,7 +319,7 @@ namespace Aao {
 		let data: string = Kyoutsu.load('data.txt');
 		let lines: Array<string> = data.split(/[\r\n]+/g);
 
-		let initter: Initter | null = null;
+		let initter: Initter | undefined = undefined;
 
 		let i = 0;
 		while (true) {
@@ -330,30 +330,30 @@ namespace Aao {
 			}
 
 			if (line == '[GAME_INITIALIZE]') {
-				if (initter != null) {
+				if (initter != undefined) {
 					initter.save();
 				}
 				// gameInitterだけは、全部そろうまでわからないので、捨てないで使いまわす。
 				initter = gameInitter;
 
 			} else if (line == '[PLAYER]') {
-				if (initter != null) {
+				if (initter != undefined) {
 					initter.save();
 				}
 				initter = new PlayerInitter(gameInitter);
 
 			} else if (line == '[FIELD]') {
-				if (initter != null) {
+				if (initter != undefined) {
 					initter.save();
 				}
 				initter = new GameFieldGamenInitter(gameInitter);
 			}
 
-			if (initter != null) {
+			if (initter != undefined) {
 				initter.analize(line);
 			}
 		}
-		if (initter != null) {
+		if (initter != undefined) {
 			initter.save();
 		}
 	}
@@ -377,7 +377,7 @@ namespace Aao {
 
 		loadData(gameInitter);
 
-		if (gameInitter.player == null || gameInitter.start_muki == null) {
+		if (gameInitter.player == undefined || gameInitter.start_muki == undefined) {
 			throw 'illigal data file';
 		}
 
@@ -490,10 +490,10 @@ namespace Aao {
 	}
 
 	class GameStatus {
-		gameMode: GameMode | null = null;
+		gameMode: GameMode | undefined = undefined;
 		player: Character = new Character('');
 
-		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', null, null, null, null);
+		gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', undefined, undefined, undefined, undefined);
 
 		frameCount: number = 0;
 		lastInputCode: number = 0;
@@ -514,11 +514,11 @@ namespace Aao {
 
 		gameStatus.frameCount++;
 
-		if (gameStatus.gameMode == null) {
+		if (gameStatus.gameMode == undefined) {
 			gameStatus.gameMode = new FreeGameMode(gameStatus);
 		}
 
-		if (_gameBoard.debug != null) {
+		if (_gameBoard.debug != undefined) {
 			_gameBoard.debug.innerHTML =
 				gameStatus.gameMode.name
 				+ '<br>' + gameStatus.frameCount
@@ -563,10 +563,10 @@ namespace Aao {
 	}
 
 	function display(): void {
-		if (_gameBoard.fieldAscii != null) {
+		if (_gameBoard.fieldAscii != undefined) {
 			_gameBoard.fieldAscii.innerHTML = _gameBoard.current.maptext.join('<br>').replace(/ /g, '&nbsp;');
 		}
-		if (_gameBoard.objectAscii != null) {
+		if (_gameBoard.objectAscii != undefined) {
 			_gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
 		}
 	}
@@ -593,7 +593,7 @@ namespace Aao {
 
 					if (this.gamenOver(this.gameStatus.player, muki)) {
 						let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
-						if (nextName != null) {
+						if (nextName != undefined) {
 							let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
 							this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
 							return;

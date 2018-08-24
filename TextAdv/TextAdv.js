@@ -32,16 +32,13 @@ var TextAdv;
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display;
     var $scenes;
-    var $scrlctrl = null;
+    var $scrlctrl = undefined;
     function analize(source) {
         var scenes = new Array();
         var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         var lines = result.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
-            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (m, g1) {
-                if (m != null) {
-                    m = null;
-                }
+            lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, function (_m, g1) {
                 g1 = '<>' + toHankaku(g1);
                 return g1 + ':';
             });
@@ -201,7 +198,7 @@ var TextAdv;
         for (var i = 0, len = linkElms.length; i < len; i++) {
             _loop_1(i, len);
         }
-        if (scene.title != null) {
+        if (scene.title != '') {
             document.title = scene.title;
         }
         $trace.push(idx);
@@ -209,7 +206,7 @@ var TextAdv;
             if (selectedElm == undefined) {
                 return;
             }
-            if ($scrlctrl == null) {
+            if ($scrlctrl == undefined) {
                 $scrlctrl = new ScrollCtrl($display);
             }
             $scrlctrl.scroll(selectedElm);
@@ -250,7 +247,7 @@ var TextAdv;
         function ScrollCtrl(display) {
             var _this = this;
             this.scrolling = function () {
-                if (_this.base == null || _this.selectedElm == null) {
+                if (_this.selectedElm == undefined) {
                     return;
                 }
                 var rect = _this.selectedElm.getBoundingClientRect();
@@ -266,13 +263,13 @@ var TextAdv;
                     return;
                 }
                 clearTimeout(_this.timer);
-                _this.selectedElm = null;
+                _this.selectedElm = undefined;
             };
             this.timer = 0;
             this.interval = 5;
             this.dy = 10;
             this.base = display;
-            this.selectedElm = null;
+            this.selectedElm = undefined;
             this.lastTop = 0;
             while (this.base.style.height == '') {
                 if (this.base.tagName == 'BODY') {

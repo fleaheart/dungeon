@@ -93,9 +93,9 @@ var Aao;
     }());
     var GameBoard = (function () {
         function GameBoard() {
-            this.fieldAscii = null;
-            this.objectAscii = null;
-            this.debug = null;
+            this.fieldAscii = undefined;
+            this.objectAscii = undefined;
+            this.debug = undefined;
             this.fieldGraph = document.createElement('DIV');
             this.asciiPosition = new Array();
             for (var i = 0; i < 15; i++) {
@@ -133,10 +133,10 @@ var Aao;
     var GameInitter = (function () {
         function GameInitter() {
             this.start_field = 'no define';
-            this.player = null;
+            this.player = undefined;
             this.start_x = 0;
             this.start_y = 0;
-            this.start_muki = null;
+            this.start_muki = undefined;
             this.gameFieldGamenList = new Array();
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
         }
@@ -209,10 +209,10 @@ var Aao;
             this.name = 'no define';
             this.maptext = new Array();
             this.imgsrc = 'no define';
-            this.over_n = null;
-            this.over_e = null;
-            this.over_s = null;
-            this.over_w = null;
+            this.over_n = undefined;
+            this.over_e = undefined;
+            this.over_s = undefined;
+            this.over_w = undefined;
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
             this.maptextMode = false;
             this.maptextCount = 0;
@@ -263,7 +263,7 @@ var Aao;
     function loadData(gameInitter) {
         var data = Kyoutsu.load('data.txt');
         var lines = data.split(/[\r\n]+/g);
-        var initter = null;
+        var initter = undefined;
         var i = 0;
         while (true) {
             var line = lines[i];
@@ -272,28 +272,28 @@ var Aao;
                 break;
             }
             if (line == '[GAME_INITIALIZE]') {
-                if (initter != null) {
+                if (initter != undefined) {
                     initter.save();
                 }
                 initter = gameInitter;
             }
             else if (line == '[PLAYER]') {
-                if (initter != null) {
+                if (initter != undefined) {
                     initter.save();
                 }
                 initter = new PlayerInitter(gameInitter);
             }
             else if (line == '[FIELD]') {
-                if (initter != null) {
+                if (initter != undefined) {
                     initter.save();
                 }
                 initter = new GameFieldGamenInitter(gameInitter);
             }
-            if (initter != null) {
+            if (initter != undefined) {
                 initter.analize(line);
             }
         }
-        if (initter != null) {
+        if (initter != undefined) {
             initter.save();
         }
     }
@@ -308,7 +308,7 @@ var Aao;
         });
         var gameInitter = new GameInitter();
         loadData(gameInitter);
-        if (gameInitter.player == null || gameInitter.start_muki == null) {
+        if (gameInitter.player == undefined || gameInitter.start_muki == undefined) {
             throw 'illigal data file';
         }
         var player = gameInitter.player;
@@ -389,9 +389,9 @@ var Aao;
     }
     var GameStatus = (function () {
         function GameStatus() {
-            this.gameMode = null;
+            this.gameMode = undefined;
             this.player = new Character('');
-            this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', null, null, null, null);
+            this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', undefined, undefined, undefined, undefined);
             this.frameCount = 0;
             this.lastInputCode = 0;
             this.koudouArray = new Array();
@@ -402,10 +402,10 @@ var Aao;
     function frameCheck() {
         var gameStatus = _gameStatus;
         gameStatus.frameCount++;
-        if (gameStatus.gameMode == null) {
+        if (gameStatus.gameMode == undefined) {
             gameStatus.gameMode = new FreeGameMode(gameStatus);
         }
-        if (_gameBoard.debug != null) {
+        if (_gameBoard.debug != undefined) {
             _gameBoard.debug.innerHTML =
                 gameStatus.gameMode.name
                     + '<br>' + gameStatus.frameCount
@@ -441,10 +441,10 @@ var Aao;
         return _gameBoard.current.maptext[y].charAt(x);
     }
     function display() {
-        if (_gameBoard.fieldAscii != null) {
+        if (_gameBoard.fieldAscii != undefined) {
             _gameBoard.fieldAscii.innerHTML = _gameBoard.current.maptext.join('<br>').replace(/ /g, '&nbsp;');
         }
-        if (_gameBoard.objectAscii != null) {
+        if (_gameBoard.objectAscii != undefined) {
             _gameBoard.objectAscii.innerHTML = _gameBoard.asciiPosition.join('<br>').replace(/ /g, '&nbsp;');
         }
     }
@@ -464,7 +464,7 @@ var Aao;
                     this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
                     if (this.gamenOver(this.gameStatus.player, muki)) {
                         var nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
-                        if (nextName != null) {
+                        if (nextName != undefined) {
                             var nextGameFieldGamen = getGameFieldGamen(nextName);
                             this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
                             return;

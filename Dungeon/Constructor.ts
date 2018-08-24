@@ -93,13 +93,13 @@ namespace Dungeon {
 		dragStart(e, mover);
 	}
 
-	let _dragObject: HTMLElement | null = null;
+	let _dragObject: HTMLElement | undefined = undefined;
 	let _startTop: number = 0;
 	let _startLeft: number = 0;
 	let _startX: number = 0;
 	let _startY: number = 0;
 	function dragStart(e: MouseEvent, element: HTMLElement): void {
-		if (_dragObject != null) {
+		if (_dragObject != undefined) {
 			return;
 		}
 
@@ -113,7 +113,7 @@ namespace Dungeon {
 	}
 
 	function drag(e: MouseEvent): void {
-		if (_dragObject == null) {
+		if (_dragObject == undefined) {
 			return;
 		}
 
@@ -125,7 +125,7 @@ namespace Dungeon {
 	}
 
 	function dragStop(e: MouseEvent): void {
-		if (_dragObject == null) {
+		if (_dragObject == undefined) {
 			return;
 		}
 
@@ -178,7 +178,7 @@ namespace Dungeon {
 
 		document.body.removeChild(_dragObject);
 
-		_dragObject = null;
+		_dragObject = undefined;
 		_startTop = 0;
 		_startY = 0;
 	}

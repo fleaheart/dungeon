@@ -174,7 +174,7 @@ var Dungeon;
     function loadData() {
         var data = Kyoutsu.load('data.txt');
         var lines = data.split(/[\r\n]+/g);
-        var initter = null;
+        var initter = undefined;
         var i = 0;
         while (true) {
             var line = lines[i];
@@ -183,22 +183,22 @@ var Dungeon;
                 break;
             }
             if (line == '[GAME_INITIALIZE]') {
-                if (initter != null) {
+                if (initter != undefined) {
                     initter.save();
                 }
                 initter = _gameStatus.gameInitter;
             }
             else if (line == '[FLOOR]') {
-                if (initter != null) {
+                if (initter != undefined) {
                     initter.save();
                 }
                 initter = new FloorInitter();
             }
-            if (initter != null) {
+            if (initter != undefined) {
                 initter.analize(line);
             }
         }
-        if (initter != null) {
+        if (initter != undefined) {
             initter.save();
         }
     }
