@@ -397,11 +397,11 @@ namespace Aao {
 		setTimeout(frameCheck, FRAME_TIMING);
 	};
 
-	function documentKeydown(key: string) {
+	function documentKeydown(key: string): void {
 		_gameStatus.lastInputCode = Kyoutsu.getInputCode(key);
 	}
 
-	function documentKeyup(inputCode: number) {
+	function documentKeyup(inputCode: number): void {
 		if (inputCode == 0 || inputCode == _gameStatus.lastInputCode) {
 			_gameStatus.lastInputCode = 0;
 		}
@@ -614,7 +614,7 @@ namespace Aao {
 			}
 		}
 
-		move(muki: Muki) {
+		move(muki: Muki): void {
 			let character: Character = this.gameStatus.player;
 
 			let next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextX;

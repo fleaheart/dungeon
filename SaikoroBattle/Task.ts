@@ -5,9 +5,9 @@ namespace Task {
 	export interface Task {
 		name: string;
 		mode: ModeType;
-		do: Function;
-		asap: Function;
-		finish: Function;
+		do: () => void;
+		asap: () => void;
+		finish: () => void;
 	}
 
 	export class TaskCtrl {
@@ -24,7 +24,7 @@ namespace Task {
 			task.mode = 'finish';
 		}
 
-		static wait(task: Task, callback: Function): void {
+		static wait(task: Task, callback: () => void): void {
 			if (task.mode == 'finish') {
 				callback();
 				return;
@@ -144,18 +144,16 @@ namespace Task {
 	export class FunctionTask implements Task {
 		readonly name: string = 'FunctionTask';
 		mode: ModeType = TaskCtrl.DEFAULT_MODE;
-		func: Function;
-		param: any;
+		func: () => void;
 
-		constructor(func: Function, param: any) {
+		constructor(func: () => void) {
 			this.func = func;
-			this.param = param;
 		}
 
 		do(): void {
 			TaskCtrl.do(this);
 
-			this.func(this.param);
+			this.func();
 
 			this.finish();
 		}

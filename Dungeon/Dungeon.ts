@@ -191,7 +191,7 @@ namespace Dungeon {
 		throw name + ' is not found';
 	}
 
-	function loadData() {
+	function loadData(): void {
 		let data: string = Kyoutsu.load('data.txt');
 		let lines: Array<string> = data.split(/[\r\n]+/g);
 
@@ -228,7 +228,7 @@ namespace Dungeon {
 		}
 	}
 
-	export function init() {
+	export function init(): void {
 		loadData();
 
 		let floor: Floor = getFloor(_gameStatus.gameInitter.start_floor);
@@ -275,7 +275,7 @@ namespace Dungeon {
 		}
 	}
 
-	function keyboardClick(e: Event) {
+	function keyboardClick(e: Event): void {
 		let key = Kyoutsu.getKeytop(e.target);
 		keyOperation(key);
 	}
@@ -284,7 +284,7 @@ namespace Dungeon {
 		keyOperation(e.key);
 	}
 
-	function keyOperation(key: string) {
+	function keyOperation(key: string): void {
 		let inputCode: number = Kyoutsu.getInputCode(key);
 		if (inputCode == Kyoutsu.INPUT_UP) {
 			let kabeChar: string = _gameStatus.mapdata[_gameStatus.player.ypos].charAt(_gameStatus.player.xpos);

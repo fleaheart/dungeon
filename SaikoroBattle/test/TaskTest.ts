@@ -8,14 +8,14 @@ namespace TaskTest {
 		return elm;
 	}
 
-	export function dbg(text: string) {
+	export function dbg(text: string): void {
 		let dbg = getElementById('debugBoard2');
 		let h = dbg.innerHTML;
 		h += '&nbsp;&nbsp;&nbsp;&nbsp;' + text + '<br>';
 		dbg.innerHTML = h;
 	}
 
-	export function init() {
+	export function init(): void {
 		getElementById('btn').addEventListener('click', susumeruGame);
 		getElementById('btn2').addEventListener('click', susumeruGame2);
 
@@ -25,7 +25,7 @@ namespace TaskTest {
 		public count: number = 0;
 		public gameMode: GameMode | undefined = undefined;
 		public me: number = -1;
-		public players: Array<any> = [-1, -1, -1, -1, -1, -1, -1];
+		public players: Array<number> = [-1, -1, -1, -1, -1, -1, -1];
 	}
 
 	let _gameStatus = new GameStatus();
@@ -40,15 +40,15 @@ namespace TaskTest {
 
 		public gameStatus: GameStatus = new GameStatus();
 
-		public do() {
+		public do(): void {
 			Task.TaskCtrl.do(this);
 		}
 
-		public asap() {
+		public asap(): void {
 			Task.TaskCtrl.asap(this);
 		}
 
-		public finish() {
+		public finish(): void {
 			Task.TaskCtrl.finish(this);
 		}
 
@@ -65,12 +65,12 @@ namespace TaskTest {
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
 
-			this.tasks.add(new Task.FunctionTask(dbg, 'init 1'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('init 1'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-			this.tasks.add(new Task.FunctionTask(dbg, 'init 2'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('init 2'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
 			this.tasks.add(new NaibuTasks());
-			this.tasks.add(new Task.FunctionTask(dbg, 'init 3'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('init 3'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
 		}
 
@@ -113,11 +113,11 @@ namespace TaskTest {
 		constructor(gameStatus: GameStatus) {
 			this.gameStatus = gameStatus;
 
-			this.tasks.add(new Task.FunctionTask(dbg, 'saikoromae'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('saikoromae'); }));
 			this.tasks.add(new SaikoroBattle.SaikoroTask(this.callback, this.rollingFunc));
 		}
 
-		private callback = (me: number) => {
+		private callback = (me: number): void => {
 			let result = <HTMLSpanElement>getElementById('result');
 			result.innerHTML = String(me);
 			dbg('saikoro:' + me);
@@ -125,7 +125,7 @@ namespace TaskTest {
 			this.gameStatus.me = me;
 		}
 
-		private rollingFunc(me: number) {
+		private rollingFunc(me: number): void {
 			let result = <HTMLSpanElement>getElementById('rolling');
 			result.innerHTML = String(me);
 		}
@@ -164,7 +164,7 @@ namespace TaskTest {
 
 			let me = gameStatus.me;
 
-			this.tasks.add(new Task.FunctionTask(dbg, 'uketotta me:' + me));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('uketotta me:' + me); }));
 		}
 
 		public do(): void {
@@ -195,15 +195,15 @@ namespace TaskTest {
 		private tasks = new Task.SequentialTasks();
 
 		constructor() {
-			this.tasks.add(new Task.FunctionTask(dbg, 'naibu 1'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('naibu 1'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-			this.tasks.add(new Task.FunctionTask(dbg, 'naibu 2'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('naibu 2'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-			this.tasks.add(new Task.FunctionTask(dbg, 'naibu 3'));
+			this.tasks.add(new Task.FunctionTask((): void => { dbg('naibu 3'); }));
 			this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
 		}
 
-		public do() {
+		public do(): void {
 			Task.TaskCtrl.do(this);
 
 			this.tasks.do();
@@ -211,19 +211,19 @@ namespace TaskTest {
 			Task.TaskCtrl.wait(this.tasks, this.finish);
 		}
 
-		public asap() {
+		public asap(): void {
 			Task.TaskCtrl.asap(this);
 
 			this.tasks.asap();
 		}
 
-		public finish = () => {
+		public finish = (): void => {
 			Task.TaskCtrl.finish(this);
 
 		}
 	}
 
-	function susumeruGame() {
+	function susumeruGame(): void {
 		if (_gameStatus.gameMode == undefined) {
 			_gameStatus.gameMode = new IdleGameMode();
 		}
@@ -264,7 +264,7 @@ namespace TaskTest {
 			this.orderEntry();
 		}
 
-		private orderEntry() {
+		private orderEntry(): void {
 			this.tasks.tasks.length = 0;
 			for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
 				if (this.orderEntryList[i].entry) {
@@ -278,11 +278,11 @@ namespace TaskTest {
 			}
 		}
 
-		private callback = (playerIdx: number, me: number) => {
+		private callback = (playerIdx: number, me: number): void => {
 			this.orderEntryList[playerIdx].me = me;
 		}
 
-		private rollingFunc = (playerIdx: number, me: number) => {
+		private rollingFunc = (playerIdx: number, me: number): void => {
 			let elm = getElementById('s' + String(playerIdx));
 			elm.textContent = String(me);
 		}
@@ -374,7 +374,7 @@ namespace TaskTest {
 		}
 	}
 
-	function susumeruGame2() {
+	function susumeruGame2(): void {
 		if (_gameStatus.gameMode == undefined) {
 			_gameStatus.gameMode = new IdleGameMode();
 		}

@@ -371,7 +371,7 @@ namespace TextAdv {
     }
     export let $result: CheckSourceResult = new CheckSourceResult();
 
-    export function checkSource(source: string) {
+    export function checkSource(source: string): void {
         $result = new CheckSourceResult();
 
         let analyzeScenes = analize(source);
@@ -431,7 +431,7 @@ namespace TextAdv {
         });
     }
 
-    function checkScene(scenes: Array<Scene>, idx: number, steps: Array<number>) {
+    function checkScene(scenes: Array<Scene>, idx: number, steps: Array<number>): void {
         if (10000 < $result.mugenStopper) { return; } $result.mugenStopper++;
 
         steps.push(idx);

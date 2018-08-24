@@ -59,12 +59,12 @@ var TaskTest;
                 _this.gameStatus.gameMode = new SaikoroFurumadeGameMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
-            this.tasks.add(new Task.FunctionTask(dbg, 'init 1'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('init 1'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-            this.tasks.add(new Task.FunctionTask(dbg, 'init 2'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('init 2'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
             this.tasks.add(new NaibuTasks());
-            this.tasks.add(new Task.FunctionTask(dbg, 'init 3'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('init 3'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
         }
         InitGameMode.prototype.do = function () {
@@ -97,7 +97,7 @@ var TaskTest;
                 _this.gameStatus.gameMode = new HanteiGameMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
-            this.tasks.add(new Task.FunctionTask(dbg, 'saikoromae'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('saikoromae'); }));
             this.tasks.add(new SaikoroBattle.SaikoroTask(this.callback, this.rollingFunc));
         }
         SaikoroFurumadeGameMode.prototype.rollingFunc = function (me) {
@@ -127,7 +127,7 @@ var TaskTest;
             };
             this.gameStatus = gameStatus;
             var me = gameStatus.me;
-            this.tasks.add(new Task.FunctionTask(dbg, 'uketotta me:' + me));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('uketotta me:' + me); }));
         }
         HanteiGameMode.prototype.do = function () {
             Task.TaskCtrl.do(this);
@@ -149,11 +149,11 @@ var TaskTest;
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
             };
-            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 1'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('naibu 1'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 2'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('naibu 2'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
-            this.tasks.add(new Task.FunctionTask(dbg, 'naibu 3'));
+            this.tasks.add(new Task.FunctionTask(function () { dbg('naibu 3'); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.SLOW));
         }
         NaibuTasks.prototype.do = function () {

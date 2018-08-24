@@ -131,15 +131,14 @@ var Task;
     }());
     Task.ParallelTasks = ParallelTasks;
     var FunctionTask = (function () {
-        function FunctionTask(func, param) {
+        function FunctionTask(func) {
             this.name = 'FunctionTask';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.func = func;
-            this.param = param;
         }
         FunctionTask.prototype.do = function () {
             TaskCtrl.do(this);
-            this.func(this.param);
+            this.func();
             this.finish();
         };
         FunctionTask.prototype.asap = function () {

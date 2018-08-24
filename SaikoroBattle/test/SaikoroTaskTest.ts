@@ -1,6 +1,6 @@
 namespace SaikoroTaskTest {
 
-	export function init() {
+	export function init(): void {
 		getElementById('btn').addEventListener('click', clickBtn);
 	}
 
@@ -12,7 +12,7 @@ namespace SaikoroTaskTest {
 		return elm;
 	}
 
-	export function dbg(text: string) {
+	export function dbg(text: string): void {
 		let dbg = getElementById('debugBoard2');
 		let h = dbg.innerHTML;
 		h += '&nbsp;&nbsp;&nbsp;&nbsp;' + text + '<br>';
@@ -21,7 +21,7 @@ namespace SaikoroTaskTest {
 
 	let task = new SaikoroBattle.SaikoroTask(callback, rollingFunc);
 
-	function clickBtn() {
+	function clickBtn(): void {
 		if (task.mode == 'idle' || task.mode == 'finish') {
 			getElementById('result').innerHTML = '';
 			getElementById('saikoro').innerHTML = '';
@@ -31,11 +31,11 @@ namespace SaikoroTaskTest {
 		}
 	}
 
-	function callback(me: number) {
+	function callback(me: number): void {
 		getElementById('result').innerHTML = String(me + 1);
 	}
 
-	function rollingFunc(me: number) {
+	function rollingFunc(me: number): void {
 		getElementById('saikoro').innerHTML = SaikoroBattle.SaikoroTask.saikoroHTML(me);
 	}
 
