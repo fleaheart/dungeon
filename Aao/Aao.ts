@@ -41,7 +41,7 @@ namespace Aao {
 	}
 
 	interface MukiListGroup {
-		[idx: string]: Array<string>
+		[idx: string]: Array<string>;
 	}
 
 	class Character {
@@ -53,7 +53,7 @@ namespace Aao {
 		ascii_y: number;
 		frame: number;
 		muki: Muki;
-		mukiListGroup: MukiListGroup = {}
+		mukiListGroup: MukiListGroup | undefined = undefined;
 
 		constructor(chr: string, mukiListGroup?: MukiListGroup) {
 			this.chr = chr;
@@ -65,9 +65,7 @@ namespace Aao {
 			this.ascii_y = 0;
 			this.frame = 0;
 			this.muki = muki_e;
-			if (mukiListGroup != undefined) {
-				this.mukiListGroup = mukiListGroup;
-			}
+			this.mukiListGroup = mukiListGroup;
 		}
 
 		moveTo(x: number, y: number, muki: Muki): void {
@@ -76,28 +74,17 @@ namespace Aao {
 			this.moveBy(dx, dy, muki);
 			this.x = x;
 			this.y = y;
-
-			if (dy < 0) {
-				this.ascii_y = Math.floor(this.y / 32);
-			} else if (0 < dy) {
-				this.ascii_y = Math.ceil(this.y / 32);
-			}
 		}
 
 		moveBy(dx: number, dy: number, muki: Muki): void {
-			let array: Array<string> = this.mukiListGroup[muki.mukiType];
-			let currentFlame: number = this.frame % array.length;
+			this.frame++;
 
-			this.img.src = array[currentFlame];
 			this.x += dx;
 			this.y += dy;
-			this.refrectStyle();
 
-			this.asciiPos(dx, dy);
-			this.frame++;
-		}
+			this.img.style.left = this.x + 'px';
+			this.img.style.top = this.y + 'px';
 
-		asciiPos(dx: number, dy: number): void {
 			if (dx < 0) {
 				this.ascii_x = Math.floor(this.x / 16);
 			} else if (0 < dx) {
@@ -108,11 +95,15 @@ namespace Aao {
 			} else if (0 < dy) {
 				this.ascii_y = Math.ceil(this.y / 32);
 			}
-		}
 
-		private refrectStyle(): void {
-			this.img.style.left = this.x + 'px';
-			this.img.style.top = this.y + 'px';
+			if (this.mukiListGroup == undefined) {
+				return;
+			}
+
+			let array: Array<string> = this.mukiListGroup[muki.mukiType];
+			let currentFlame: number = this.frame % array.length;
+
+			this.img.src = array[currentFlame];
 		}
 	}
 

@@ -27,7 +27,7 @@ var Aao;
     }
     var Character = (function () {
         function Character(chr, mukiListGroup) {
-            this.mukiListGroup = {};
+            this.mukiListGroup = undefined;
             this.chr = chr;
             this.img = document.createElement('IMG');
             this.img.style.position = 'absolute';
@@ -37,9 +37,7 @@ var Aao;
             this.ascii_y = 0;
             this.frame = 0;
             this.muki = muki_e;
-            if (mukiListGroup != undefined) {
-                this.mukiListGroup = mukiListGroup;
-            }
+            this.mukiListGroup = mukiListGroup;
         }
         Character.prototype.moveTo = function (x, y, muki) {
             var dx = x - this.x;
@@ -47,24 +45,13 @@ var Aao;
             this.moveBy(dx, dy, muki);
             this.x = x;
             this.y = y;
-            if (dy < 0) {
-                this.ascii_y = Math.floor(this.y / 32);
-            }
-            else if (0 < dy) {
-                this.ascii_y = Math.ceil(this.y / 32);
-            }
         };
         Character.prototype.moveBy = function (dx, dy, muki) {
-            var array = this.mukiListGroup[muki.mukiType];
-            var currentFlame = this.frame % array.length;
-            this.img.src = array[currentFlame];
+            this.frame++;
             this.x += dx;
             this.y += dy;
-            this.refrectStyle();
-            this.asciiPos(dx, dy);
-            this.frame++;
-        };
-        Character.prototype.asciiPos = function (dx, dy) {
+            this.img.style.left = this.x + 'px';
+            this.img.style.top = this.y + 'px';
             if (dx < 0) {
                 this.ascii_x = Math.floor(this.x / 16);
             }
@@ -77,10 +64,12 @@ var Aao;
             else if (0 < dy) {
                 this.ascii_y = Math.ceil(this.y / 32);
             }
-        };
-        Character.prototype.refrectStyle = function () {
-            this.img.style.left = this.x + 'px';
-            this.img.style.top = this.y + 'px';
+            if (this.mukiListGroup == undefined) {
+                return;
+            }
+            var array = this.mukiListGroup[muki.mukiType];
+            var currentFlame = this.frame % array.length;
+            this.img.src = array[currentFlame];
         };
         return Character;
     }());
