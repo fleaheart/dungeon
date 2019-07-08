@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "commonjs",
+        "incremental": true,
         "strict": true,
         "alwaysStrict": true, // strict
         "forceConsistentCasingInFileNames": true,

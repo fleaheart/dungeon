@@ -1,8 +1,8 @@
 [GAME_INITIALIZE]
-start_floor:floor1
-start_x:0
-start_y:7
+start_floor:floor3
+start_y:0
 start_muki:n
+mode:debug
 
 [FLOOR]
 
@@ -19,3 +19,28 @@ AAD452AA
 EC5556C6
 :mapend
 
+[FLOOR]
+name:floor2
+
+maptext:
+95300093
+A0C553C2
+85553C543
+A000AD53A
+85308556A
+A0A0A000E
+E0C56
+:mapend
+
+[FLOOR]
+name:floor3
+
+maptext:
+95555515155157
+C53913A0C53A
+00AC06A000AC553
+09452BA000A957A
+0A956AC5550600A
+0AC55455792000A
+0E0000000C6000E
+:mapend

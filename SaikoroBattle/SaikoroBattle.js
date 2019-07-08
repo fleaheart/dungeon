@@ -42,15 +42,15 @@ var SaikoroBattle;
             if (columns.length < 4) {
                 continue;
             }
-            var id = +columns[0];
+            var id = Number(columns[0]);
             var type = columns[1];
             var name_1 = columns[3];
             if (type == 'Attack') {
-                var action = new AttackAction(id, name_1, +columns[4]);
+                var action = new AttackAction(id, name_1, Number(columns[4]));
                 _gameDeifine.attackActionList.push(action);
             }
             else if (type == 'Defense') {
-                var action = new DefenseAction(id, name_1, +columns[4]);
+                var action = new DefenseAction(id, name_1, Number(columns[4]));
                 if (columns[5] == 'through') {
                     action.through = true;
                 }
@@ -58,7 +58,7 @@ var SaikoroBattle;
             }
             else if (type == 'Player' || type == 'Enemy') {
                 var character = new Character(id, type, name_1);
-                character.hitPointMax = +columns[4];
+                character.hitPointMax = Number(columns[4]);
                 setDefaultActionPalette(_gameDeifine.attackActionList, columns[5], character.attackPalette);
                 setDefaultActionPalette(_gameDeifine.defenseActionList, columns[6], character.defensePalette);
                 if (type == 'Player') {
@@ -77,7 +77,7 @@ var SaikoroBattle;
         }
         palette.length = 0;
         for (var i = 0; i < 6; i++) {
-            var action = pickupAction(list, +ids[i]);
+            var action = pickupAction(list, Number(ids[i]));
             palette.push(action);
         }
     }

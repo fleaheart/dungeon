@@ -30,8 +30,8 @@ var TextAdv;
     var $selectColor = 'red';
     var $trace = new Array();
     var $mode = TextAdv.MODE_MAKIMONO;
-    var $display;
-    var $scenes;
+    var $display = undefined;
+    var $scenes = new Array();
     var $scrlctrl = undefined;
     function analize(source) {
         var scenes = new Array();
@@ -47,7 +47,7 @@ var TextAdv;
         for (var i = 0, len = sceneWorks.length; i < len; i++) {
             var res = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             if (res != null) {
-                var idx = +res[1];
+                var idx = Number(res[1]);
                 var text = res[2];
                 var scene = analizeScene(idx, text);
                 scenes[idx] = scene;
@@ -74,7 +74,7 @@ var TextAdv;
                 var res = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     linkCount++;
-                    var toIdx = +toHankaku(res[2]);
+                    var toIdx = toHankaku(res[2]);
                     var msg = res[1].replace(/\s*$/, '');
                     var linkNo = linkCount;
                     var link = ' <span class="link">' + msg + '</span>';
@@ -114,14 +114,21 @@ var TextAdv;
     }
     TextAdv.analizeScene = analizeScene;
     function toHankaku(s) {
-        return +(s.replace(/[０-９]/g, function (s) { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
+        return Number(s.replace(/[０-９]/g, function (s) { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
     }
     function initialize(display, source) {
         $display = display;
-        $scenes = analize(source);
+        $scenes.length = 0;
+        var list = analize(source);
+        for (var i = 0, len = list.length; i < len; i++) {
+            $scenes.push(list[i]);
+        }
     }
     TextAdv.initialize = initialize;
     function start() {
+        if ($display == undefined) {
+            throw 'no initialized';
+        }
         if ($scenes[0] != undefined) {
             $display.innerHTML = '';
             go(0);
@@ -129,6 +136,9 @@ var TextAdv;
     }
     TextAdv.start = start;
     function go(idx, selectedElm) {
+        if ($display == undefined) {
+            throw 'no initialized';
+        }
         var step = 0;
         if (selectedElm != undefined) {
             var sceneElm = null;
@@ -144,7 +154,7 @@ var TextAdv;
             if (sceneElm != null) {
                 var res = sceneElm.id.match(/^sc(\d+)$/);
                 if (res != null) {
-                    step = +RegExp.$1;
+                    step = Number(RegExp.$1);
                 }
                 var linkElms_1 = new Array();
                 pickupElements(sceneElm, 'link', linkElms_1);
@@ -239,7 +249,11 @@ var TextAdv;
     function pickupElements(parentElm, className, pickupElms) {
         var childElms = parentElm.childNodes;
         for (var i = 0; i < childElms.length; i++) {
-            var elm = childElms.item(i);
+            var item = childElms.item(i);
+            if (item == null) {
+                continue;
+            }
+            var elm = item;
             if (0 < elm.childNodes.length) {
                 pickupElements(elm, className, pickupElms);
             }

@@ -30,8 +30,8 @@ namespace TextAdv {
     let $trace = new Array<number>();  // 遷移順配列
     let $mode: DisplyMode = MODE_MAKIMONO;
 
-    let $display: HTMLElement;
-    let $scenes: Array<Scene>;
+    let $display: HTMLElement | undefined = undefined;
+    let $scenes: Array<Scene> = new Array<Scene>();
     let $scrlctrl: ScrollCtrl | undefined = undefined;
 
     export function analize(source: string): Array<Scene> {
@@ -51,7 +51,7 @@ namespace TextAdv {
         for (let i = 0, len: number = sceneWorks.length; i < len; i++) {
             let res: RegExpMatchArray | null = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             if (res != null) {
-                let idx: number = +res[1];
+                let idx: number = Number(res[1]);
                 let text: string = res[2];
                 let scene: Scene = analizeScene(idx, text);
                 scenes[idx] = scene;
@@ -92,7 +92,7 @@ namespace TextAdv {
                 let res: RegExpMatchArray | null = block.match(regDaikakkoAnchor);
                 if (res != null) {
                     linkCount++;
-                    let toIdx: number = +toHankaku(res[2]);
+                    let toIdx: number = toHankaku(res[2]);
                     let msg: string = res[1].replace(/\s*$/, '');
                     let linkNo: number = linkCount;
                     let link: string = ' <span class="link">' + msg + '</span>';
@@ -137,15 +137,23 @@ namespace TextAdv {
     }
 
     function toHankaku(s: string): number {
-        return +(s.replace(/[０-９]/g, (s: string): string => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
+        return Number(s.replace(/[０-９]/g, (s: string): string => { return String.fromCharCode(s.charCodeAt(0) - 65248); }));
     }
 
     export function initialize(display: HTMLElement, source: string): void {
         $display = display;
-        $scenes = analize(source);
+        $scenes.length = 0;
+        let list: Array<Scene> = analize(source);
+        for (let i = 0, len: number = list.length; i < len; i++) {
+            $scenes.push(list[i]);
+        }
     }
 
     export function start(): void {
+        if ($display == undefined) {
+            throw 'no initialized';
+        }
+
         if ($scenes[0] != undefined) {
             $display.innerHTML = '';
             go(0);
@@ -153,6 +161,10 @@ namespace TextAdv {
     }
 
     export function go(idx: number, selectedElm?: HTMLElement): void {
+        if ($display == undefined) {
+            throw 'no initialized';
+        }
+
         let step = 0;   // MODE_MAKIMONO用
         if (selectedElm != undefined) {
             // 選択されたものを赤くする
@@ -168,7 +180,7 @@ namespace TextAdv {
             if (sceneElm != null) {
                 let res: RegExpMatchArray | null = sceneElm.id.match(/^sc(\d+)$/);
                 if (res != null) {
-                    step = +RegExp.$1;
+                    step = Number(RegExp.$1);
                 }
 
                 let linkElms = new Array<HTMLElement>();
@@ -260,30 +272,35 @@ namespace TextAdv {
     }
 
     /**
-     * Kyoutsu.searchParentElementと一緒
+     * Kyoutsu.searchParentElementと一緒にするのでelmでなくてelement
      */
     function searchParentElement(target: HTMLElement, className: string): HTMLElement | null {
-		let element: HTMLElement | Node | null = target;
+        let element: HTMLElement | Node | null = target;
 
-		while (true) {
-			if (element == null) {
-				break;
-			}
-			if (element instanceof HTMLElement) {
-				if (element.classList.contains(className)) {
-					return element;
-				}
-			}
-			element = element.parentNode;
-		}
+        while (true) {
+            if (element == null) {
+                break;
+            }
+            if (element instanceof HTMLElement) {
+                if (element.classList.contains(className)) {
+                    return element;
+                }
+            }
+            element = element.parentNode;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
     function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
         let childElms: NodeList = parentElm.childNodes;
         for (let i = 0; i < childElms.length; i++) {
-            let elm = <HTMLElement>childElms.item(i);
+            let item = childElms.item(i);
+            if (item == null) {
+                continue;
+            }
+
+            let elm = <HTMLElement>item;
             if (0 < elm.childNodes.length) {
                 pickupElements(elm, className, pickupElms);
             }
@@ -374,7 +391,7 @@ namespace TextAdv {
     export function checkSource(source: string): void {
         $result = new CheckSourceResult();
 
-        let analyzeScenes = analize(source);
+        let analyzeScenes: Array<Scene> = analize(source);
 
         // undefinedをつめる
         let scenes = new Array<Scene>();
@@ -404,7 +421,7 @@ namespace TextAdv {
             }
             while (nukeCheckIdx < scene.idx) {
                 $result.nukeIdxs.push(nukeCheckIdx);
-                nukeCheckIdx++
+                nukeCheckIdx++;
             }
             nukeCheckIdx++;
         }

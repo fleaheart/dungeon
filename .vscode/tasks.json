@@ -1,9 +1,14 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "0.1.0",
-    "command": "tsc",
-    "isShellCommand": true,
-    "args": ["-w", "-p", ".", "--sourcemap", "--removeComments", "--target", "ES5"],
-    "problemMatcher": "$tsc"
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "tsc-main",
+            "type": "shell",
+            "command": "tsc",
+            "args": [ "-w", "-p", ".", "--sourcemap", "--removeComments", "--target", "ES5"],
+            "problemMatcher": "$tsc"
+        }
+    ]
 }

@@ -35,7 +35,7 @@ namespace Task {
 	}
 
 	export class SequentialTasks implements Task {
-		readonly name: string = 'Tasks';
+		readonly name: string = 'SequentialTasks';
 		mode: ModeType = TaskCtrl.DEFAULT_MODE;
 		tasks: Array<Task> = new Array<Task>();
 
@@ -92,7 +92,7 @@ namespace Task {
 	}
 
 	export class ParallelTasks implements Task {
-		readonly name: string = 'Tasks';
+		readonly name: string = 'ParallelTasks';
 		mode: ModeType = TaskCtrl.DEFAULT_MODE;
 		tasks: Array<Task> = new Array<Task>();
 
@@ -104,7 +104,7 @@ namespace Task {
 			TaskCtrl.do(this);
 
 			for (let i = 0, len: number = this.tasks.length; i < len; i++) {
-				this.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+				this.tasks[i].mode = TaskCtrl.DEFAULT_MODE;
 				window.setTimeout((): void => { this.tasks[i].do(); });
 			}
 

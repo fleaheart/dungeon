@@ -151,7 +151,7 @@ namespace Kyoutsu {
 			}
 		}
 
-		setKeyEvent(type: string, listener: EventListener) {
+		setKeyEvent(type: string, listener: EventListener): void {
 			for (let i = 0, len: number = this.keys.length; i < len; i++) {
 				this.keys[i].addEventListener(type, listener);
 			}

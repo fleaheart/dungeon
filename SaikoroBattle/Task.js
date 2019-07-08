@@ -26,7 +26,7 @@ var Task;
     Task.TaskCtrl = TaskCtrl;
     var SequentialTasks = (function () {
         function SequentialTasks() {
-            this.name = 'Tasks';
+            this.name = 'SequentialTasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
             this.step = -1;
@@ -76,7 +76,7 @@ var Task;
     Task.SequentialTasks = SequentialTasks;
     var ParallelTasks = (function () {
         function ParallelTasks() {
-            this.name = 'Tasks';
+            this.name = 'ParallelTasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
             this.tasks = new Array();
         }
@@ -87,7 +87,7 @@ var Task;
             var _this = this;
             TaskCtrl.do(this);
             var _loop_1 = function (i, len) {
-                this_1.tasks[i].mode = Task.TaskCtrl.DEFAULT_MODE;
+                this_1.tasks[i].mode = TaskCtrl.DEFAULT_MODE;
                 window.setTimeout(function () { _this.tasks[i].do(); });
             };
             var this_1 = this;
