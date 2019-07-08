@@ -29,7 +29,7 @@ namespace SaikoroBattle {
 
         _gameStatus.players.push(new Player(_gameDeifine.playerList[0]));
         _gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
-        //	_gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
+        // _gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
 
         initMainBoard(_gameStatus);
     };
@@ -47,7 +47,7 @@ namespace SaikoroBattle {
 
             let id: number = Number(columns[0]);
             let type: string = columns[1];
-            //	let alphanumericName: string = columns[2];
+            // let alphanumericName: string = columns[2];
             let name: string = columns[3];
 
             if (type == 'Attack') {
