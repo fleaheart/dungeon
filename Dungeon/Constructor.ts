@@ -2,10 +2,30 @@ namespace Dungeon {
 
     const ippen = 36;
 
+    class Elems {
+        maptextElent: HTMLTextAreaElement | undefined = undefined;
+
+        init = (): void => {
+            this.maptextElent = <HTMLTextAreaElement>Kyoutsu.getElementById('maptext');
+        }
+
+        chk = <T>(elem: T | undefined): T => {
+            if (elem == undefined) {
+                throw 'not initialzed.';
+            }
+            return elem;
+        }
+
+        maptext = (): HTMLTextAreaElement => { return this.chk(this.maptextElent); };
+    }
+    let _elems = new Elems();
+
     export function constructor_init(): void {
+        _elems.init();
+
         Kyoutsu.getElementById('refresh').addEventListener('click', refresh);
 
-        let partsBoard = Kyoutsu.getElementById('div_partsBoard');
+        let partsBoard: HTMLElement = Kyoutsu.getElementById('div_partsBoard');
 
         let futosa: number = 2;
 
@@ -46,22 +66,26 @@ namespace Dungeon {
     let _mapdata: Array<string> = new Array<string>();
 
     function refresh(): void {
-        let textarea = <HTMLTextAreaElement>Kyoutsu.getElementById('maptext');
-        _mapdata = textarea.value.split(/[\r\n]+/g);
+        _mapdata = _elems.maptext().value.split(/[\r\n]+/g);
 
         let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
         mapview(div_map, _mapdata, '');
     }
 
-    function selectKukaku(e: MouseEvent): void {
-        let element: HTMLElement | null = Kyoutsu.searchParentElement(<HTMLElement>e.target, 'kukaku');
+    function selectKukaku(evt: MouseEvent): void {
+        let target: EventTarget | null = evt.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+
+        let element: HTMLElement | null = Kyoutsu.searchParentElement(target, 'kukaku');
         if (element == null) {
             return;
         }
 
         let rect: ClientRect = element.getBoundingClientRect();
 
-        let mover: HTMLElement = <HTMLElement>element.cloneNode(true);
+        let mover = <HTMLElement>element.cloneNode(true);
         mover.style.margin = '0';
         mover.style.border = '1px dashed red';
         mover.style.background = 'pink';
@@ -72,7 +96,7 @@ namespace Dungeon {
 
         document.body.appendChild(mover);
 
-        dragStart(e, mover);
+        dragStart(evt, mover);
     }
 
     let _dragObject: HTMLElement | undefined = undefined;
@@ -99,8 +123,8 @@ namespace Dungeon {
             return;
         }
 
-        let x = _startLeft - (_startX - e.clientX);
-        let y = _startTop - (_startY - e.clientY);
+        let x: number = _startLeft - (_startX - e.clientX);
+        let y: number = _startTop - (_startY - e.clientY);
 
         _dragObject.style.left = x + 'px';
         _dragObject.style.top = y + 'px';
@@ -111,10 +135,10 @@ namespace Dungeon {
             return;
         }
 
-        let dropx = _startLeft - (_startX - e.clientX);
-        let dropy = _startTop - (_startY - e.clientY);
+        let dropx: number = _startLeft - (_startX - e.clientX);
+        let dropy: number = _startTop - (_startY - e.clientY);
 
-        let boxippen = (ippen + 2 * 2);
+        let boxippen: number = (ippen + 2 * 2);
         dropx = Math.floor(dropx + (boxippen / 2));
         dropy = Math.floor(dropy + (boxippen / 2));
 
@@ -126,8 +150,6 @@ namespace Dungeon {
 
         let c: string | null = _dragObject.textContent;
         if (c != null) {
-
-
             let x: number = dropx / boxippen;
             let y: number = (dropy - 200) / boxippen;
 
@@ -152,7 +174,7 @@ namespace Dungeon {
 
             _mapdata[y] = line;
 
-            (<HTMLTextAreaElement>document.getElementById('maptext')).value = _mapdata.join('\r\n');
+            _elems.maptext().value = _mapdata.join('\r\n');
 
             let div_map: HTMLElement = Kyoutsu.getElementById('div_map');
             mapview(div_map, _mapdata, '');

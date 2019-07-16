@@ -157,6 +157,9 @@ var Kyoutsu;
     }());
     Kyoutsu.Keyboard = Keyboard;
     function getKeytop(target) {
+        if (!(target instanceof HTMLElement)) {
+            return '';
+        }
         var element = searchParentElement(target, 'sofwareKey');
         if (element == null) {
             return '';

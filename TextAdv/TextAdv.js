@@ -250,15 +250,13 @@ var TextAdv;
         var childElms = parentElm.childNodes;
         for (var i = 0; i < childElms.length; i++) {
             var item = childElms.item(i);
-            if (item == null) {
-                continue;
-            }
-            var elm = item;
-            if (0 < elm.childNodes.length) {
-                pickupElements(elm, className, pickupElms);
-            }
-            if (elm.className == className) {
-                pickupElms.push(elm);
+            if (item instanceof HTMLElement) {
+                if (0 < item.childNodes.length) {
+                    pickupElements(item, className, pickupElms);
+                }
+                if (item.className == className) {
+                    pickupElms.push(item);
+                }
             }
         }
     }
@@ -298,7 +296,7 @@ var TextAdv;
                 if (elm == null) {
                     break;
                 }
-                else {
+                if (elm instanceof HTMLElement) {
                     this.base = elm;
                 }
             }
@@ -444,7 +442,7 @@ var TextAdv;
 window.addEventListener('load', function () {
     var displayElm = document.getElementById('display');
     var sourceElm = document.getElementById('source');
-    if (sourceElm != null && displayElm != null) {
+    if (displayElm instanceof HTMLElement && sourceElm instanceof HTMLTextAreaElement) {
         TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
     }

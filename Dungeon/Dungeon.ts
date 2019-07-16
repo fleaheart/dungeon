@@ -73,7 +73,7 @@ namespace Dungeon {
     }
 
     function mukiRotation(muki: Muki, chokkakuCount: number): Muki {
-        let index = muki.index + chokkakuCount;
+        let index: number = muki.index + chokkakuCount;
         if (index < 0) {
             index += 4;
         } else if (4 <= index) {
@@ -111,9 +111,9 @@ namespace Dungeon {
                 if (attr == 'start_floor') {
                     this.start_floor = value;
                 } else if (attr == 'start_x') {
-                    this.start_x = +value;
+                    this.start_x = Number(value);
                 } else if (attr == 'start_y') {
-                    this.start_y = +value;
+                    this.start_y = Number(value);
                 } else if (attr == 'start_muki') {
                     if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
                         this.start_muki = createMuki(value);
@@ -258,7 +258,7 @@ namespace Dungeon {
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
 
         let mode: string = _gameStatus.gameInitter.mode;
-        let div_submap = Kyoutsu.getElementById('div_submap');
+        let div_submap: HTMLElement = Kyoutsu.getElementById('div_submap');
         if (mode == 'debug') {
             div_map.style.display = '';
             div_submap.style.display = '';
@@ -276,7 +276,7 @@ namespace Dungeon {
     }
 
     function keyboardClick(e: Event): void {
-        let key = Kyoutsu.getKeytop(e.target);
+        let key: string = Kyoutsu.getKeytop(e.target);
         keyOperation(key);
     }
 
@@ -430,7 +430,7 @@ namespace Dungeon {
     }
 
     function draw3D(mapdata: string[], zenpou: number, hidarimigi: number): void {
-        let cvs: HTMLCanvasElement = <HTMLCanvasElement>Kyoutsu.getElementById('map3d');
+        let cvs = <HTMLCanvasElement>Kyoutsu.getElementById('map3d');
         let context: CanvasRenderingContext2D | null = cvs.getContext('2d');
         if (context == null) {
             return;
@@ -619,7 +619,7 @@ namespace Dungeon {
             return;
         }
 
-        let nagasa = $kabex[fukasa - 1];
+        let nagasa: number = $kabex[fukasa - 1];
         if (kabeArray[fukasa - 2] == 0) {
             nagasa = $kabex[fukasa - 2];
             if (kabeArray[fukasa - 3] == 0) {

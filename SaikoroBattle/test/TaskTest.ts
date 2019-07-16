@@ -118,7 +118,7 @@ namespace TaskTest {
         }
 
         private callback = (me: number): void => {
-            let result = <HTMLSpanElement>getElementById('result');
+            let result = getElementById('result');
             result.innerHTML = String(me);
             dbg('saikoro:' + me);
 
@@ -126,7 +126,7 @@ namespace TaskTest {
         }
 
         private rollingFunc(me: number): void {
-            let result = <HTMLSpanElement>getElementById('rolling');
+            let result = getElementById('rolling');
             result.innerHTML = String(me);
         }
 

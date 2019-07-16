@@ -30,9 +30,9 @@ namespace Kyoutsu {
     }
 
     export class Message {
-        board: HTMLDivElement | undefined = undefined;
+        board: HTMLElement | undefined = undefined;
 
-        set(board: HTMLDivElement): void {
+        set(board: HTMLElement): void {
             this.board = board;
         }
 
@@ -47,7 +47,7 @@ namespace Kyoutsu {
             if (this.board == undefined) {
                 return;
             }
-            let html = this.board.innerHTML;
+            let html: string = this.board.innerHTML;
             if (html == '') {
                 html = text;
             } else {
@@ -60,7 +60,7 @@ namespace Kyoutsu {
             if (this.board == undefined) {
                 return;
             }
-            let html = this.board.innerHTML;
+            let html: string = this.board.innerHTML;
             html += text + '<br>';
             this.board.innerHTML = html;
         }
@@ -123,11 +123,11 @@ namespace Kyoutsu {
     }
 
     export class Keyboard {
-        keyboard: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+        keyboard: HTMLElement = document.createElement('DIV');
         keys: Array<HTMLElement> = new Array<HTMLElement>();
 
         constructor() {
-            let keyboard = this.keyboard;
+            let keyboard: HTMLElement = this.keyboard;
             keyboard.style.position = 'absolute';
             keyboard.style.width = '138px';
             keyboard.style.display = 'flex';
@@ -137,7 +137,7 @@ namespace Kyoutsu {
             keyboard.style.textAlign = 'center';
 
             for (let i = 0; i < 9; i++) {
-                let key = document.createElement('DIV');
+                let key: HTMLElement = document.createElement('DIV');
                 key.className = 'sofwareKey';
                 key.style.display = 'inline-block';
                 key.style.margin = '2px';
@@ -173,7 +173,10 @@ namespace Kyoutsu {
     }
 
     export function getKeytop(target: EventTarget | HTMLElement | null): string {
-        let element: HTMLElement | null = searchParentElement(<HTMLElement>target, 'sofwareKey');
+        if (!(target instanceof HTMLElement)) {
+            return '';
+        }
+        let element: HTMLElement | null = searchParentElement(target, 'sofwareKey');
         if (element == null) {
             return '';
         }

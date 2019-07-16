@@ -295,18 +295,16 @@ namespace TextAdv {
     function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
         let childElms: NodeList = parentElm.childNodes;
         for (let i = 0; i < childElms.length; i++) {
-            let item = childElms.item(i);
-            if (item == null) {
-                continue;
-            }
+            let item: Node | null = childElms.item(i);
 
-            let elm = <HTMLElement>item;
-            if (0 < elm.childNodes.length) {
-                pickupElements(elm, className, pickupElms);
-            }
+            if (item instanceof HTMLElement) {
+                if (0 < item.childNodes.length) {
+                    pickupElements(item, className, pickupElms);
+                }
 
-            if (elm.className == className) {
-                pickupElms.push(elm);
+                if (item.className == className) {
+                    pickupElms.push(item);
+                }
             }
         }
     }
@@ -335,8 +333,9 @@ namespace TextAdv {
                 let elm: Node | null = this.base.parentNode;
                 if (elm == null) {
                     break;
-                } else {
-                    this.base = <HTMLElement>elm;
+                }
+                if (elm instanceof HTMLElement) {
+                    this.base = elm;
                 }
             }
         }
@@ -464,7 +463,7 @@ namespace TextAdv {
 
         for (let j = 0, jlen: number = scene.links.length; j < jlen; j++) {
             let link: Link = scene.links[j];
-            let toIdx = link.toIdx;
+            let toIdx: number = link.toIdx;
             $result.logging(scene.steps + ' →[' + toIdx + ']');
 
             let toScene: Scene | null = pickupScene(scenes, toIdx);
@@ -516,9 +515,9 @@ namespace TextAdv {
 }
 
 window.addEventListener('load', (): void => {
-    let displayElm = <HTMLDivElement>document.getElementById('display');
-    let sourceElm = <HTMLTextAreaElement>document.getElementById('source');
-    if (sourceElm != null && displayElm != null) {
+    let displayElm: HTMLElement | null = document.getElementById('display');
+    let sourceElm: HTMLElement | null = document.getElementById('source');
+    if (displayElm instanceof HTMLElement && sourceElm instanceof HTMLTextAreaElement) {
         TextAdv.initialize(displayElm, sourceElm.value);
         TextAdv.start();
     }

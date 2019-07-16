@@ -118,17 +118,17 @@ namespace Aao {
     }
 
     class GameBoard {
-        fieldGraph: HTMLDivElement;
-        fieldAscii: HTMLDivElement | undefined = undefined;
-        objectAscii: HTMLDivElement | undefined = undefined;
+        fieldGraph: HTMLElement;
+        fieldAscii: HTMLElement | undefined = undefined;
+        objectAscii: HTMLElement | undefined = undefined;
         asciiPosition: Array<string>;
-        debug: HTMLDivElement | undefined = undefined;
+        debug: HTMLElement | undefined = undefined;
 
         current: GameField;
         next: GameField;
 
         constructor() {
-            this.fieldGraph = <HTMLDivElement>document.createElement('DIV');
+            this.fieldGraph = document.createElement('DIV');
             this.asciiPosition = new Array<string>();
             for (let i = 0; i < 15; i++) {
                 this.asciiPosition.push('                                        ');
@@ -194,9 +194,9 @@ namespace Aao {
                 if (attr == 'start_field') {
                     this.start_field = value;
                 } else if (attr == 'start_x') {
-                    this.start_x = +value;
+                    this.start_x = Number(value);
                 } else if (attr == 'start_y') {
-                    this.start_y = +value;
+                    this.start_y = Number(value);
                 } else if (attr == 'start_muki') {
                     if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
                         this.start_muki = createMuki(value);
@@ -360,7 +360,7 @@ namespace Aao {
         });
 
         document.addEventListener('keyup', (e: KeyboardEvent): void => {
-            let inputCode = Kyoutsu.getInputCode(e.key);
+            let inputCode: number = Kyoutsu.getInputCode(e.key);
             documentKeyup(inputCode);
         });
 
@@ -372,7 +372,7 @@ namespace Aao {
             throw 'illigal data file';
         }
 
-        let player = gameInitter.player;
+        let player: Character = gameInitter.player;
 
         for (let i = 0, len: number = gameInitter.gameFieldGamenList.length; i < len; i++) {
             _GameFieldGamenList.push(gameInitter.gameFieldGamenList[i]);
@@ -411,7 +411,7 @@ namespace Aao {
         let mainBoard: HTMLElement = Kyoutsu.getElementById('mainBoard');
 
         {
-            let elm: HTMLDivElement = _gameBoard.fieldGraph;
+            let elm: HTMLElement = _gameBoard.fieldGraph;
             elm.className = 'fieldGraph';
 
             _gameBoard.current.backGround.style.position = 'absolute';
@@ -426,7 +426,7 @@ namespace Aao {
         }
 
         {
-            let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+            let elm: HTMLElement = document.createElement('DIV');
             elm.className = 'fieldAscii';
             elm.style.left = '660px'
 
@@ -435,7 +435,7 @@ namespace Aao {
             mainBoard.appendChild(elm);
         }
         {
-            let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+            let elm: HTMLElement = document.createElement('DIV');
             elm.className = 'fieldAscii';
             elm.style.left = '660px'
             elm.style.color = 'red';
@@ -445,7 +445,7 @@ namespace Aao {
             mainBoard.appendChild(elm);
         }
         {
-            let elm: HTMLDivElement = <HTMLDivElement>document.createElement('DIV');
+            let elm: HTMLElement = document.createElement('DIV');
             elm.style.position = 'absolute';
             elm.style.top = '180px';
             elm.style.left = '660px';
@@ -467,7 +467,7 @@ namespace Aao {
     }
 
     function keyboardMousedown(evt: Event): void {
-        let key = Kyoutsu.getKeytop(evt.target);
+        let key: string = Kyoutsu.getKeytop(evt.target);
         documentKeydown(key);
     }
 
@@ -538,7 +538,7 @@ namespace Aao {
 
         chr = (chr + '..').substr(0, 2);
 
-        let swp = _gameBoard.asciiPosition[y];
+        let swp: string = _gameBoard.asciiPosition[y];
         swp = swp.substr(0, x) + chr + swp.substr(x + 2);
         _gameBoard.asciiPosition[y] = swp;
     }
@@ -575,7 +575,7 @@ namespace Aao {
                 return;
             }
 
-            let koudou = this.gameStatus.koudouArray.shift();
+            let koudou: Koudou | undefined = this.gameStatus.koudouArray.shift();
             if (koudou != undefined) {
                 if (koudou.type == 'idou') {
                     let muki: Muki = koudou.muki;
@@ -583,7 +583,7 @@ namespace Aao {
                     this.gameStatus.player.moveBy(muki.nextX * 4, muki.nextY * 4, muki);
 
                     if (this.gamenOver(this.gameStatus.player, muki)) {
-                        let nextName = this.gameStatus.gameFieldGamen.over[muki.mukiType];
+                        let nextName: string | undefined = this.gameStatus.gameFieldGamen.over[muki.mukiType];
                         if (nextName != undefined) {
                             let nextGameFieldGamen: GameFieldGamen = getGameFieldGamen(nextName);
                             this.gameStatus.gameMode = new ScrollGameMode(this.gameStatus, this.gameStatus.player.muki, nextGameFieldGamen);
@@ -617,11 +617,11 @@ namespace Aao {
         move(muki: Muki): void {
             let character: Character = this.gameStatus.player;
 
-            let next_ascii_x = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextX;
-            let next_ascii_y = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextY;
+            let next_ascii_x: number = Math.floor(character.x / 16) + ((character.x % 16 == 0) ? 1 : 0) * muki.nextX;
+            let next_ascii_y: number = Math.floor(character.y / 32) + ((character.y % 32 == 0) ? 1 : 0) * muki.nextY;
 
-            let check_c1 = get(next_ascii_x, next_ascii_y);
-            let check_c2 = get(next_ascii_x + 1, next_ascii_y);
+            let check_c1: string = get(next_ascii_x, next_ascii_y);
+            let check_c2: string = get(next_ascii_x + 1, next_ascii_y);
 
             let check_offet: string;
             if (muki.mukiType == 'n' || muki.mukiType == 's') {

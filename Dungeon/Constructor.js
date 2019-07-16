@@ -2,7 +2,26 @@
 var Dungeon;
 (function (Dungeon) {
     var ippen = 36;
+    var Elems = (function () {
+        function Elems() {
+            var _this = this;
+            this.maptextElent = undefined;
+            this.init = function () {
+                _this.maptextElent = Kyoutsu.getElementById('maptext');
+            };
+            this.chk = function (elem) {
+                if (elem == undefined) {
+                    throw 'not initialzed.';
+                }
+                return elem;
+            };
+            this.maptext = function () { return _this.chk(_this.maptextElent); };
+        }
+        return Elems;
+    }());
+    var _elems = new Elems();
     function constructor_init() {
+        _elems.init();
         Kyoutsu.getElementById('refresh').addEventListener('click', refresh);
         var partsBoard = Kyoutsu.getElementById('div_partsBoard');
         var futosa = 2;
@@ -34,13 +53,16 @@ var Dungeon;
     Dungeon.constructor_init = constructor_init;
     var _mapdata = new Array();
     function refresh() {
-        var textarea = Kyoutsu.getElementById('maptext');
-        _mapdata = textarea.value.split(/[\r\n]+/g);
+        _mapdata = _elems.maptext().value.split(/[\r\n]+/g);
         var div_map = Kyoutsu.getElementById('div_map');
         Dungeon.mapview(div_map, _mapdata, '');
     }
-    function selectKukaku(e) {
-        var element = Kyoutsu.searchParentElement(e.target, 'kukaku');
+    function selectKukaku(evt) {
+        var target = evt.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        var element = Kyoutsu.searchParentElement(target, 'kukaku');
         if (element == null) {
             return;
         }
@@ -53,7 +75,7 @@ var Dungeon;
         mover.style.top = rect.top + 'px';
         mover.style.left = rect.left + 'px';
         document.body.appendChild(mover);
-        dragStart(e, mover);
+        dragStart(evt, mover);
     }
     var _dragObject = undefined;
     var _startTop = 0;
@@ -112,7 +134,7 @@ var Dungeon;
             }
             line = line.substr(0, x) + c + line.substr(x + 1);
             _mapdata[y] = line;
-            document.getElementById('maptext').value = _mapdata.join('\r\n');
+            _elems.maptext().value = _mapdata.join('\r\n');
             var div_map = Kyoutsu.getElementById('div_map');
             Dungeon.mapview(div_map, _mapdata, '');
         }

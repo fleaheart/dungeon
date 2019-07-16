@@ -105,10 +105,10 @@ var Dungeon;
                     this.start_floor = value;
                 }
                 else if (attr == 'start_x') {
-                    this.start_x = +value;
+                    this.start_x = Number(value);
                 }
                 else if (attr == 'start_y') {
-                    this.start_y = +value;
+                    this.start_y = Number(value);
                 }
                 else if (attr == 'start_muki') {
                     if (value == 'n' || value == 'e' || value == 's' || value == 'w') {
