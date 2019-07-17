@@ -5,10 +5,10 @@ var SaikoroBattle;
     var _debug = new Kyoutsu.Message();
     var GameDeifine = (function () {
         function GameDeifine() {
-            this.attackActionList = new Array();
-            this.defenseActionList = new Array();
-            this.playerList = new Array();
-            this.enemyList = new Array();
+            this.attackActionList = [];
+            this.defenseActionList = [];
+            this.playerList = [];
+            this.enemyList = [];
         }
         return GameDeifine;
     }());
@@ -16,8 +16,8 @@ var SaikoroBattle;
     var GameStatus = (function () {
         function GameStatus() {
             this.gameMode = undefined;
-            this.players = new Array();
-            this.actionStack = new Array();
+            this.players = [];
+            this.actionStack = [];
             this.attacker = NullCharacter;
             this.defender = NullCharacter;
         }
@@ -188,8 +188,8 @@ var SaikoroBattle;
     var Character = (function () {
         function Character(id, type, name) {
             this.hitPointMax = 0;
-            this.attackPalette = new Array();
-            this.defensePalette = new Array();
+            this.attackPalette = [];
+            this.defensePalette = [];
             this.id = id;
             this.type = type;
             this.name = name;
@@ -213,8 +213,8 @@ var SaikoroBattle;
         function Player(character) {
             this.hitPoint = 0;
             this.saikoroMe = 1;
-            this.attackBoxList = new Array();
-            this.defenseBoxList = new Array();
+            this.attackBoxList = [];
+            this.defenseBoxList = [];
             this.character = character.clone();
             this.characterBoard = document.createElement('DIV');
             this.hitPointElement = document.createElement('SPAN');
@@ -275,7 +275,7 @@ var SaikoroBattle;
         function ActionSetTask(gameStatus) {
             this.name = 'ActionSetTask';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.actionList = new Array();
+            this.actionList = [];
             this.tasks = new Task.ParallelTasks();
             for (var i = 0, len = gameStatus.players.length; i < len; i++) {
                 var player = gameStatus.players[i];
@@ -391,8 +391,8 @@ var SaikoroBattle;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.ParallelTasks();
-            this.order = new Array();
-            this.orderEntryList = new Array();
+            this.order = [];
+            this.orderEntryList = [];
             this.callback = function (playerIdx, me) {
                 _this.gameStatus.players[playerIdx].saikoroMe = me;
             };
@@ -401,7 +401,7 @@ var SaikoroBattle;
             };
             this.check = function () {
                 var existsKaburi = false;
-                var meList = new Array();
+                var meList = [];
                 for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
                     if (_this.orderEntryList[i].entry) {
                         var me = _this.gameStatus.players[i].saikoroMe;

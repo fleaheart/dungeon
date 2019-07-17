@@ -37,7 +37,7 @@ namespace Task {
     export class SequentialTasks implements Task {
         readonly name: string = 'SequentialTasks';
         mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        tasks: Array<Task> = new Array<Task>();
+        tasks: Task[] = [];
 
         private step: number = -1;
 
@@ -94,7 +94,7 @@ namespace Task {
     export class ParallelTasks implements Task {
         readonly name: string = 'ParallelTasks';
         mode: ModeType = TaskCtrl.DEFAULT_MODE;
-        tasks: Array<Task> = new Array<Task>();
+        tasks: Task[] = [];
 
         add(task: Task): void {
             this.tasks.push(task);

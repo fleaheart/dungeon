@@ -127,7 +127,7 @@ var Dungeon;
     var FloorInitter = (function () {
         function FloorInitter() {
             this.name = 'no define';
-            this.maptext = new Array();
+            this.maptext = [];
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
             this.maptextMode = false;
         }
@@ -163,9 +163,9 @@ var Dungeon;
     var _gameStatus = {
         gameInitter: new GameInitter(),
         player: new Character(),
-        mapdata: new Array()
+        mapdata: []
     };
-    var _floorList = new Array();
+    var _floorList = [];
     function getFloor(name) {
         for (var i = 0, len = _floorList.length; i < len; i++) {
             var item = _floorList[i];
@@ -297,7 +297,7 @@ var Dungeon;
         }
     }
     function map_kiritori(mapdata, zenpou, hidarimigi) {
-        var kiritorimapdata = new Array();
+        var kiritorimapdata = [];
         var x = 0;
         var y = 0;
         if (_gameStatus.player.muki.bit == Kyoutsu.BIT_TOP) {
@@ -382,8 +382,8 @@ var Dungeon;
         context.beginPath();
         context.clearRect(0, 0, $SCREEN_WIDTH, $SCREEN_HEIGHT);
         var kabe = -1;
-        var hidarikabe = new Array(zenpou);
-        var migikabe = new Array(zenpou);
+        var hidarikabe = [zenpou];
+        var migikabe = [zenpou];
         for (var i = 0; i <= zenpou; i++) {
             var c = mapdata[zenpou - i].charAt(hidarimigi);
             var n = parseInt(c, 16);

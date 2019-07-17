@@ -76,7 +76,7 @@ var Aao;
     var GameField = (function () {
         function GameField() {
             this.backGround = document.createElement('IMG');
-            this.maptext = new Array();
+            this.maptext = [];
         }
         return GameField;
     }());
@@ -86,7 +86,7 @@ var Aao;
             this.objectAscii = undefined;
             this.debug = undefined;
             this.fieldGraph = document.createElement('DIV');
-            this.asciiPosition = new Array();
+            this.asciiPosition = [];
             for (var i = 0; i < 15; i++) {
                 this.asciiPosition.push('                                        ');
             }
@@ -109,7 +109,7 @@ var Aao;
         }
         return GameFieldGamen;
     }());
-    var _GameFieldGamenList = new Array();
+    var _GameFieldGamenList = [];
     function getGameFieldGamen(name) {
         for (var i = 0, len = _GameFieldGamenList.length; i < len; i++) {
             var item = _GameFieldGamenList[i];
@@ -126,7 +126,7 @@ var Aao;
             this.start_x = 0;
             this.start_y = 0;
             this.start_muki = undefined;
-            this.gameFieldGamenList = new Array();
+            this.gameFieldGamenList = [];
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
         }
         GameInitter.prototype.analize = function (line) {
@@ -157,10 +157,10 @@ var Aao;
     var PlayerInitter = (function () {
         function PlayerInitter(gameInitter) {
             this.chr = 'no define';
-            this.mukiList_n = new Array();
-            this.mukiList_e = new Array();
-            this.mukiList_s = new Array();
-            this.mukiList_w = new Array();
+            this.mukiList_n = [];
+            this.mukiList_e = [];
+            this.mukiList_s = [];
+            this.mukiList_w = [];
             this.reg = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
             this.gameInitter = gameInitter;
         }
@@ -196,7 +196,7 @@ var Aao;
     var GameFieldGamenInitter = (function () {
         function GameFieldGamenInitter(gameInitter) {
             this.name = 'no define';
-            this.maptext = new Array();
+            this.maptext = [];
             this.imgsrc = 'no define';
             this.over_n = undefined;
             this.over_e = undefined;
@@ -380,10 +380,10 @@ var Aao;
         function GameStatus() {
             this.gameMode = undefined;
             this.player = new Character('');
-            this.gameFieldGamen = new GameFieldGamen('null', new Array(), '', undefined, undefined, undefined, undefined);
+            this.gameFieldGamen = new GameFieldGamen('null', [], '', undefined, undefined, undefined, undefined);
             this.frameCount = 0;
             this.lastInputCode = 0;
-            this.koudouArray = new Array();
+            this.koudouArray = [];
         }
         return GameStatus;
     }());

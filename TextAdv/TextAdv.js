@@ -19,22 +19,22 @@ var TextAdv;
             this.text = '';
             this.title = '';
             this.html = '';
-            this.links = new Array();
+            this.links = [];
             this.checked = false;
-            this.steps = new Array();
+            this.steps = [];
         }
         return Scene;
     }());
     TextAdv.Scene = Scene;
     var $linkColor = 'blue';
     var $selectColor = 'red';
-    var $trace = new Array();
+    var $trace = [];
     var $mode = TextAdv.MODE_MAKIMONO;
     var $display = undefined;
-    var $scenes = new Array();
+    var $scenes = [];
     var $scrlctrl = undefined;
     function analize(source) {
-        var scenes = new Array();
+        var scenes = [];
         var result = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         var lines = result.split('\n');
         for (var i = 0, len = lines.length; i < len; i++) {
@@ -65,8 +65,8 @@ var TextAdv;
         var regYajirushiOnly = /→\s*([0-9０-９]+)/;
         text = text.replace(regDaikakkoCheck, function (s) { return '##BLOCK##' + s + '##BLOCK##'; });
         var blocks = text.split('##BLOCK##');
-        var blockHTMLs = new Array();
-        var links = new Array();
+        var blockHTMLs = [];
+        var links = [];
         var linkCount = 0;
         for (var i = 0, len = blocks.length; i < len; i++) {
             var block = blocks[i];
@@ -156,7 +156,7 @@ var TextAdv;
                 if (res != null) {
                     step = Number(RegExp.$1);
                 }
-                var linkElms_1 = new Array();
+                var linkElms_1 = [];
                 pickupElements(sceneElm, 'link', linkElms_1);
                 for (var i = 0; i < linkElms_1.length; i++) {
                     linkElms_1[i].style.color = $linkColor;
@@ -192,7 +192,7 @@ var TextAdv;
         else {
             throw 'unreachable';
         }
-        var linkElms = new Array();
+        var linkElms = [];
         pickupElements(sceneDiv, 'link', linkElms);
         var _loop_1 = function (i, len) {
             var linkElm = linkElms[i];
@@ -315,9 +315,9 @@ var TextAdv;
             this.mugenStopper = 0;
             this.sceneCount = 0;
             this.maxIdx = 0;
-            this.nukeIdxs = new Array();
+            this.nukeIdxs = [];
             this.existsStartScene = false;
-            this.errorMessages = new Array();
+            this.errorMessages = [];
         }
         CheckSourceResult.prototype.logging = function (text) {
             this.log += text;
@@ -328,7 +328,7 @@ var TextAdv;
     function checkSource(source) {
         TextAdv.$result = new CheckSourceResult();
         var analyzeScenes = analize(source);
-        var scenes = new Array();
+        var scenes = [];
         analyzeScenes.forEach(function (scene) {
             if (scene != undefined) {
                 TextAdv.$result.sceneCount++;
@@ -359,7 +359,7 @@ var TextAdv;
         TextAdv.$result.logging('<br>');
         TextAdv.$result.logging('インデックス抜け: ' + TextAdv.$result.nukeIdxs + '<br>');
         if (TextAdv.$result.existsStartScene) {
-            var steps = new Array();
+            var steps = [];
             checkScene(scenes, 0, steps);
             TextAdv.$result.logging(' 無限ストッパーカウント: ' + TextAdv.$result.mugenStopper + '<br>');
         }
@@ -432,7 +432,7 @@ var TextAdv;
         return null;
     }
     function arrayClone(array) {
-        var cloneArray = new Array();
+        var cloneArray = [];
         array.forEach(function (value) {
             cloneArray.push(value);
         });

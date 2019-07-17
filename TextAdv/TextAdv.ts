@@ -18,27 +18,27 @@ namespace TextAdv {
         text: string = '';
         title: string = '';
         html: string = '';
-        links: Array<Link> = new Array<Link>();
+        links: Link[] = [];
         // 妥当性用
         checked: boolean = false;
-        steps: Array<number> = new Array<number>();
+        steps: number[] = [];
     }
 
     let $linkColor: string = 'blue';
     let $selectColor: string = 'red';
 
-    let $trace = new Array<number>();  // 遷移順配列
+    let $trace: number[] = [];  // 遷移順配列
     let $mode: DisplyMode = MODE_MAKIMONO;
 
     let $display: HTMLElement | undefined = undefined;
-    let $scenes: Array<Scene> = new Array<Scene>();
+    let $scenes: Scene[] = [];
     let $scrlctrl: ScrollCtrl | undefined = undefined;
 
-    export function analize(source: string): Array<Scene> {
-        let scenes: Array<Scene> = new Array<Scene>();
+    export function analize(source: string): Scene[] {
+        let scenes: Scene[] = [];
 
         let result: string = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        let lines: Array<string> = result.split('\n');
+        let lines: string[] = result.split('\n');
 
         for (let i = 0, len: number = lines.length; i < len; i++) {
             lines[i] = lines[i].replace(/^\s*([\d０-９]+)\s*[:：]/, (_m: string | null, g1: string): string => {
@@ -47,7 +47,7 @@ namespace TextAdv {
             });
         }
 
-        let sceneWorks: Array<string> = lines.join('\n').split(/<>/);
+        let sceneWorks: string[] = lines.join('\n').split(/<>/);
         for (let i = 0, len: number = sceneWorks.length; i < len; i++) {
             let res: RegExpMatchArray | null = sceneWorks[i].match(/^(\d+):((\n|.)*)/m);
             if (res != null) {
@@ -75,14 +75,14 @@ namespace TextAdv {
         let regYajirushiOnly: RegExp = /→\s*([0-9０-９]+)/;   // → 000
 
         text = text.replace(regDaikakkoCheck, (s: string): string => { return '##BLOCK##' + s + '##BLOCK##'; });
-        let blocks: Array<string> = text.split('##BLOCK##');
+        let blocks: string[] = text.split('##BLOCK##');
 
         /*
          * BLOCKごとにcreateContextualFragmentしようとしたが、アンカーをまたぐタグに対応できなかったので、アンカーも文字列で対応
          */
-        let blockHTMLs = new Array<string>();
+        let blockHTMLs: string[] = [];
 
-        let links = new Array<Link>();
+        let links: Link[] = [];
         let linkCount = 0;
 
         for (let i = 0, len: number = blocks.length; i < len; i++) {
@@ -123,7 +123,7 @@ namespace TextAdv {
         }
 
         let html: string = blockHTMLs.join('');
-        let titlehtml: Array<string> = html.split('◇');
+        let titlehtml: string[] = html.split('◇');
         if (2 <= titlehtml.length) {
             scene.title = titlehtml[0];
             scene.html = titlehtml[1];
@@ -143,7 +143,7 @@ namespace TextAdv {
     export function initialize(display: HTMLElement, source: string): void {
         $display = display;
         $scenes.length = 0;
-        let list: Array<Scene> = analize(source);
+        let list: Scene[] = analize(source);
         for (let i = 0, len: number = list.length; i < len; i++) {
             $scenes.push(list[i]);
         }
@@ -183,7 +183,7 @@ namespace TextAdv {
                     step = Number(RegExp.$1);
                 }
 
-                let linkElms = new Array<HTMLElement>();
+                let linkElms: HTMLElement[] = [];
                 pickupElements(sceneElm, 'link', linkElms);
                 for (let i = 0; i < linkElms.length; i++) {
                     linkElms[i].style.color = $linkColor;
@@ -226,7 +226,7 @@ namespace TextAdv {
         }
 
         // リンクにアンカーをつける
-        let linkElms = new Array<HTMLElement>();
+        let linkElms: HTMLElement[] = [];
         pickupElements(sceneDiv, 'link', linkElms);
 
         for (let i = 0, len: number = linkElms.length; i < len; i++) {
@@ -292,7 +292,7 @@ namespace TextAdv {
         return null;
     }
 
-    function pickupElements(parentElm: HTMLElement, className: string, pickupElms: Array<HTMLElement>): void {
+    function pickupElements(parentElm: HTMLElement, className: string, pickupElms: HTMLElement[]): void {
         let childElms: NodeList = parentElm.childNodes;
         for (let i = 0; i < childElms.length; i++) {
             let item: Node | null = childElms.item(i);
@@ -377,9 +377,9 @@ namespace TextAdv {
         mugenStopper: number = 0;
         sceneCount: number = 0;
         maxIdx: number = 0;
-        nukeIdxs: Array<number> = new Array<number>();
+        nukeIdxs: number[] = [];
         existsStartScene: boolean = false;
-        errorMessages: Array<string> = new Array<string>();
+        errorMessages: string[] = [];
 
         logging(text: string): void {
             this.log += text;
@@ -390,10 +390,10 @@ namespace TextAdv {
     export function checkSource(source: string): void {
         $result = new CheckSourceResult();
 
-        let analyzeScenes: Array<Scene> = analize(source);
+        let analyzeScenes: Scene[] = analize(source);
 
         // undefinedをつめる
-        let scenes = new Array<Scene>();
+        let scenes: Scene[] = [];
         analyzeScenes.forEach(scene => {
             if (scene != undefined) {
                 $result.sceneCount++;
@@ -428,7 +428,7 @@ namespace TextAdv {
         $result.logging('インデックス抜け: ' + $result.nukeIdxs + '<br>');
 
         if ($result.existsStartScene) {
-            let steps = new Array<number>();
+            let steps: number[] = [];
             checkScene(scenes, 0, steps);
             $result.logging(' 無限ストッパーカウント: ' + $result.mugenStopper + '<br>');
         } else {
@@ -447,7 +447,7 @@ namespace TextAdv {
         });
     }
 
-    function checkScene(scenes: Array<Scene>, idx: number, steps: Array<number>): void {
+    function checkScene(scenes: Scene[], idx: number, steps: number[]): void {
         if (10000 < $result.mugenStopper) { return; } $result.mugenStopper++;
 
         steps.push(idx);
@@ -495,7 +495,7 @@ namespace TextAdv {
         scene.checked = true;
     }
 
-    function pickupScene(scenes: Array<Scene>, idx: number): Scene | null {
+    function pickupScene(scenes: Scene[], idx: number): Scene | null {
         for (let i = 0, len = scenes.length; i < len; i++) {
             let scene: Scene = scenes[i];
             if (scene != undefined && scene.idx == idx) {
@@ -505,8 +505,8 @@ namespace TextAdv {
         return null;
     }
 
-    function arrayClone<T>(array: Array<T>): Array<T> {
-        let cloneArray = new Array<T>();
+    function arrayClone<T>(array: T[]): T[] {
+        let cloneArray: T[] = [];
         array.forEach(value => {
             cloneArray.push(value);
         });

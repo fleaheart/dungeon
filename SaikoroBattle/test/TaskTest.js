@@ -189,8 +189,8 @@ var TaskTest;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.ParallelTasks();
-            this.order = new Array();
-            this.orderEntryList = new Array();
+            this.order = [];
+            this.orderEntryList = [];
             this.callback = function (playerIdx, me) {
                 _this.orderEntryList[playerIdx].me = me;
             };
@@ -201,7 +201,7 @@ var TaskTest;
             this.check = function () {
                 dbg('check');
                 var existsKaburi = false;
-                var meList = new Array();
+                var meList = [];
                 for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
                     if (_this.orderEntryList[i].entry) {
                         var me = _this.orderEntryList[i].me;

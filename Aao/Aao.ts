@@ -28,7 +28,7 @@ namespace Aao {
     let muki_e: Muki = new MukiClass('e', 1, 0, 40);
     let muki_s: Muki = new MukiClass('s', 0, 1, 30);
     let muki_w: Muki = new MukiClass('w', -1, 0, 40);
-    let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
+    let mukiArray: Muki[] = [muki_n, muki_e, muki_s, muki_w];
 
     function createMuki(mukiType: MukiType): Muki {
         for (let i = 0, len: number = mukiArray.length; i < len; i++) {
@@ -41,7 +41,7 @@ namespace Aao {
     }
 
     interface MukiListGroup {
-        [idx: string]: Array<string>;
+        [idx: string]: string[];
     }
 
     class Character {
@@ -100,7 +100,7 @@ namespace Aao {
                 return;
             }
 
-            let array: Array<string> = this.mukiListGroup[muki.mukiType];
+            let array: string[] = this.mukiListGroup[muki.mukiType];
             let currentFlame: number = this.frame % array.length;
 
             this.img.src = array[currentFlame];
@@ -109,11 +109,11 @@ namespace Aao {
 
     class GameField {
         backGround: HTMLImageElement;
-        maptext: Array<string>;
+        maptext: string[];
 
         constructor() {
             this.backGround = <HTMLImageElement>document.createElement('IMG');
-            this.maptext = new Array<string>();
+            this.maptext = [];
         }
     }
 
@@ -121,7 +121,7 @@ namespace Aao {
         fieldGraph: HTMLElement;
         fieldAscii: HTMLElement | undefined = undefined;
         objectAscii: HTMLElement | undefined = undefined;
-        asciiPosition: Array<string>;
+        asciiPosition: string[];
         debug: HTMLElement | undefined = undefined;
 
         current: GameField;
@@ -129,7 +129,7 @@ namespace Aao {
 
         constructor() {
             this.fieldGraph = document.createElement('DIV');
-            this.asciiPosition = new Array<string>();
+            this.asciiPosition = [];
             for (let i = 0; i < 15; i++) {
                 this.asciiPosition.push('                                        ');
             }
@@ -142,12 +142,12 @@ namespace Aao {
 
     class GameFieldGamen {
         name: string;
-        maptext: Array<string>;
+        maptext: string[];
         imgsrc: string;
 
         over: { [mukiType: string]: string | undefined } = {};
 
-        constructor(name: string, maptext: Array<string>, imgsrc: string, over_n: string | undefined, over_e: string | undefined, over_s: string | undefined, over_w: string | undefined) {
+        constructor(name: string, maptext: string[], imgsrc: string, over_n: string | undefined, over_e: string | undefined, over_s: string | undefined, over_w: string | undefined) {
             this.name = name;
             this.maptext = maptext;
             this.imgsrc = imgsrc;
@@ -157,7 +157,7 @@ namespace Aao {
             this.over['w'] = over_w;
         }
     }
-    let _GameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
+    let _GameFieldGamenList: GameFieldGamen[] = [];
 
     function getGameFieldGamen(name: string): GameFieldGamen {
         for (let i = 0, len: number = _GameFieldGamenList.length; i < len; i++) {
@@ -181,7 +181,7 @@ namespace Aao {
         start_y: number = 0;
         start_muki: Muki | undefined = undefined;
 
-        gameFieldGamenList: Array<GameFieldGamen> = new Array<GameFieldGamen>();
+        gameFieldGamenList: GameFieldGamen[] = [];
 
         reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
 
@@ -214,10 +214,10 @@ namespace Aao {
         private gameInitter: GameInitter;
         chr: string = 'no define';
 
-        mukiList_n: Array<string> = new Array<string>();
-        mukiList_e: Array<string> = new Array<string>();
-        mukiList_s: Array<string> = new Array<string>();
-        mukiList_w: Array<string> = new Array<string>();
+        mukiList_n: string[] = [];
+        mukiList_e: string[] = [];
+        mukiList_s: string[] = [];
+        mukiList_w: string[] = [];
 
         reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
 
@@ -254,7 +254,7 @@ namespace Aao {
     class GameFieldGamenInitter implements Initter {
         private gameInitter: GameInitter;
         name: string = 'no define';
-        maptext: Array<string> = new Array<string>();
+        maptext: string[] = [];
         imgsrc: string = 'no define';
         over_n: string | undefined = undefined;
         over_e: string | undefined = undefined;
@@ -308,7 +308,7 @@ namespace Aao {
 
     function loadData(gameInitter: GameInitter): void {
         let data: string = Kyoutsu.load('data.txt');
-        let lines: Array<string> = data.split(/[\r\n]+/g);
+        let lines: string[] = data.split(/[\r\n]+/g);
 
         let initter: Initter | undefined = undefined;
 
@@ -484,12 +484,12 @@ namespace Aao {
         gameMode: GameMode | undefined = undefined;
         player: Character = new Character('');
 
-        gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', new Array<string>(), '', undefined, undefined, undefined, undefined);
+        gameFieldGamen: GameFieldGamen = new GameFieldGamen('null', [], '', undefined, undefined, undefined, undefined);
 
         frameCount: number = 0;
         lastInputCode: number = 0;
 
-        koudouArray: Array<Koudou> = new Array<Koudou>();
+        koudouArray: Koudou[] = [];
     }
     let _gameStatus: GameStatus = new GameStatus();
 

@@ -112,7 +112,7 @@ var Kyoutsu;
     var Keyboard = (function () {
         function Keyboard() {
             this.keyboard = document.createElement('DIV');
-            this.keys = new Array();
+            this.keys = [];
             var keyboard = this.keyboard;
             keyboard.style.position = 'absolute';
             keyboard.style.width = '138px';

@@ -124,7 +124,7 @@ namespace Kyoutsu {
 
     export class Keyboard {
         keyboard: HTMLElement = document.createElement('DIV');
-        keys: Array<HTMLElement> = new Array<HTMLElement>();
+        keys: HTMLElement[] = [];
 
         constructor() {
             let keyboard: HTMLElement = this.keyboard;
@@ -157,7 +157,7 @@ namespace Kyoutsu {
             }
         }
 
-        setKeytops(keytops: Array<string>): void {
+        setKeytops(keytops: string[]): void {
             for (let i = 0, len: number = this.keys.length; i < len; i++) {
                 let key: HTMLElement | undefined = this.keys[i];
                 let keytop: string | undefined = keytops[i];

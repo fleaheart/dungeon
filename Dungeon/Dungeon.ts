@@ -57,7 +57,7 @@ namespace Dungeon {
         readonly nextY: number = 0;
     }
     let muki_w = new Muki_W();
-    let mukiArray: Array<Muki> = [muki_n, muki_e, muki_s, muki_w];
+    let mukiArray: Muki[] = [muki_n, muki_e, muki_s, muki_w];
 
     function createMuki(mukiType: MukiType): Muki {
         if (mukiType == 'n') {
@@ -131,7 +131,7 @@ namespace Dungeon {
 
     class FloorInitter implements Initter {
         name: string = 'no define';
-        maptext: Array<string> = new Array<string>();
+        maptext: string[] = [];
 
         reg: RegExp = /^([_0-9a-zA-Z]*): ?(.*)\s*/;
 
@@ -167,19 +167,19 @@ namespace Dungeon {
     interface GameStatus {
         gameInitter: GameInitter;
         player: Character;
-        mapdata: Array<string>;
+        mapdata: string[];
     }
     let _gameStatus: GameStatus = {
         gameInitter: new GameInitter(),
         player: new Character(),
-        mapdata: new Array<string>()
+        mapdata: []
     }
 
     interface Floor {
         name: string;
-        maptext: Array<string>;
+        maptext: string[];
     }
-    let _floorList: Array<Floor> = new Array<Floor>();
+    let _floorList: Floor[] = [];
 
     function getFloor(name: string): Floor {
         for (let i = 0, len: number = _floorList.length; i < len; i++) {
@@ -193,7 +193,7 @@ namespace Dungeon {
 
     function loadData(): void {
         let data: string = Kyoutsu.load('data.txt');
-        let lines: Array<string> = data.split(/[\r\n]+/g);
+        let lines: string[] = data.split(/[\r\n]+/g);
 
         let initter: Initter | undefined = undefined;
 
@@ -349,7 +349,7 @@ namespace Dungeon {
     }
 
     function map_kiritori(mapdata: string[], zenpou: number, hidarimigi: number): string[] {
-        let kiritorimapdata: string[] = new Array();
+        let kiritorimapdata: string[] = [];
         let x: number = 0;
         let y: number = 0;
 
@@ -441,8 +441,8 @@ namespace Dungeon {
 
         let kabe: number = -1;
 
-        let hidarikabe: Array<number> = new Array<number>(zenpou);
-        let migikabe: Array<number> = new Array<number>(zenpou);
+        let hidarikabe: number[] = [zenpou];
+        let migikabe: number[] = [zenpou];
 
         for (let i: number = 0; i <= zenpou; i++) {
             let c: string = mapdata[zenpou - i].charAt(hidarimigi);
@@ -605,7 +605,7 @@ namespace Dungeon {
         context.stroke();
     }
 
-    function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, kabeArray: Array<number>, side: number): void {
+    function kabeyokokaku(context: CanvasRenderingContext2D, fukasa: number, kabeArray: number[], side: number): void {
         let startx: number;
         let fugou: number;
 

@@ -51,7 +51,7 @@ var Dungeon;
         document.body.addEventListener('mouseup', dragStop);
     }
     Dungeon.constructor_init = constructor_init;
-    var _mapdata = new Array();
+    var _mapdata = [];
     function refresh() {
         _mapdata = _elems.maptext().value.split(/[\r\n]+/g);
         var div_map = Kyoutsu.getElementById('div_map');

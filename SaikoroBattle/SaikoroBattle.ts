@@ -4,18 +4,18 @@ namespace SaikoroBattle {
     let _debug = new Kyoutsu.Message();
 
     class GameDeifine {
-        attackActionList: Array<AttackAction> = new Array<AttackAction>();
-        defenseActionList: Array<DefenseAction> = new Array<DefenseAction>();
+        attackActionList: AttackAction[] = [];
+        defenseActionList: DefenseAction[] = [];
 
-        playerList: Array<Character> = new Array<Character>();
-        enemyList: Array<Character> = new Array<Character>();
+        playerList: Character[] = [];
+        enemyList: Character[] = [];
     }
     let _gameDeifine = new GameDeifine();
 
     class GameStatus {
         gameMode: GameMode | undefined = undefined;
-        players: Array<Player> = new Array<Player>();
-        actionStack: Array<number> = new Array<number>();
+        players: Player[] = [];
+        actionStack: number[] = [];
         attacker: Player = NullCharacter;
         defender: Player = NullCharacter;
     }
@@ -78,7 +78,7 @@ namespace SaikoroBattle {
         }
     }
 
-    function setDefaultActionPalette<T extends Action>(list: Array<T>, idText: string, palette: Array<T>): void {
+    function setDefaultActionPalette<T extends Action>(list: T[], idText: string, palette: T[]): void {
         let ids: string[] = idText.split(',');
         if (ids.length != 6) {
             throw 'illegal palette count';
@@ -91,7 +91,7 @@ namespace SaikoroBattle {
         }
     }
 
-    function pickupAction<T extends Action>(list: Array<T>, id: number): T {
+    function pickupAction<T extends Action>(list: T[], id: number): T {
         for (let i = 0, len: number = list.length; i < len; i++) {
             if (list[i].id == id) {
                 return <T>list[i].clone();
@@ -136,7 +136,7 @@ namespace SaikoroBattle {
 
         for (let attackDefense: number = 1; attackDefense <= 2; attackDefense++) {
             let actionBoard: HTMLElement;
-            let actionBoxList: Array<HTMLElement>;
+            let actionBoxList: HTMLElement[];
 
             if (attackDefense == 1) {
                 actionBoard = player.attackActionBoard;
@@ -238,8 +238,8 @@ namespace SaikoroBattle {
         name: string;
         hitPointMax: number = 0;
 
-        attackPalette: Array<AttackAction> = new Array<AttackAction>();
-        defensePalette: Array<DefenseAction> = new Array<DefenseAction>();
+        attackPalette: AttackAction[] = [];
+        defensePalette: DefenseAction[] = [];
 
         constructor(id: number, type: string, name: string) {
             this.id = id;
@@ -258,7 +258,7 @@ namespace SaikoroBattle {
         }
     }
 
-    function cloneList<T extends Action>(source: Array<T>, destination: Array<T>): void {
+    function cloneList<T extends Action>(source: T[], destination: T[]): void {
         destination.length = 0;
         for (let i = 0, len: number = source.length; i < len; i++) {
             destination.push(<T>source[i].clone());
@@ -276,9 +276,9 @@ namespace SaikoroBattle {
         saikoroMe: number = 1;
 
         attackActionBoard: HTMLElement;
-        attackBoxList: Array<HTMLElement> = new Array<HTMLElement>();
+        attackBoxList: HTMLElement[] = [];
         defenseActionBoard: HTMLElement;
-        defenseBoxList: Array<HTMLElement> = new Array<HTMLElement>();
+        defenseBoxList: HTMLElement[] = [];
 
         constructor(character: Character) {
             this.character = character.clone();
@@ -360,7 +360,7 @@ namespace SaikoroBattle {
         readonly name: string = 'ActionSetTask';
         mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
 
-        private actionList: Array<Action> = new Array<Action>();
+        private actionList: Action[] = [];
         private tasks = new Task.ParallelTasks();
 
         constructor(gameStatus: GameStatus) {
@@ -373,7 +373,7 @@ namespace SaikoroBattle {
         private setActionBox(player: Player): void {
             let tasks = new Task.SequentialTasks();
             for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                let actionBoxList: Array<HTMLElement>;
+                let actionBoxList: HTMLElement[];
                 if (attackDefense == 1) {
                     this.actionList = player.character.attackPalette;
                     actionBoxList = player.attackBoxList;
@@ -494,8 +494,8 @@ namespace SaikoroBattle {
 
         private tasks: Task.ParallelTasks = new Task.ParallelTasks();
 
-        private order: Array<number> = new Array<number>();
-        private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
+        private order: number[] = [];
+        private orderEntryList: { entry: boolean, me: number }[] = [];
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
@@ -555,7 +555,7 @@ namespace SaikoroBattle {
 
         private check = (): void => {
             let existsKaburi: boolean = false;
-            let meList: Array<{ playerIdx: number, me: number, kaburi: boolean }> = new Array();
+            let meList: { playerIdx: number, me: number, kaburi: boolean }[] = [];
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 if (this.orderEntryList[i].entry) {
                     let me: number = this.gameStatus.players[i].saikoroMe;
@@ -812,7 +812,7 @@ namespace SaikoroBattle {
         }
     }
 
-    function actionSelect(actionBoxList: Array<HTMLElement>, me: number, className: string): void {
+    function actionSelect(actionBoxList: HTMLElement[], me: number, className: string): void {
         for (let i = 0; i < 6; i++) {
             let box: HTMLElement = actionBoxList[i];
 
@@ -822,11 +822,11 @@ namespace SaikoroBattle {
         }
     }
 
-    function actionSelectReset(players: Array<Player>): void {
+    function actionSelectReset(players: Player[]): void {
         for (let i = 0, len: number = players.length; i < len; i++) {
             let player: Player = players[i];
             for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
-                let actionBoxList: Array<HTMLElement>;
+                let actionBoxList: HTMLElement[];
                 if (attackDefense == 1) {
                     actionBoxList = player.attackBoxList;
                 } else {

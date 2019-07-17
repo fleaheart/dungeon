@@ -25,7 +25,7 @@ namespace TaskTest {
         public count: number = 0;
         public gameMode: GameMode | undefined = undefined;
         public me: number = -1;
-        public players: Array<number> = [-1, -1, -1, -1, -1, -1, -1];
+        public players: number[] = [-1, -1, -1, -1, -1, -1, -1];
     }
 
     let _gameStatus = new GameStatus();
@@ -249,8 +249,8 @@ namespace TaskTest {
 
         private tasks = new Task.ParallelTasks();
 
-        private order: Array<number> = new Array<number>();
-        private orderEntryList: Array<{ entry: boolean, me: number }> = new Array();
+        private order: number[] = [];
+        private orderEntryList: { entry: boolean, me: number }[] = [];
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
@@ -305,7 +305,7 @@ namespace TaskTest {
             dbg('check');
 
             let existsKaburi: boolean = false;
-            let meList: Array<{ playerIdx: number, me: number, kaburi: boolean }> = new Array();
+            let meList: { playerIdx: number, me: number, kaburi: boolean }[] = [];
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 if (this.orderEntryList[i].entry) {
                     let me = this.orderEntryList[i].me

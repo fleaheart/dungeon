@@ -63,7 +63,7 @@ namespace Dungeon {
         document.body.addEventListener('mouseup', dragStop);
     }
 
-    let _mapdata: Array<string> = new Array<string>();
+    let _mapdata: string[] = [];
 
     function refresh(): void {
         _mapdata = _elems.maptext().value.split(/[\r\n]+/g);

@@ -28,7 +28,7 @@ var Task;
         function SequentialTasks() {
             this.name = 'SequentialTasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Array();
+            this.tasks = [];
             this.step = -1;
         }
         SequentialTasks.prototype.add = function (task) {
@@ -78,7 +78,7 @@ var Task;
         function ParallelTasks() {
             this.name = 'ParallelTasks';
             this.mode = TaskCtrl.DEFAULT_MODE;
-            this.tasks = new Array();
+            this.tasks = [];
         }
         ParallelTasks.prototype.add = function (task) {
             this.tasks.push(task);
