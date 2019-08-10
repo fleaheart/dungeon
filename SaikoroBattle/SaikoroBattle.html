@@ -13,16 +13,18 @@
 <script type="text/javascript">
 window.addEventListener('load', function() {
     SaikoroBattle.init();
+
+    SaikoroBattle.addPlayer(SaikoroBattle.searchPlayer(0));
+    SaikoroBattle.addPlayer(SaikoroBattle.searchPlayer(0));
+    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
+    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
+    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
+
+    SaikoroBattle.initMainBoard();
 });
 </script>
 
 <body>
-    <div id="mainBoard">
-
-    </div>
-    <div id="messageBoard" style="overflow:scroll;height:140px;border:1px dashed black;">
-
-    </div>
     <div id="debugBoard" style="display:none;overflow:scroll;height:300px;border:1px dashed black;">
 
     </div>

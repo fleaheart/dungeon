@@ -14,25 +14,20 @@ namespace SaikoroBattle {
 
     class GameStatus {
         gameMode: GameMode | undefined = undefined;
-        players: Player[] = [];
+        players: SaikoroBattlePlayer[] = [];
         actionStack: number[] = [];
-        attacker: Player = NullCharacter;
-        defender: Player = NullCharacter;
+        attacker: SaikoroBattlePlayer = NullCharacter;
+        defender: SaikoroBattlePlayer = NullCharacter;
     }
     let _gameStatus = new GameStatus();
 
     export function init(): void {
-        _message.set(Kyoutsu.getElementById('messageBoard'));
-        _debug.set(Kyoutsu.getElementById('messageBoard'));
+        _debug.set(Kyoutsu.getElementById('debugBoard'));
 
         initDefine();
 
-        _gameStatus.players.push(new Player(_gameDeifine.playerList[0]));
-        _gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
-        // _gameStatus.players.push(new Player(_gameDeifine.enemyList[0]));
-
-        initMainBoard(_gameStatus);
-    };
+        clearGamePlayer();
+    }
 
     function initDefine(): void {
         let fileData: string = Kyoutsu.load('SaikoroBattle.txt');
@@ -100,16 +95,34 @@ namespace SaikoroBattle {
         throw 'id:' + String(id) + ' is not found';
     }
 
-    function initMainBoard(gameStatus: GameStatus): void {
-        let mainBoard: HTMLElement = Kyoutsu.getElementById('mainBoard');
+    export function initMainBoard(): void {
+        let gameStatus: GameStatus = _gameStatus;
 
-        let startButton = <HTMLButtonElement>document.createElement('BUTTON');
-        startButton.textContent = 'start';
-        startButton.addEventListener('click', susumeruGame);
-        mainBoard.appendChild(startButton);
+        let mainBoard: HTMLElement = document.createElement('DIV');
+        mainBoard.style.border = '1px solid red';
+        mainBoard.style.width = '462px';
+        document.body.appendChild(mainBoard);
+
+        let messageBoard: HTMLElement = document.createElement('DIV');
+        messageBoard.style.border = '1px dashed black';
+        messageBoard.style.width = '462px';
+        messageBoard.style.height = '140px';
+        messageBoard.style.overflow = 'scroll';
+        document.body.appendChild(messageBoard);
+
+        _message.set(messageBoard);
+
+        let keyboard = new Kyoutsu.Keyboard();
+
+        document.body.appendChild(keyboard.keyboard);
+
+        keyboard.setKeyEvent('click', keyboardClick);
+        keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
+
+        keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
 
         for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-            let player: Player = gameStatus.players[i];
+            let player: SaikoroBattlePlayer = gameStatus.players[i];
 
             createActonBoard(player);
 
@@ -117,22 +130,33 @@ namespace SaikoroBattle {
         }
     }
 
-    function createActonBoard(player: Player): void {
+    function clearGamePlayer() {
+        _gameStatus.players.length = 0;
+    }
+
+    export function addPlayer(player: SaikoroBattlePlayer): void {
+        _gameStatus.players.push(player);
+    }
+
+    export function searchPlayer(idx: number): SaikoroBattlePlayer {
+        return new SaikoroBattlePlayer(_gameDeifine.playerList[idx]);
+    }
+
+    export function searchEnemy(idx: number): SaikoroBattlePlayer {
+        return new SaikoroBattlePlayer(_gameDeifine.enemyList[idx]);
+    }
+
+    function createActonBoard(player: SaikoroBattlePlayer): void {
         {
             let span: HTMLElement = document.createElement('SPAN');
             span.textContent = player.character.name + ' HP: ';
             player.characterBoard.appendChild(span);
         }
-        {
-            let span: HTMLElement = document.createElement('SPAN');
-            player.characterBoard.appendChild(span);
-            player.hitPointElement = span;
-        }
-        {
-            let saikoro: HTMLElement = player.saikoroElement;
-            saikoro.className = 'saikoro';
-            player.characterBoard.appendChild(saikoro);
-        }
+
+        player.characterBoard.appendChild(player.hitPointElement);
+        player.characterBoard.appendChild(player.debugElement);
+        player.saikoroElement.className = 'saikoro';
+        player.characterBoard.appendChild(player.saikoroElement);
 
         for (let attackDefense: number = 1; attackDefense <= 2; attackDefense++) {
             let actionBoard: HTMLElement;
@@ -231,9 +255,11 @@ namespace SaikoroBattle {
         }
     }
 
+    type PlayerType = 'NULL' | 'Player' | 'Enemy';
+
     class Character implements GameObject {
         id: number;
-        type: string;
+        type: PlayerType;
 
         name: string;
         hitPointMax: number = 0;
@@ -241,7 +267,7 @@ namespace SaikoroBattle {
         attackPalette: AttackAction[] = [];
         defensePalette: DefenseAction[] = [];
 
-        constructor(id: number, type: string, name: string) {
+        constructor(id: number, type: PlayerType, name: string) {
             this.id = id;
             this.type = type;
             this.name = name;
@@ -265,13 +291,14 @@ namespace SaikoroBattle {
         }
     }
 
-    class Player {
+    class SaikoroBattlePlayer {
         character: Character;
 
         hitPoint: number = 0;
 
         characterBoard: HTMLElement;
         hitPointElement: HTMLElement;
+        debugElement: HTMLElement;
         saikoroElement: HTMLElement;
         saikoroMe: number = 1;
 
@@ -280,21 +307,32 @@ namespace SaikoroBattle {
         defenseActionBoard: HTMLElement;
         defenseBoxList: HTMLElement[] = [];
 
+        operationOrder: number = -1;
+        targetIdx: number = -1;
+
         constructor(character: Character) {
             this.character = character.clone();
 
             this.characterBoard = document.createElement('DIV');
             this.hitPointElement = document.createElement('SPAN');
+            this.debugElement = document.createElement('SPAN');
             this.saikoroElement = document.createElement('DIV');
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
         }
     }
 
-    let NullCharacter = new Player(new Character(-1, 'NULL', 'NULL'));
+    let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
 
     interface GameMode extends Task.Task {
         gameStatus: GameStatus;
+    }
+
+    function keyboardClick(e: Event) {
+        let key: string = Kyoutsu.getKeytop(e.target);
+        if (key == 'w') {
+            susumeruGame();
+        }
     }
 
     export function susumeruGame(): void {
@@ -305,6 +343,7 @@ namespace SaikoroBattle {
         if (_gameStatus.gameMode.mode == 'running') {
             _gameStatus.gameMode.asap();
             return;
+
         } else if (_gameStatus.gameMode.mode == 'idle') {
             _gameStatus.gameMode.do();
         }
@@ -322,7 +361,7 @@ namespace SaikoroBattle {
             this.gameStatus = gameStatus;
 
             for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-                let player: Player = gameStatus.players[i];
+                let player: SaikoroBattlePlayer = gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
             }
 
@@ -352,7 +391,7 @@ namespace SaikoroBattle {
         finish = (): void => {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
         }
     }
 
@@ -365,12 +404,12 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-                let player: Player = gameStatus.players[i];
+                let player: SaikoroBattlePlayer = gameStatus.players[i];
                 this.setActionBox(player);
             }
         }
 
-        private setActionBox(player: Player): void {
+        private setActionBox(player: SaikoroBattlePlayer): void {
             let tasks = new Task.SequentialTasks();
             for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
                 let actionBoxList: HTMLElement[];
@@ -482,6 +521,52 @@ namespace SaikoroBattle {
             Task.TaskCtrl.finish(this);
 
             this.callback(this.me);
+        }
+    }
+
+    class ActionTaishouSelectMode implements GameMode {
+        readonly name: string = 'ActionTaishouSelectMode';
+        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        gameStatus: GameStatus;
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+        }
+
+        do = (): void => {
+            Task.TaskCtrl.do(this);
+
+            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
+
+                let targetIdx = -1;
+                while (true) {
+                    targetIdx = integerRandom(len);
+                    if (player.character.type == 'Player') {
+                        if (this.gameStatus.players[targetIdx].character.type == 'Enemy') {
+                            break;
+                        }
+                    } else if (player.character.type == 'Enemy') {
+                        if (this.gameStatus.players[targetIdx].character.type == 'Player') {
+                            break;
+                        }
+                    }
+                }
+                player.targetIdx = targetIdx;
+            }
+
+            this.finish();
+        }
+
+        asap = (): void => {
+            Task.TaskCtrl.asap(this);
+        }
+
+        finish = (): void => {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
         }
     }
 
@@ -615,7 +700,12 @@ namespace SaikoroBattle {
 
             this.gameStatus.actionStack.length = 0;
             for (let i = 0, len: number = this.order.length; i < len; i++) {
-                this.gameStatus.actionStack.push(this.order[i]);
+                let playerIdx = this.order[i];
+                this.gameStatus.actionStack.push(playerIdx);
+                this.gameStatus.players[playerIdx].operationOrder = i;
+                // debug
+                this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(this.gameStatus.players[playerIdx].operationOrder) 
+                + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx);
             }
 
             this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
@@ -636,13 +726,11 @@ namespace SaikoroBattle {
             if (attackerIdx == undefined) {
                 throw 'no stack';
             }
-            if (attackerIdx == 0) {
-                gameStatus.attacker = this.gameStatus.players[0];
-                gameStatus.defender = this.gameStatus.players[1];
-            } else {
-                gameStatus.attacker = this.gameStatus.players[attackerIdx];
-                gameStatus.defender = this.gameStatus.players[0];
-            }
+
+            gameStatus.attacker = this.gameStatus.players[attackerIdx];
+
+            let targetIdx: number = gameStatus.attacker.targetIdx;
+            gameStatus.defender = this.gameStatus.players[targetIdx];
 
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(gameStatus.players); }));
@@ -807,7 +895,7 @@ namespace SaikoroBattle {
 
     function nokoriHpHyouji(gameStatus: GameStatus): void {
         for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-            let player: Player = gameStatus.players[i];
+            let player: SaikoroBattlePlayer = gameStatus.players[i];
             player.hitPointElement.textContent = String(player.hitPoint);
         }
     }
@@ -822,9 +910,9 @@ namespace SaikoroBattle {
         }
     }
 
-    function actionSelectReset(players: Player[]): void {
+    function actionSelectReset(players: SaikoroBattlePlayer[]): void {
         for (let i = 0, len: number = players.length; i < len; i++) {
-            let player: Player = players[i];
+            let player: SaikoroBattlePlayer = players[i];
             for (let attackDefense = 1; attackDefense <= 2; attackDefense++) {
                 let actionBoxList: HTMLElement[];
                 if (attackDefense == 1) {

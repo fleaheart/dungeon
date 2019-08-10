@@ -1,7 +1,9 @@
 .actionBoard {
     display: flex;
     display: -webkit-box;
+    margin-bottom: 3px;
     border: 1px dashed black;
+    padding: 2px;
 }
 
 .actionBox {
