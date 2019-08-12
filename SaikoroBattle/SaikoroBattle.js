@@ -15,11 +15,21 @@ var SaikoroBattle;
     var _gameDeifine = new GameDeifine();
     var GameStatus = (function () {
         function GameStatus() {
+            var _this = this;
             this.gameMode = undefined;
             this.players = [];
-            this.actionStack = [];
+            this.operationPos = -1;
             this.attacker = NullCharacter;
             this.defender = NullCharacter;
+            this.operationIdx = function () {
+                for (var i = 0, len = _this.players.length; i < len; i++) {
+                    var player = _this.players[i];
+                    if (player.operationOrder == _this.operationPos) {
+                        return i;
+                    }
+                }
+                return -1;
+            };
         }
         return GameStatus;
     }());
@@ -519,14 +529,13 @@ var SaikoroBattle;
             };
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
-                _this.gameStatus.actionStack.length = 0;
                 for (var i = 0, len = _this.order.length; i < len; i++) {
                     var playerIdx = _this.order[i];
-                    _this.gameStatus.actionStack.push(playerIdx);
                     _this.gameStatus.players[playerIdx].operationOrder = i;
                     _this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(_this.gameStatus.players[playerIdx].operationOrder)
                         + ' -> ' + String(_this.gameStatus.players[playerIdx].targetIdx);
                 }
+                _this.gameStatus.operationPos = 0;
                 _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
@@ -585,8 +594,8 @@ var SaikoroBattle;
                 _this.gameStatus.gameMode.do();
             };
             this.gameStatus = gameStatus;
-            var attackerIdx = this.gameStatus.actionStack.shift();
-            if (attackerIdx == undefined) {
+            var attackerIdx = this.gameStatus.operationIdx();
+            if (attackerIdx == -1) {
                 throw 'no stack';
             }
             gameStatus.attacker = this.gameStatus.players[attackerIdx];
@@ -653,7 +662,8 @@ var SaikoroBattle;
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
                 if (0 < _this.gameStatus.defender.hitPoint) {
-                    if (0 < _this.gameStatus.actionStack.length) {
+                    _this.gameStatus.operationPos++;
+                    if (0 <= _this.gameStatus.operationIdx()) {
                         _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
                     }
                     else {

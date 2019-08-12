@@ -15,9 +15,19 @@ namespace SaikoroBattle {
     class GameStatus {
         gameMode: GameMode | undefined = undefined;
         players: SaikoroBattlePlayer[] = [];
-        actionStack: number[] = [];
+        operationPos: number = -1;
         attacker: SaikoroBattlePlayer = NullCharacter;
         defender: SaikoroBattlePlayer = NullCharacter;
+
+        operationIdx = (): number => {
+            for (let i = 0, len: number = this.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.players[i];
+                if (player.operationOrder == this.operationPos) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
     let _gameStatus = new GameStatus();
 
@@ -698,16 +708,15 @@ namespace SaikoroBattle {
         finish = (): void => {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.actionStack.length = 0;
             for (let i = 0, len: number = this.order.length; i < len; i++) {
                 let playerIdx = this.order[i];
-                this.gameStatus.actionStack.push(playerIdx);
                 this.gameStatus.players[playerIdx].operationOrder = i;
                 // debug
-                this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(this.gameStatus.players[playerIdx].operationOrder) 
-                + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx);
+                this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(this.gameStatus.players[playerIdx].operationOrder)
+                    + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx);
             }
 
+            this.gameStatus.operationPos = 0;
             this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
         }
     }
@@ -722,8 +731,8 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            let attackerIdx: number | undefined = this.gameStatus.actionStack.shift();
-            if (attackerIdx == undefined) {
+            let attackerIdx: number = this.gameStatus.operationIdx();
+            if (attackerIdx == -1) {
                 throw 'no stack';
             }
 
@@ -882,7 +891,8 @@ namespace SaikoroBattle {
             Task.TaskCtrl.finish(this);
 
             if (0 < this.gameStatus.defender.hitPoint) {
-                if (0 < this.gameStatus.actionStack.length) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
                     this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
                 } else {
                     this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
