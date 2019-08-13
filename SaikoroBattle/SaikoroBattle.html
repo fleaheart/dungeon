@@ -15,13 +15,14 @@
 window.addEventListener('load', function() {
     SaikoroBattle.init();
 
-    SaikoroBattle.addPlayer(SaikoroBattle.searchPlayer(0));
-    SaikoroBattle.addPlayer(SaikoroBattle.searchPlayer(0));
-    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
-    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
-    SaikoroBattle.addPlayer(SaikoroBattle.searchEnemy(0));
+    let list = [];
+    list.push(SaikoroBattle.pickupCharacter(301));
+    list.push(SaikoroBattle.pickupCharacter(301));
+    list.push(SaikoroBattle.pickupCharacter(401));
+    list.push(SaikoroBattle.pickupCharacter(401));
+    list.push(SaikoroBattle.pickupCharacter(402));
 
-    SaikoroBattle.initMainBoard();
+    SaikoroBattle.initMainBoard(list);
 });
 </script>
 

@@ -2,6 +2,37 @@
 var SaikoroBattle;
 (function (SaikoroBattle) {
     var _message = new Kyoutsu.Message();
+    var SaikoroBattlePlayer = (function () {
+        function SaikoroBattlePlayer(character) {
+            this.hitPoint = 0;
+            this.saikoroMe = 1;
+            this.attackBoxList = [];
+            this.defenseBoxList = [];
+            this.operationOrder = -1;
+            this.targetIdx = -1;
+            this.character = character.clone();
+            this.characterBoard = document.createElement('DIV');
+            this.hitPointElement = document.createElement('SPAN');
+            this.debugElement = document.createElement('SPAN');
+            this.saikoroElement = document.createElement('DIV');
+            this.attackActionBoard = document.createElement('DIV');
+            this.defenseActionBoard = document.createElement('DIV');
+        }
+        SaikoroBattlePlayer.prototype.openAttackActionBoard = function () {
+            this.attackActionBoard.style.display = 'flex';
+        };
+        SaikoroBattlePlayer.prototype.closeAttackActionBoard = function () {
+            this.attackActionBoard.style.display = 'none';
+        };
+        SaikoroBattlePlayer.prototype.openDefenseActionBoard = function () {
+            this.defenseActionBoard.style.display = 'flex';
+        };
+        SaikoroBattlePlayer.prototype.closeDefenseActionBoard = function () {
+            this.defenseActionBoard.style.display = 'none';
+        };
+        return SaikoroBattlePlayer;
+    }());
+    SaikoroBattle.NullCharacter = new SaikoroBattlePlayer(new SaikoroBattle.Character(-1, 'NULL', 'NULL'));
     var GameStatus = (function () {
         function GameStatus() {
             var _this = this;
@@ -23,9 +54,14 @@ var SaikoroBattle;
         return GameStatus;
     }());
     var _gameStatus = new GameStatus();
-    function initMainBoard() {
-        var gameStatus = _gameStatus;
+    function initMainBoard(characterList) {
         var mainBoard = document.createElement('DIV');
+        for (var i = 0, len = characterList.length; i < len; i++) {
+            var player = new SaikoroBattlePlayer(characterList[i]);
+            _gameStatus.players.push(player);
+            createActonBoard(player);
+            mainBoard.appendChild(player.characterBoard);
+        }
         mainBoard.style.border = '1px solid red';
         mainBoard.style.width = '462px';
         document.body.appendChild(mainBoard);
@@ -41,11 +77,6 @@ var SaikoroBattle;
         keyboard.setKeyEvent('click', keyboardClick);
         keyboard.setKeyEvent('touch', function (e) { keyboardClick(e); e.preventDefault(); });
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
-        for (var i = 0, len = gameStatus.players.length; i < len; i++) {
-            var player = gameStatus.players[i];
-            createActonBoard(player);
-            mainBoard.appendChild(player.characterBoard);
-        }
     }
     SaikoroBattle.initMainBoard = initMainBoard;
     function addPlayer(player) {

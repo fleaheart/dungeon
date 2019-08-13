@@ -2,6 +2,55 @@ namespace SaikoroBattle {
 
     let _message = new Kyoutsu.Message();
 
+    class SaikoroBattlePlayer {
+        character: Character;
+
+        hitPoint: number = 0;
+
+        characterBoard: HTMLElement;
+        hitPointElement: HTMLElement;
+        debugElement: HTMLElement;
+        saikoroElement: HTMLElement;
+        saikoroMe: number = 1;
+
+        attackActionBoard: HTMLElement;
+        attackBoxList: HTMLElement[] = [];
+        defenseActionBoard: HTMLElement;
+        defenseBoxList: HTMLElement[] = [];
+
+        operationOrder: number = -1;
+        targetIdx: number = -1;
+
+        constructor(character: Character) {
+            this.character = character.clone();
+
+            this.characterBoard = document.createElement('DIV');
+            this.hitPointElement = document.createElement('SPAN');
+            this.debugElement = document.createElement('SPAN');
+            this.saikoroElement = document.createElement('DIV');
+            this.attackActionBoard = document.createElement('DIV');
+            this.defenseActionBoard = document.createElement('DIV');
+        }
+
+        openAttackActionBoard(): void {
+            this.attackActionBoard.style.display = 'flex';
+        }
+
+        closeAttackActionBoard(): void {
+            this.attackActionBoard.style.display = 'none';
+        }
+
+        openDefenseActionBoard(): void {
+            this.defenseActionBoard.style.display = 'flex';
+        }
+
+        closeDefenseActionBoard(): void {
+            this.defenseActionBoard.style.display = 'none';
+        }
+    }
+
+    export let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
+
     class GameStatus {
         gameMode: GameMode | undefined = undefined;
         players: SaikoroBattlePlayer[] = [];
@@ -21,10 +70,18 @@ namespace SaikoroBattle {
     }
     let _gameStatus = new GameStatus();
 
-    export function initMainBoard(): void {
-        let gameStatus: GameStatus = _gameStatus;
-
+    export function initMainBoard(characterList: Character[]): void {
         let mainBoard: HTMLElement = document.createElement('DIV');
+
+        for (let i = 0, len: number = characterList.length; i < len; i++) {
+            let player: SaikoroBattlePlayer = new SaikoroBattlePlayer(characterList[i]);
+            _gameStatus.players.push(player);
+
+            createActonBoard(player);
+
+            mainBoard.appendChild(player.characterBoard);
+        }
+
         mainBoard.style.border = '1px solid red';
         mainBoard.style.width = '462px';
         document.body.appendChild(mainBoard);
@@ -46,14 +103,6 @@ namespace SaikoroBattle {
         keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
-
-        for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-            let player: SaikoroBattlePlayer = gameStatus.players[i];
-
-            createActonBoard(player);
-
-            mainBoard.appendChild(player.characterBoard);
-        }
     }
 
     export function addPlayer(player: SaikoroBattlePlayer): void {

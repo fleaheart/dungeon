@@ -5,14 +5,14 @@ namespace SaikoroBattle {
     export interface GameObject {
         id: number;
         name: string;
+
+        clone(): GameObject;
     }
 
     export interface Action extends GameObject {
         detail: string;
         power: number;
         opened: boolean;
-
-        clone(): Action;
     }
 
     export class AttackAction implements Action {
@@ -71,7 +71,7 @@ namespace SaikoroBattle {
 
     type PlayerType = 'NULL' | 'Player' | 'Enemy';
 
-    class Character implements GameObject {
+    export class Character implements GameObject {
         id: number;
         type: PlayerType;
 
@@ -98,63 +98,17 @@ namespace SaikoroBattle {
         }
     }
 
-    export class SaikoroBattlePlayer {
-        character: Character;
-
-        hitPoint: number = 0;
-
-        characterBoard: HTMLElement;
-        hitPointElement: HTMLElement;
-        debugElement: HTMLElement;
-        saikoroElement: HTMLElement;
-        saikoroMe: number = 1;
-
-        attackActionBoard: HTMLElement;
-        attackBoxList: HTMLElement[] = [];
-        defenseActionBoard: HTMLElement;
-        defenseBoxList: HTMLElement[] = [];
-
-        operationOrder: number = -1;
-        targetIdx: number = -1;
-
-        constructor(character: Character) {
-            this.character = character.clone();
-
-            this.characterBoard = document.createElement('DIV');
-            this.hitPointElement = document.createElement('SPAN');
-            this.debugElement = document.createElement('SPAN');
-            this.saikoroElement = document.createElement('DIV');
-            this.attackActionBoard = document.createElement('DIV');
-            this.defenseActionBoard = document.createElement('DIV');
-        }
-
-        openAttackActionBoard(): void {
-            this.attackActionBoard.style.display = 'flex';
-        }
-
-        closeAttackActionBoard(): void {
-            this.attackActionBoard.style.display = 'none';
-        }
-
-        openDefenseActionBoard(): void {
-            this.defenseActionBoard.style.display = 'flex';
-        }
-
-        closeDefenseActionBoard(): void {
-            this.defenseActionBoard.style.display = 'none';
-        }
-    }
-
-    export let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
-
     class GameDeifine {
         attackActionList: AttackAction[] = [];
         defenseActionList: DefenseAction[] = [];
 
-        playerList: Character[] = [];
-        enemyList: Character[] = [];
+        characterList: Character[] = [];
     }
     let _gameDeifine = new GameDeifine();
+
+    export function pickupCharacter(idx: number): Character {
+        return pickupAction(_gameDeifine.characterList, idx);
+    }
 
     export function init(): void {
         _debug.set(Kyoutsu.getElementById('debugBoard'));
@@ -197,11 +151,7 @@ namespace SaikoroBattle {
                 setDefaultActionPalette(_gameDeifine.attackActionList, columns[5], character.attackPalette);
                 setDefaultActionPalette(_gameDeifine.defenseActionList, columns[6], character.defensePalette);
 
-                if (type == 'Player') {
-                    _gameDeifine.playerList.push(character);
-                } else if (type == 'Enemy') {
-                    _gameDeifine.enemyList.push(character);
-                }
+                _gameDeifine.characterList.push(character);
             }
         }
     }
@@ -219,7 +169,7 @@ namespace SaikoroBattle {
         }
     }
 
-    function pickupAction<T extends Action>(list: T[], id: number): T {
+    function pickupAction<T extends GameObject>(list: T[], id: number): T {
         for (let i = 0, len: number = list.length; i < len; i++) {
             if (list[i].id == id) {
                 return <T>list[i].clone();
@@ -233,14 +183,6 @@ namespace SaikoroBattle {
         for (let i = 0, len: number = source.length; i < len; i++) {
             destination.push(<T>source[i].clone());
         }
-    }
-
-    export function searchPlayer(idx: number): SaikoroBattlePlayer {
-        return new SaikoroBattlePlayer(_gameDeifine.playerList[idx]);
-    }
-
-    export function searchEnemy(idx: number): SaikoroBattlePlayer {
-        return new SaikoroBattlePlayer(_gameDeifine.enemyList[idx]);
     }
 
 }
