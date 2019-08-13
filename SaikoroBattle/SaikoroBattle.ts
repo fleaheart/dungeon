@@ -189,9 +189,12 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            this.init();
+        }
 
-            for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-                let player: SaikoroBattlePlayer = gameStatus.players[i];
+        init(): void {
+            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
 
                 if (player.character.type == 'Player') {
@@ -202,9 +205,9 @@ namespace SaikoroBattle {
                 }
             }
 
-            this.tasks.add(new ActionSetTask(gameStatus));
+            this.tasks.add(new ActionSetTask(this.gameStatus.players));
 
-            this.tasks.add(new Task.FunctionTask((): void => { nokoriHpHyouji(gameStatus); }));
+            this.tasks.add(new Task.FunctionTask((): void => { nokoriHpHyouji(this.gameStatus); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
@@ -239,9 +242,9 @@ namespace SaikoroBattle {
         private actionList: Action[] = [];
         private tasks = new Task.ParallelTasks();
 
-        constructor(gameStatus: GameStatus) {
-            for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
-                let player: SaikoroBattlePlayer = gameStatus.players[i];
+        constructor(players: SaikoroBattlePlayer[]) {
+            for (let i = 0, len: number = players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = players[i];
                 this.setActionBox(player);
             }
         }
@@ -369,7 +372,6 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-
             this.init();
         }
 
@@ -432,7 +434,10 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            this.init();
+        }
 
+        init(): void {
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
@@ -569,18 +574,22 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            this.init();
+        }
+
+        init(): void {
             let attackerIdx: number = this.gameStatus.operationIdx();
             if (attackerIdx == -1) {
                 throw 'no stack';
             }
 
-            gameStatus.attacker = this.gameStatus.players[attackerIdx];
+            this.gameStatus.attacker = this.gameStatus.players[attackerIdx];
 
-            let targetIdx: number = gameStatus.attacker.targetIdx;
-            gameStatus.defender = this.gameStatus.players[targetIdx];
+            let targetIdx: number = this.gameStatus.attacker.targetIdx;
+            this.gameStatus.defender = this.gameStatus.players[targetIdx];
 
             this.tasks.add(new Task.FunctionTask(_message.clear));
-            this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(gameStatus.players); }));
+            this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'の攻撃') }));
             this.tasks.add(new Task.FunctionTask((): void => { this.gameStatus.attacker.openAttackActionBoard(); }));
             this.tasks.add(new SaikoroTask(
@@ -629,7 +638,10 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            this.init();
+        }
 
+        init(): void {
             let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             attackAction.opened = true;
@@ -684,7 +696,10 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            this.init();
+        }
 
+        init(): void {
             let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
 
@@ -713,7 +728,7 @@ namespace SaikoroBattle {
                 this.gameStatus.defender.hitPoint = 0;
             }
 
-            this.tasks.add(new Task.FunctionTask((): void => { nokoriHpHyouji(gameStatus); }));
+            this.tasks.add(new Task.FunctionTask((): void => { nokoriHpHyouji(this.gameStatus); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
             if (this.gameStatus.defender.hitPoint <= 0) {
@@ -739,7 +754,12 @@ namespace SaikoroBattle {
         finish(): void {
             Task.TaskCtrl.finish(this);
 
-            if (0 < this.gameStatus.defender.hitPoint) {
+            let hitPoint = this.gameStatus.defender.hitPoint;
+
+            this.gameStatus.attacker = NullCharacter;
+            this.gameStatus.defender = NullCharacter;
+
+            if (0 < hitPoint) {
                 this.gameStatus.operationPos++;
                 if (0 <= this.gameStatus.operationIdx()) {
                     this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);

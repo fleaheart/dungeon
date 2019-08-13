@@ -146,8 +146,12 @@ var SaikoroBattle;
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
-            for (var i = 0, len = gameStatus.players.length; i < len; i++) {
-                var player = gameStatus.players[i];
+            this.init();
+        }
+        InitGameMode.prototype.init = function () {
+            var _this = this;
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                var player = this.gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
                 if (player.character.type == 'Player') {
                     for (var j = 0, jlen = player.character.attackPalette.length; j < jlen; j++) {
@@ -156,13 +160,13 @@ var SaikoroBattle;
                     }
                 }
             }
-            this.tasks.add(new ActionSetTask(gameStatus));
-            this.tasks.add(new Task.FunctionTask(function () { nokoriHpHyouji(gameStatus); }));
+            this.tasks.add(new ActionSetTask(this.gameStatus.players));
+            this.tasks.add(new Task.FunctionTask(function () { nokoriHpHyouji(_this.gameStatus); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine('start'); }));
-        }
+        };
         InitGameMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
@@ -180,13 +184,13 @@ var SaikoroBattle;
         return InitGameMode;
     }());
     var ActionSetTask = (function () {
-        function ActionSetTask(gameStatus) {
+        function ActionSetTask(players) {
             this.name = 'ActionSetTask';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.actionList = [];
             this.tasks = new Task.ParallelTasks();
-            for (var i = 0, len = gameStatus.players.length; i < len; i++) {
-                var player = gameStatus.players[i];
+            for (var i = 0, len = players.length; i < len; i++) {
+                var player = players[i];
                 this.setActionBox(player);
             }
         }
@@ -347,13 +351,16 @@ var SaikoroBattle;
             this.order = [];
             this.orderEntryList = [];
             this.gameStatus = gameStatus;
+            this.init();
+        }
+        KougekiJunjoHandanMode.prototype.init = function () {
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 this.orderEntryList.push({ entry: true, me: -1 });
             }
             this.orderEntry();
-        }
+        };
         KougekiJunjoHandanMode.prototype.orderEntry = function () {
             var _this = this;
             this.tasks.tasks.length = 0;
@@ -457,24 +464,27 @@ var SaikoroBattle;
     }());
     var Attack1GameMode = (function () {
         function Attack1GameMode(gameStatus) {
-            var _this = this;
             this.name = 'Attack1GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
+            this.init();
+        }
+        Attack1GameMode.prototype.init = function () {
+            var _this = this;
             var attackerIdx = this.gameStatus.operationIdx();
             if (attackerIdx == -1) {
                 throw 'no stack';
             }
-            gameStatus.attacker = this.gameStatus.players[attackerIdx];
-            var targetIdx = gameStatus.attacker.targetIdx;
-            gameStatus.defender = this.gameStatus.players[targetIdx];
+            this.gameStatus.attacker = this.gameStatus.players[attackerIdx];
+            var targetIdx = this.gameStatus.attacker.targetIdx;
+            this.gameStatus.defender = this.gameStatus.players[targetIdx];
             this.tasks.add(new Task.FunctionTask(_message.clear));
-            this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(gameStatus.players); }));
+            this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(_this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
             this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
             this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
-        }
+        };
         Attack1GameMode.prototype.callback = function (me) {
             this.gameStatus.attacker.saikoroMe = me;
         };
@@ -500,11 +510,14 @@ var SaikoroBattle;
     }());
     var Attack2GameMode = (function () {
         function Attack2GameMode(gameStatus) {
-            var _this = this;
             this.name = 'Attack2GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
+            this.init();
+        }
+        Attack2GameMode.prototype.init = function () {
+            var _this = this;
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             attackAction.opened = true;
@@ -513,7 +526,7 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.defender.character.name + 'の防御'); }));
             this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.defender.openDefenseActionBoard(); }));
             this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
-        }
+        };
         Attack2GameMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
@@ -539,11 +552,14 @@ var SaikoroBattle;
     }());
     var Attack3GameMode = (function () {
         function Attack3GameMode(gameStatus) {
-            var _this = this;
             this.name = 'Attack3GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
+            this.init();
+        }
+        Attack3GameMode.prototype.init = function () {
+            var _this = this;
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             var defenseMe = this.gameStatus.defender.saikoroMe;
@@ -565,13 +581,13 @@ var SaikoroBattle;
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.gameStatus.defender.hitPoint = 0;
             }
-            this.tasks.add(new Task.FunctionTask(function () { nokoriHpHyouji(gameStatus); }));
+            this.tasks.add(new Task.FunctionTask(function () { nokoriHpHyouji(_this.gameStatus); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.defender.character.name + 'は、倒れた'); }));
                 this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
             }
-        }
+        };
         Attack3GameMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
@@ -584,7 +600,10 @@ var SaikoroBattle;
         };
         Attack3GameMode.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            if (0 < this.gameStatus.defender.hitPoint) {
+            var hitPoint = this.gameStatus.defender.hitPoint;
+            this.gameStatus.attacker = SaikoroBattle.NullCharacter;
+            this.gameStatus.defender = SaikoroBattle.NullCharacter;
+            if (0 < hitPoint) {
                 this.gameStatus.operationPos++;
                 if (0 <= this.gameStatus.operationIdx()) {
                     this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
