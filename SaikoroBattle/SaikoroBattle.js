@@ -241,25 +241,12 @@ var SaikoroBattle;
     }
     var SaikoroBattlePlayer = (function () {
         function SaikoroBattlePlayer(character) {
-            var _this = this;
             this.hitPoint = 0;
             this.saikoroMe = 1;
             this.attackBoxList = [];
             this.defenseBoxList = [];
             this.operationOrder = -1;
             this.targetIdx = -1;
-            this.openAttackActionBoard = function () {
-                _this.attackActionBoard.style.display = 'flex';
-            };
-            this.closeAttackActionBoard = function () {
-                _this.attackActionBoard.style.display = 'none';
-            };
-            this.openDefenseActionBoard = function () {
-                _this.defenseActionBoard.style.display = 'flex';
-            };
-            this.closeDefenseActionBoard = function () {
-                _this.defenseActionBoard.style.display = 'none';
-            };
             this.character = character.clone();
             this.characterBoard = document.createElement('DIV');
             this.hitPointElement = document.createElement('SPAN');
@@ -268,6 +255,18 @@ var SaikoroBattle;
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
         }
+        SaikoroBattlePlayer.prototype.openAttackActionBoard = function () {
+            this.attackActionBoard.style.display = 'flex';
+        };
+        SaikoroBattlePlayer.prototype.closeAttackActionBoard = function () {
+            this.attackActionBoard.style.display = 'none';
+        };
+        SaikoroBattlePlayer.prototype.openDefenseActionBoard = function () {
+            this.defenseActionBoard.style.display = 'flex';
+        };
+        SaikoroBattlePlayer.prototype.closeDefenseActionBoard = function () {
+            this.defenseActionBoard.style.display = 'none';
+        };
         return SaikoroBattlePlayer;
     }());
     var NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
@@ -292,14 +291,9 @@ var SaikoroBattle;
     SaikoroBattle.susumeruGame = susumeruGame;
     var InitGameMode = (function () {
         function InitGameMode(gameStatus) {
-            var _this = this;
             this.name = 'InitGameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                _this.gameStatus.gameMode = new ActionTaishouSelectMode(_this.gameStatus);
-            };
             this.gameStatus = gameStatus;
             for (var i = 0, len = gameStatus.players.length; i < len; i++) {
                 var player = gameStatus.players[i];
@@ -319,13 +313,18 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine('start'); }));
         }
         InitGameMode.prototype.do = function () {
+            var _this = this;
             Task.TaskCtrl.do(this);
             this.tasks.do();
-            Task.TaskCtrl.wait(this.tasks, this.finish);
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
         };
         InitGameMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
+        };
+        InitGameMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
         };
         return InitGameMode;
     }());
@@ -445,129 +444,57 @@ var SaikoroBattle;
     SaikoroBattle.SaikoroTask = SaikoroTask;
     var ActionTaishouSelectMode = (function () {
         function ActionTaishouSelectMode(gameStatus) {
-            var _this = this;
             this.name = 'ActionTaishouSelectMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
-            this.init = function () {
-                actionSelectReset(_this.gameStatus.players);
-                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
-                    var player = _this.gameStatus.players[i];
-                    player.openAttackActionBoard();
-                    player.openDefenseActionBoard();
-                }
-            };
-            this.do = function () {
-                Task.TaskCtrl.do(_this);
-                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
-                    var player = _this.gameStatus.players[i];
-                    var targetIdx = -1;
-                    while (true) {
-                        targetIdx = integerRandom(len);
-                        if (player.character.type == 'Player') {
-                            if (_this.gameStatus.players[targetIdx].character.type == 'Enemy') {
-                                break;
-                            }
-                        }
-                        else if (player.character.type == 'Enemy') {
-                            if (_this.gameStatus.players[targetIdx].character.type == 'Player') {
-                                break;
-                            }
-                        }
-                    }
-                    player.targetIdx = targetIdx;
-                }
-                _this.finish();
-            };
-            this.asap = function () {
-                Task.TaskCtrl.asap(_this);
-            };
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                _this.gameStatus.gameMode = new KougekiJunjoHandanMode(_this.gameStatus);
-            };
             this.gameStatus = gameStatus;
             this.init();
         }
+        ActionTaishouSelectMode.prototype.init = function () {
+            actionSelectReset(this.gameStatus.players);
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                var player = this.gameStatus.players[i];
+                player.openAttackActionBoard();
+                player.openDefenseActionBoard();
+            }
+        };
+        ActionTaishouSelectMode.prototype.do = function () {
+            Task.TaskCtrl.do(this);
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                var player = this.gameStatus.players[i];
+                var targetIdx = -1;
+                while (true) {
+                    targetIdx = integerRandom(len);
+                    if (player.character.type == 'Player') {
+                        if (this.gameStatus.players[targetIdx].character.type == 'Enemy') {
+                            break;
+                        }
+                    }
+                    else if (player.character.type == 'Enemy') {
+                        if (this.gameStatus.players[targetIdx].character.type == 'Player') {
+                            break;
+                        }
+                    }
+                }
+                player.targetIdx = targetIdx;
+            }
+            this.finish();
+        };
+        ActionTaishouSelectMode.prototype.asap = function () {
+            Task.TaskCtrl.asap(this);
+        };
+        ActionTaishouSelectMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+        };
         return ActionTaishouSelectMode;
     }());
     var KougekiJunjoHandanMode = (function () {
         function KougekiJunjoHandanMode(gameStatus) {
-            var _this = this;
             this.name = 'KougekiJunjoHandanMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.ParallelTasks();
             this.order = [];
             this.orderEntryList = [];
-            this.callback = function (playerIdx, me) {
-                _this.gameStatus.players[playerIdx].saikoroMe = me;
-            };
-            this.rollingFunc = function (playerIdx, me) {
-                _this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
-            };
-            this.check = function () {
-                var existsKaburi = false;
-                var meList = [];
-                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
-                    if (_this.orderEntryList[i].entry) {
-                        var me = _this.gameStatus.players[i].saikoroMe;
-                        var kaburi = (function (me) {
-                            var kaburi = false;
-                            for (var i_1 = 0, len_1 = meList.length; i_1 < len_1; i_1++) {
-                                if (_this.orderEntryList[meList[i_1].playerIdx].entry) {
-                                    if (meList[i_1].me == me) {
-                                        kaburi = true;
-                                        meList[i_1].kaburi = true;
-                                    }
-                                }
-                            }
-                            return kaburi;
-                        })(me);
-                        meList.push({ playerIdx: i, me: me, kaburi: kaburi });
-                        if (kaburi) {
-                            existsKaburi = true;
-                        }
-                    }
-                }
-                meList.sort(function (m1, m2) {
-                    if (m1.kaburi && !m2.kaburi) {
-                        return 1;
-                    }
-                    if (!m1.kaburi && m2.kaburi) {
-                        return -1;
-                    }
-                    if (m1.me == m2.me) {
-                        return 0;
-                    }
-                    return m1.me < m2.me ? 1 : -1;
-                });
-                for (var i = 0, len = meList.length; i < len; i++) {
-                    _debug.writeLine(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
-                    if (meList[i].kaburi) {
-                        _this.orderEntryList[meList[i].playerIdx].entry = true;
-                    }
-                    else {
-                        _this.orderEntryList[meList[i].playerIdx].entry = false;
-                        _this.order.push(meList[i].playerIdx);
-                    }
-                }
-                if (existsKaburi) {
-                    _this.mode = Task.TaskCtrl.DEFAULT_MODE;
-                    _this.orderEntry();
-                    return;
-                }
-                _this.finish();
-            };
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                for (var i = 0, len = _this.order.length; i < len; i++) {
-                    var playerIdx = _this.order[i];
-                    _this.gameStatus.players[playerIdx].operationOrder = i;
-                    _this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(_this.gameStatus.players[playerIdx].operationOrder)
-                        + ' -> ' + String(_this.gameStatus.players[playerIdx].targetIdx);
-                }
-                _this.gameStatus.operationPos = 0;
-                _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
-            };
             this.gameStatus = gameStatus;
             this.order.length = 0;
             this.orderEntryList.length = 0;
@@ -587,6 +514,12 @@ var SaikoroBattle;
                 }
             }
         };
+        KougekiJunjoHandanMode.prototype.callback = function (playerIdx, me) {
+            this.gameStatus.players[playerIdx].saikoroMe = me;
+        };
+        KougekiJunjoHandanMode.prototype.rollingFunc = function (playerIdx, me) {
+            this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
+        };
         KougekiJunjoHandanMode.prototype.do = function () {
             var _this = this;
             Task.TaskCtrl.do(this);
@@ -604,6 +537,71 @@ var SaikoroBattle;
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
         };
+        KougekiJunjoHandanMode.prototype.check = function () {
+            var _this = this;
+            var existsKaburi = false;
+            var meList = [];
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                if (this.orderEntryList[i].entry) {
+                    var me = this.gameStatus.players[i].saikoroMe;
+                    var kaburi = (function (me) {
+                        var kaburi = false;
+                        for (var i_1 = 0, len_1 = meList.length; i_1 < len_1; i_1++) {
+                            if (_this.orderEntryList[meList[i_1].playerIdx].entry) {
+                                if (meList[i_1].me == me) {
+                                    kaburi = true;
+                                    meList[i_1].kaburi = true;
+                                }
+                            }
+                        }
+                        return kaburi;
+                    })(me);
+                    meList.push({ playerIdx: i, me: me, kaburi: kaburi });
+                    if (kaburi) {
+                        existsKaburi = true;
+                    }
+                }
+            }
+            meList.sort(function (m1, m2) {
+                if (m1.kaburi && !m2.kaburi) {
+                    return 1;
+                }
+                if (!m1.kaburi && m2.kaburi) {
+                    return -1;
+                }
+                if (m1.me == m2.me) {
+                    return 0;
+                }
+                return m1.me < m2.me ? 1 : -1;
+            });
+            for (var i = 0, len = meList.length; i < len; i++) {
+                _debug.writeLine(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+                if (meList[i].kaburi) {
+                    this.orderEntryList[meList[i].playerIdx].entry = true;
+                }
+                else {
+                    this.orderEntryList[meList[i].playerIdx].entry = false;
+                    this.order.push(meList[i].playerIdx);
+                }
+            }
+            if (existsKaburi) {
+                this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                this.orderEntry();
+                return;
+            }
+            this.finish();
+        };
+        KougekiJunjoHandanMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            for (var i = 0, len = this.order.length; i < len; i++) {
+                var playerIdx = this.order[i];
+                this.gameStatus.players[playerIdx].operationOrder = i;
+                this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(this.gameStatus.players[playerIdx].operationOrder)
+                    + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx);
+            }
+            this.gameStatus.operationPos = 0;
+            this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+        };
         return KougekiJunjoHandanMode;
     }());
     var Attack1GameMode = (function () {
@@ -612,17 +610,6 @@ var SaikoroBattle;
             this.name = 'Attack1GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
-            this.callback = function (me) {
-                _this.gameStatus.attacker.saikoroMe = me;
-            };
-            this.rollingFunc = function (me) {
-                _this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
-            };
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                _this.gameStatus.gameMode = new Attack2GameMode(_this.gameStatus);
-                _this.gameStatus.gameMode.do();
-            };
             this.gameStatus = gameStatus;
             var attackerIdx = this.gameStatus.operationIdx();
             if (attackerIdx == -1) {
@@ -635,16 +622,28 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
             this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
-            this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
+            this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
         }
+        Attack1GameMode.prototype.callback = function (me) {
+            this.gameStatus.attacker.saikoroMe = me;
+        };
+        Attack1GameMode.prototype.rollingFunc = function (me) {
+            this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
+        };
         Attack1GameMode.prototype.do = function () {
+            var _this = this;
             Task.TaskCtrl.do(this);
             this.tasks.do();
-            Task.TaskCtrl.wait(this.tasks, this.finish);
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
         };
         Attack1GameMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
+        };
+        Attack1GameMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
+            this.gameStatus.gameMode.do();
         };
         return Attack1GameMode;
     }());
@@ -654,17 +653,6 @@ var SaikoroBattle;
             this.name = 'Attack2GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
-            this.callback = function (me) {
-                _this.gameStatus.defender.saikoroMe = me;
-            };
-            this.rollingFunc = function (me) {
-                _this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
-            };
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                _this.gameStatus.gameMode = new Attack3GameMode(_this.gameStatus);
-                _this.gameStatus.gameMode.do();
-            };
             this.gameStatus = gameStatus;
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
@@ -673,16 +661,28 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(function () { actionSelect(_this.gameStatus.attacker.attackBoxList, attackMe, 'selected_attack', attackAction); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.defender.character.name + 'の防御'); }));
             this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.defender.openDefenseActionBoard(); }));
-            this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
+            this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
         }
         Attack2GameMode.prototype.do = function () {
+            var _this = this;
             Task.TaskCtrl.do(this);
             this.tasks.do();
-            Task.TaskCtrl.wait(this.tasks, this.finish);
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
+        };
+        Attack2GameMode.prototype.callback = function (me) {
+            this.gameStatus.defender.saikoroMe = me;
+        };
+        Attack2GameMode.prototype.rollingFunc = function (me) {
+            this.gameStatus.defender.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         };
         Attack2GameMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
+        };
+        Attack2GameMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
+            this.gameStatus.gameMode.do();
         };
         return Attack2GameMode;
     }());
@@ -692,21 +692,6 @@ var SaikoroBattle;
             this.name = 'Attack3GameMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
-            this.finish = function () {
-                Task.TaskCtrl.finish(_this);
-                if (0 < _this.gameStatus.defender.hitPoint) {
-                    _this.gameStatus.operationPos++;
-                    if (0 <= _this.gameStatus.operationIdx()) {
-                        _this.gameStatus.gameMode = new Attack1GameMode(_this.gameStatus);
-                    }
-                    else {
-                        _this.gameStatus.gameMode = new KougekiJunjoHandanMode(_this.gameStatus);
-                    }
-                }
-                else {
-                    _this.gameStatus.gameMode = new InitGameMode(_this.gameStatus);
-                }
-            };
             this.gameStatus = gameStatus;
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
@@ -737,13 +722,29 @@ var SaikoroBattle;
             }
         }
         Attack3GameMode.prototype.do = function () {
+            var _this = this;
             Task.TaskCtrl.do(this);
             this.tasks.do();
-            Task.TaskCtrl.wait(this.tasks, this.finish);
+            Task.TaskCtrl.wait(this.tasks, function () { _this.finish(); });
         };
         Attack3GameMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
             this.tasks.asap();
+        };
+        Attack3GameMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            if (0 < this.gameStatus.defender.hitPoint) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                }
+                else {
+                    this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+                }
+            }
+            else {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            }
         };
         return Attack3GameMode;
     }());
