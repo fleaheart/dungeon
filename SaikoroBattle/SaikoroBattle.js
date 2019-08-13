@@ -104,7 +104,7 @@ var SaikoroBattle;
         var messageBoard = document.createElement('DIV');
         messageBoard.style.border = '1px dashed black';
         messageBoard.style.width = '462px';
-        messageBoard.style.height = '140px';
+        messageBoard.style.height = '180px';
         messageBoard.style.overflow = 'scroll';
         document.body.appendChild(messageBoard);
         _message.set(messageBoard);
@@ -175,6 +175,7 @@ var SaikoroBattle;
     }
     var AttackAction = (function () {
         function AttackAction(id, name, power, detail) {
+            this.opened = false;
             this.id = id;
             this.name = name;
             this.power = power;
@@ -193,6 +194,7 @@ var SaikoroBattle;
     }());
     var DefenseAction = (function () {
         function DefenseAction(id, name, power, detail) {
+            this.opened = false;
             this.through = false;
             this.nigashiPoint = 0;
             this.id = id;
@@ -239,12 +241,25 @@ var SaikoroBattle;
     }
     var SaikoroBattlePlayer = (function () {
         function SaikoroBattlePlayer(character) {
+            var _this = this;
             this.hitPoint = 0;
             this.saikoroMe = 1;
             this.attackBoxList = [];
             this.defenseBoxList = [];
             this.operationOrder = -1;
             this.targetIdx = -1;
+            this.openAttackActionBoard = function () {
+                _this.attackActionBoard.style.display = 'flex';
+            };
+            this.closeAttackActionBoard = function () {
+                _this.attackActionBoard.style.display = 'none';
+            };
+            this.openDefenseActionBoard = function () {
+                _this.defenseActionBoard.style.display = 'flex';
+            };
+            this.closeDefenseActionBoard = function () {
+                _this.defenseActionBoard.style.display = 'none';
+            };
             this.character = character.clone();
             this.characterBoard = document.createElement('DIV');
             this.hitPointElement = document.createElement('SPAN');
@@ -289,6 +304,12 @@ var SaikoroBattle;
             for (var i = 0, len = gameStatus.players.length; i < len; i++) {
                 var player = gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
+                if (player.character.type == 'Player') {
+                    for (var j = 0, jlen = player.character.attackPalette.length; j < jlen; j++) {
+                        player.character.attackPalette[j].opened = true;
+                        player.character.defensePalette[j].opened = true;
+                    }
+                }
             }
             this.tasks.add(new ActionSetTask(gameStatus));
             this.tasks.add(new Task.FunctionTask(function () { nokoriHpHyouji(gameStatus); }));
@@ -346,7 +367,7 @@ var SaikoroBattle;
             this.tasks.add(tasks);
         };
         ActionSetTask.prototype.setBox = function (box, action) {
-            box.innerHTML = action.name;
+            box.innerHTML = action.opened ? action.name : '？？？';
         };
         ActionSetTask.prototype.do = function () {
             var _this = this;
@@ -427,6 +448,14 @@ var SaikoroBattle;
             var _this = this;
             this.name = 'ActionTaishouSelectMode';
             this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.init = function () {
+                actionSelectReset(_this.gameStatus.players);
+                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
+                    var player = _this.gameStatus.players[i];
+                    player.openAttackActionBoard();
+                    player.openDefenseActionBoard();
+                }
+            };
             this.do = function () {
                 Task.TaskCtrl.do(_this);
                 for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
@@ -457,6 +486,7 @@ var SaikoroBattle;
                 _this.gameStatus.gameMode = new KougekiJunjoHandanMode(_this.gameStatus);
             };
             this.gameStatus = gameStatus;
+            this.init();
         }
         return ActionTaishouSelectMode;
     }());
@@ -604,6 +634,7 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
+            this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
             this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
         }
         Attack1GameMode.prototype.do = function () {
@@ -637,9 +668,11 @@ var SaikoroBattle;
             this.gameStatus = gameStatus;
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
+            attackAction.opened = true;
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine('さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name); }));
-            this.tasks.add(new Task.FunctionTask(function () { actionSelect(_this.gameStatus.attacker.attackBoxList, attackMe, 'selected_attack'); }));
+            this.tasks.add(new Task.FunctionTask(function () { actionSelect(_this.gameStatus.attacker.attackBoxList, attackMe, 'selected_attack', attackAction); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.defender.character.name + 'の防御'); }));
+            this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.defender.openDefenseActionBoard(); }));
             this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
         }
         Attack2GameMode.prototype.do = function () {
@@ -679,8 +712,9 @@ var SaikoroBattle;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             var defenseMe = this.gameStatus.defender.saikoroMe;
             var defenseAction = this.gameStatus.defender.character.defensePalette[defenseMe];
+            defenseAction.opened = true;
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine('さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name); }));
-            this.tasks.add(new Task.FunctionTask(function () { actionSelect(_this.gameStatus.defender.defenseBoxList, defenseMe, 'selected_defense'); }));
+            this.tasks.add(new Task.FunctionTask(function () { actionSelect(_this.gameStatus.defender.defenseBoxList, defenseMe, 'selected_defense', defenseAction); }));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
             var damage = 0;
             if (!defenseAction.through) {
@@ -719,11 +753,12 @@ var SaikoroBattle;
             player.hitPointElement.textContent = String(player.hitPoint);
         }
     }
-    function actionSelect(actionBoxList, me, className) {
+    function actionSelect(actionBoxList, me, className, action) {
         for (var i = 0; i < 6; i++) {
             var box = actionBoxList[i];
             if (i == me) {
                 box.classList.add(className);
+                box.textContent = action.name;
             }
         }
     }
@@ -744,6 +779,8 @@ var SaikoroBattle;
                     box.classList.remove('selected_defense');
                 }
             }
+            player.closeAttackActionBoard();
+            player.closeDefenseActionBoard();
         }
     }
 })(SaikoroBattle || (SaikoroBattle = {}));

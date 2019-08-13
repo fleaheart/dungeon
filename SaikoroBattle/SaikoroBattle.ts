@@ -116,7 +116,7 @@ namespace SaikoroBattle {
         let messageBoard: HTMLElement = document.createElement('DIV');
         messageBoard.style.border = '1px dashed black';
         messageBoard.style.width = '462px';
-        messageBoard.style.height = '140px';
+        messageBoard.style.height = '180px';
         messageBoard.style.overflow = 'scroll';
         document.body.appendChild(messageBoard);
 
@@ -209,6 +209,7 @@ namespace SaikoroBattle {
     interface Action extends GameObject {
         detail: string;
         power: number;
+        opened: boolean;
 
         clone(): Action;
     }
@@ -218,6 +219,7 @@ namespace SaikoroBattle {
         name: string;
         detail: string;
         power: number;
+        opened: boolean = false;
 
         constructor(id: number, name: string, power: number, detail?: string) {
             this.id = id;
@@ -242,6 +244,7 @@ namespace SaikoroBattle {
         name: string;
         detail: string;
         power: number;
+        opened: boolean = false;
         through: boolean = false;
         nigashiPoint: number = 0;
 
@@ -330,6 +333,22 @@ namespace SaikoroBattle {
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
         }
+
+        openAttackActionBoard = (): void => {
+            this.attackActionBoard.style.display = 'flex';
+        }
+
+        closeAttackActionBoard = (): void => {
+            this.attackActionBoard.style.display = 'none';
+        }
+
+        openDefenseActionBoard = (): void => {
+            this.defenseActionBoard.style.display = 'flex';
+        }
+
+        closeDefenseActionBoard = (): void => {
+            this.defenseActionBoard.style.display = 'none';
+        }
     }
 
     let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
@@ -373,6 +392,13 @@ namespace SaikoroBattle {
             for (let i = 0, len: number = gameStatus.players.length; i < len; i++) {
                 let player: SaikoroBattlePlayer = gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
+
+                if (player.character.type == 'Player') {
+                    for (let j = 0, jlen = player.character.attackPalette.length; j < jlen; j++) {
+                        player.character.attackPalette[j].opened = true;
+                        player.character.defensePalette[j].opened = true;
+                    }
+                }
             }
 
             this.tasks.add(new ActionSetTask(gameStatus));
@@ -443,7 +469,7 @@ namespace SaikoroBattle {
         }
 
         setBox(box: HTMLElement, action: Action): void {
-            box.innerHTML = action.name;
+            box.innerHTML = action.opened ? action.name : '？？？';
         }
 
         do(): void {
@@ -542,6 +568,17 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+
+            this.init();
+        }
+
+        init = (): void => {
+            actionSelectReset(this.gameStatus.players);
+            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
+                player.openAttackActionBoard();
+                player.openDefenseActionBoard();
+            }
         }
 
         do = (): void => {
@@ -744,6 +781,7 @@ namespace SaikoroBattle {
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'の攻撃') }));
+            this.tasks.add(new Task.FunctionTask((): void => { this.gameStatus.attacker.openAttackActionBoard(); }));
             this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
         }
 
@@ -790,11 +828,13 @@ namespace SaikoroBattle {
 
             let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
+            attackAction.opened = true;
 
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine('さいころの目 → [' + String(attackMe + 1) + ']' + attackAction.name) }));
-            this.tasks.add(new Task.FunctionTask((): void => { actionSelect(this.gameStatus.attacker.attackBoxList, attackMe, 'selected_attack'); }));
 
+            this.tasks.add(new Task.FunctionTask((): void => { actionSelect(this.gameStatus.attacker.attackBoxList, attackMe, 'selected_attack', attackAction); }));
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.defender.character.name + 'の防御') }));
+            this.tasks.add(new Task.FunctionTask((): void => { this.gameStatus.defender.openDefenseActionBoard(); }));
             this.tasks.add(new SaikoroTask(this.callback, this.rollingFunc));
         }
 
@@ -843,9 +883,11 @@ namespace SaikoroBattle {
 
             let defenseMe: number = this.gameStatus.defender.saikoroMe;
             let defenseAction: DefenseAction = this.gameStatus.defender.character.defensePalette[defenseMe];
+            defenseAction.opened = true;
 
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine('さいころの目 → [' + String(defenseMe + 1) + ']' + defenseAction.name) }));
-            this.tasks.add(new Task.FunctionTask((): void => { actionSelect(this.gameStatus.defender.defenseBoxList, defenseMe, 'selected_defense'); }));
+
+            this.tasks.add(new Task.FunctionTask((): void => { actionSelect(this.gameStatus.defender.defenseBoxList, defenseMe, 'selected_defense', defenseAction); }));
 
             this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
 
@@ -910,12 +952,13 @@ namespace SaikoroBattle {
         }
     }
 
-    function actionSelect(actionBoxList: HTMLElement[], me: number, className: string): void {
+    function actionSelect(actionBoxList: HTMLElement[], me: number, className: string, action: Action): void {
         for (let i = 0; i < 6; i++) {
             let box: HTMLElement = actionBoxList[i];
 
             if (i == me) {
                 box.classList.add(className);
+                box.textContent = action.name;
             }
         }
     }
@@ -937,6 +980,8 @@ namespace SaikoroBattle {
                     box.classList.remove('selected_defense');
                 }
             }
+            player.closeAttackActionBoard();
+            player.closeDefenseActionBoard();
         }
     }
 }
