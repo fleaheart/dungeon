@@ -2,25 +2,14 @@
 var SaikoroBattle;
 (function (SaikoroBattle) {
     var _message = new Kyoutsu.Message();
-    var _debug = new Kyoutsu.Message();
-    var GameDeifine = (function () {
-        function GameDeifine() {
-            this.attackActionList = [];
-            this.defenseActionList = [];
-            this.playerList = [];
-            this.enemyList = [];
-        }
-        return GameDeifine;
-    }());
-    var _gameDeifine = new GameDeifine();
     var GameStatus = (function () {
         function GameStatus() {
             var _this = this;
             this.gameMode = undefined;
             this.players = [];
             this.operationPos = -1;
-            this.attacker = NullCharacter;
-            this.defender = NullCharacter;
+            this.attacker = SaikoroBattle.NullCharacter;
+            this.defender = SaikoroBattle.NullCharacter;
             this.operationIdx = function () {
                 for (var i = 0, len = _this.players.length; i < len; i++) {
                     var player = _this.players[i];
@@ -34,67 +23,6 @@ var SaikoroBattle;
         return GameStatus;
     }());
     var _gameStatus = new GameStatus();
-    function init() {
-        _debug.set(Kyoutsu.getElementById('debugBoard'));
-        initDefine();
-        clearGamePlayer();
-    }
-    SaikoroBattle.init = init;
-    function initDefine() {
-        var fileData = Kyoutsu.load('SaikoroBattle.txt');
-        var lines = fileData.split(/[\r\n]+/);
-        for (var i = 0, len = lines.length; i < len; i++) {
-            var columns = lines[i].split(/\t/);
-            if (columns.length < 4) {
-                continue;
-            }
-            var id = Number(columns[0]);
-            var type = columns[1];
-            var name_1 = columns[3];
-            if (type == 'Attack') {
-                var action = new AttackAction(id, name_1, Number(columns[4]));
-                _gameDeifine.attackActionList.push(action);
-            }
-            else if (type == 'Defense') {
-                var action = new DefenseAction(id, name_1, Number(columns[4]));
-                if (columns[5] == 'through') {
-                    action.through = true;
-                }
-                _gameDeifine.defenseActionList.push(action);
-            }
-            else if (type == 'Player' || type == 'Enemy') {
-                var character = new Character(id, type, name_1);
-                character.hitPointMax = Number(columns[4]);
-                setDefaultActionPalette(_gameDeifine.attackActionList, columns[5], character.attackPalette);
-                setDefaultActionPalette(_gameDeifine.defenseActionList, columns[6], character.defensePalette);
-                if (type == 'Player') {
-                    _gameDeifine.playerList.push(character);
-                }
-                else if (type == 'Enemy') {
-                    _gameDeifine.enemyList.push(character);
-                }
-            }
-        }
-    }
-    function setDefaultActionPalette(list, idText, palette) {
-        var ids = idText.split(',');
-        if (ids.length != 6) {
-            throw 'illegal palette count';
-        }
-        palette.length = 0;
-        for (var i = 0; i < 6; i++) {
-            var action = pickupAction(list, Number(ids[i]));
-            palette.push(action);
-        }
-    }
-    function pickupAction(list, id) {
-        for (var i = 0, len = list.length; i < len; i++) {
-            if (list[i].id == id) {
-                return list[i].clone();
-            }
-        }
-        throw 'id:' + String(id) + ' is not found';
-    }
     function initMainBoard() {
         var gameStatus = _gameStatus;
         var mainBoard = document.createElement('DIV');
@@ -120,21 +48,10 @@ var SaikoroBattle;
         }
     }
     SaikoroBattle.initMainBoard = initMainBoard;
-    function clearGamePlayer() {
-        _gameStatus.players.length = 0;
-    }
     function addPlayer(player) {
         _gameStatus.players.push(player);
     }
     SaikoroBattle.addPlayer = addPlayer;
-    function searchPlayer(idx) {
-        return new SaikoroBattlePlayer(_gameDeifine.playerList[idx]);
-    }
-    SaikoroBattle.searchPlayer = searchPlayer;
-    function searchEnemy(idx) {
-        return new SaikoroBattlePlayer(_gameDeifine.enemyList[idx]);
-    }
-    SaikoroBattle.searchEnemy = searchEnemy;
     function createActonBoard(player) {
         {
             var span = document.createElement('SPAN');
@@ -173,103 +90,6 @@ var SaikoroBattle;
     function saikoro() {
         return integerRandom(6);
     }
-    var AttackAction = (function () {
-        function AttackAction(id, name, power, detail) {
-            this.opened = false;
-            this.id = id;
-            this.name = name;
-            this.power = power;
-            if (detail == undefined) {
-                this.detail = '';
-            }
-            else {
-                this.detail = detail;
-            }
-        }
-        AttackAction.prototype.clone = function () {
-            var action = new AttackAction(this.id, this.name, this.power, this.detail);
-            return action;
-        };
-        return AttackAction;
-    }());
-    var DefenseAction = (function () {
-        function DefenseAction(id, name, power, detail) {
-            this.opened = false;
-            this.through = false;
-            this.nigashiPoint = 0;
-            this.id = id;
-            this.name = name;
-            this.power = power;
-            if (detail == undefined) {
-                this.detail = '';
-            }
-            else {
-                this.detail = detail;
-            }
-        }
-        DefenseAction.prototype.clone = function () {
-            var action = new DefenseAction(this.id, this.name, this.power, this.detail);
-            action.through = this.through;
-            action.nigashiPoint = this.nigashiPoint;
-            return action;
-        };
-        return DefenseAction;
-    }());
-    var Character = (function () {
-        function Character(id, type, name) {
-            this.hitPointMax = 0;
-            this.attackPalette = [];
-            this.defensePalette = [];
-            this.id = id;
-            this.type = type;
-            this.name = name;
-        }
-        Character.prototype.clone = function () {
-            var character = new Character(this.id, this.type, this.name);
-            character.hitPointMax = this.hitPointMax;
-            cloneList(this.attackPalette, character.attackPalette);
-            cloneList(this.defensePalette, character.defensePalette);
-            return character;
-        };
-        return Character;
-    }());
-    function cloneList(source, destination) {
-        destination.length = 0;
-        for (var i = 0, len = source.length; i < len; i++) {
-            destination.push(source[i].clone());
-        }
-    }
-    var SaikoroBattlePlayer = (function () {
-        function SaikoroBattlePlayer(character) {
-            this.hitPoint = 0;
-            this.saikoroMe = 1;
-            this.attackBoxList = [];
-            this.defenseBoxList = [];
-            this.operationOrder = -1;
-            this.targetIdx = -1;
-            this.character = character.clone();
-            this.characterBoard = document.createElement('DIV');
-            this.hitPointElement = document.createElement('SPAN');
-            this.debugElement = document.createElement('SPAN');
-            this.saikoroElement = document.createElement('DIV');
-            this.attackActionBoard = document.createElement('DIV');
-            this.defenseActionBoard = document.createElement('DIV');
-        }
-        SaikoroBattlePlayer.prototype.openAttackActionBoard = function () {
-            this.attackActionBoard.style.display = 'flex';
-        };
-        SaikoroBattlePlayer.prototype.closeAttackActionBoard = function () {
-            this.attackActionBoard.style.display = 'none';
-        };
-        SaikoroBattlePlayer.prototype.openDefenseActionBoard = function () {
-            this.defenseActionBoard.style.display = 'flex';
-        };
-        SaikoroBattlePlayer.prototype.closeDefenseActionBoard = function () {
-            this.defenseActionBoard.style.display = 'none';
-        };
-        return SaikoroBattlePlayer;
-    }());
-    var NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
     function keyboardClick(e) {
         var key = Kyoutsu.getKeytop(e.target);
         if (key == 'w') {
@@ -575,7 +395,7 @@ var SaikoroBattle;
                 return m1.me < m2.me ? 1 : -1;
             });
             for (var i = 0, len = meList.length; i < len; i++) {
-                _debug.writeLine(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+                SaikoroBattle._debug.writeLine(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
                 if (meList[i].kaburi) {
                     this.orderEntryList[meList[i].playerIdx].entry = true;
                 }
