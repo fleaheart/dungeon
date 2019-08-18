@@ -12,9 +12,10 @@ var SaikoroBattle;
             this.targetIdx = -1;
             this.character = character.clone();
             this.characterBoard = document.createElement('DIV');
+            this.nameElement = document.createElement('SPAN');
             this.hitPointElement = document.createElement('SPAN');
             this.debugElement = document.createElement('SPAN');
-            this.saikoroElement = document.createElement('DIV');
+            this.saikoroElement = document.createElement('SPAN');
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
         }
@@ -84,15 +85,15 @@ var SaikoroBattle;
     }
     SaikoroBattle.addPlayer = addPlayer;
     function createActonBoard(player) {
-        {
-            var span = document.createElement('SPAN');
-            span.textContent = player.character.name + ' HP: ';
-            player.characterBoard.appendChild(span);
-        }
-        player.characterBoard.appendChild(player.hitPointElement);
-        player.characterBoard.appendChild(player.debugElement);
         player.saikoroElement.className = 'saikoro';
         player.characterBoard.appendChild(player.saikoroElement);
+        player.nameElement.className = 'playerName';
+        player.nameElement.textContent = player.character.name;
+        player.characterBoard.appendChild(player.nameElement);
+        player.characterBoard.appendChild(document.createTextNode('HP:'));
+        player.hitPointElement.className = 'hitPoint';
+        player.characterBoard.appendChild(player.hitPointElement);
+        player.characterBoard.appendChild(player.debugElement);
         for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
             var actionBoard = void 0;
             var actionBoxList = void 0;

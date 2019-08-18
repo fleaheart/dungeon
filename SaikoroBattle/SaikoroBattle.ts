@@ -8,6 +8,7 @@ namespace SaikoroBattle {
         hitPoint: number = 0;
 
         characterBoard: HTMLElement;
+        nameElement: HTMLElement;
         hitPointElement: HTMLElement;
         debugElement: HTMLElement;
         saikoroElement: HTMLElement;
@@ -25,9 +26,10 @@ namespace SaikoroBattle {
             this.character = character.clone();
 
             this.characterBoard = document.createElement('DIV');
+            this.nameElement = document.createElement('SPAN');
             this.hitPointElement = document.createElement('SPAN');
             this.debugElement = document.createElement('SPAN');
-            this.saikoroElement = document.createElement('DIV');
+            this.saikoroElement = document.createElement('SPAN');
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
         }
@@ -110,16 +112,18 @@ namespace SaikoroBattle {
     }
 
     function createActonBoard(player: SaikoroBattlePlayer): void {
-        {
-            let span: HTMLElement = document.createElement('SPAN');
-            span.textContent = player.character.name + ' HP: ';
-            player.characterBoard.appendChild(span);
-        }
-
-        player.characterBoard.appendChild(player.hitPointElement);
-        player.characterBoard.appendChild(player.debugElement);
         player.saikoroElement.className = 'saikoro';
         player.characterBoard.appendChild(player.saikoroElement);
+
+        player.nameElement.className = 'playerName';
+        player.nameElement.textContent = player.character.name;
+        player.characterBoard.appendChild(player.nameElement);
+
+        player.characterBoard.appendChild(document.createTextNode('HP:'));
+        player.hitPointElement.className = 'hitPoint';
+        player.characterBoard.appendChild(player.hitPointElement);
+
+        player.characterBoard.appendChild(player.debugElement);
 
         for (let attackDefense: number = 1; attackDefense <= 2; attackDefense++) {
             let actionBoard: HTMLElement;

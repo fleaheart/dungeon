@@ -14,6 +14,7 @@
 }
 
 .saikoro {
+    display: inline-block;
     width: 24px;
     height: 24px;
     border: 1px solid black;
@@ -22,6 +23,19 @@
     font-size: 7pt;
     letter-spacing : -2px;
     line-height : 8px;
+}
+
+.playerName {
+    display: inline-block;
+    margin-left: 4px;
+    margin-right: 4px;
+    width: 64px;
+}
+
+.hitPoint {
+    display: inline-block;
+    width: 44px;
+    text-align: right;
 }
 
 .selected_attack {
