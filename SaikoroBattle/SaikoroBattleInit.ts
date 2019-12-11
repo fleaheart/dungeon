@@ -1,7 +1,5 @@
 namespace SaikoroBattle {
 
-    export let _debug = new Kyoutsu.Message();
-
     export interface GameObject {
         id: number;
         name: string;
@@ -111,8 +109,6 @@ namespace SaikoroBattle {
     }
 
     export function init(): void {
-        _debug.set(Kyoutsu.getElementById('debugBoard'));
-
         initDefine();
     }
 

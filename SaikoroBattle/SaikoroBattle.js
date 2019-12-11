@@ -2,6 +2,9 @@
 var SaikoroBattle;
 (function (SaikoroBattle) {
     var _message = new Kyoutsu.Message();
+    function debuglog(text) {
+        console.log(text);
+    }
     var SaikoroBattlePlayer = (function () {
         function SaikoroBattlePlayer(character) {
             this.hitPoint = 0;
@@ -14,7 +17,6 @@ var SaikoroBattle;
             this.characterBoard = document.createElement('DIV');
             this.nameElement = document.createElement('SPAN');
             this.hitPointElement = document.createElement('SPAN');
-            this.debugElement = document.createElement('SPAN');
             this.saikoroElement = document.createElement('SPAN');
             this.attackActionBoard = document.createElement('DIV');
             this.defenseActionBoard = document.createElement('DIV');
@@ -80,10 +82,6 @@ var SaikoroBattle;
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
     }
     SaikoroBattle.initMainBoard = initMainBoard;
-    function addPlayer(player) {
-        _gameStatus.players.push(player);
-    }
-    SaikoroBattle.addPlayer = addPlayer;
     function createActonBoard(player) {
         player.saikoroElement.className = 'saikoro';
         player.characterBoard.appendChild(player.saikoroElement);
@@ -93,7 +91,6 @@ var SaikoroBattle;
         player.characterBoard.appendChild(document.createTextNode('HP:'));
         player.hitPointElement.className = 'hitPoint';
         player.characterBoard.appendChild(player.hitPointElement);
-        player.characterBoard.appendChild(player.debugElement);
         for (var attackDefense = 1; attackDefense <= 2; attackDefense++) {
             var actionBoard = void 0;
             var actionBoxList = void 0;
@@ -434,7 +431,7 @@ var SaikoroBattle;
                 return m1.me < m2.me ? 1 : -1;
             });
             for (var i = 0, len = meList.length; i < len; i++) {
-                SaikoroBattle._debug.writeLine(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
+                debuglog(i + ' idx:' + meList[i].playerIdx + ' me:' + meList[i].me + ':' + meList[i].kaburi);
                 if (meList[i].kaburi) {
                     this.orderEntryList[meList[i].playerIdx].entry = true;
                 }
@@ -455,8 +452,8 @@ var SaikoroBattle;
             for (var i = 0, len = this.order.length; i < len; i++) {
                 var playerIdx = this.order[i];
                 this.gameStatus.players[playerIdx].operationOrder = i;
-                this.gameStatus.players[playerIdx].debugElement.textContent = ' ' + String(this.gameStatus.players[playerIdx].operationOrder)
-                    + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx);
+                debuglog(String(playerIdx) + ' ' + String(this.gameStatus.players[playerIdx].operationOrder)
+                    + ' -> ' + String(this.gameStatus.players[playerIdx].targetIdx));
             }
             this.gameStatus.operationPos = 0;
             this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);

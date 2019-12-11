@@ -1,7 +1,6 @@
 "use strict";
 var SaikoroBattle;
 (function (SaikoroBattle) {
-    SaikoroBattle._debug = new Kyoutsu.Message();
     var AttackAction = (function () {
         function AttackAction(id, name, power, detail) {
             this.opened = false;
@@ -79,7 +78,6 @@ var SaikoroBattle;
     }
     SaikoroBattle.pickupCharacter = pickupCharacter;
     function init() {
-        SaikoroBattle._debug.set(Kyoutsu.getElementById('debugBoard'));
         initDefine();
     }
     SaikoroBattle.init = init;
