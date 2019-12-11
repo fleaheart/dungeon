@@ -231,7 +231,7 @@ namespace SaikoroBattle {
         finish(): void {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+            this.gameStatus.gameMode = new PaletteSelectMode(this.gameStatus);
         }
     }
 
@@ -361,6 +361,37 @@ namespace SaikoroBattle {
             Task.TaskCtrl.finish(this);
 
             this.callback(this.me);
+        }
+    }
+
+    class PaletteSelectMode implements GameMode {
+        readonly name: string = 'PaletteSelectMode';
+        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+
+        gameStatus: GameStatus;
+
+        constructor(gameStatus: GameStatus) {
+            this.gameStatus = gameStatus;
+            this.init();
+        }
+
+        init(): void {
+            setTimeout((): void => { this.do(); });
+        }
+
+        do(): void {
+            Task.TaskCtrl.do(this);
+            this.finish();
+        }
+
+        asap(): void {
+            Task.TaskCtrl.asap(this);
+        }
+
+        finish(): void {
+            Task.TaskCtrl.finish(this);
+
+            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
         }
     }
 

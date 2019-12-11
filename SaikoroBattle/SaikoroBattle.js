@@ -177,7 +177,7 @@ var SaikoroBattle;
         };
         InitGameMode.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+            this.gameStatus.gameMode = new PaletteSelectMode(this.gameStatus);
         };
         return InitGameMode;
     }());
@@ -295,6 +295,30 @@ var SaikoroBattle;
         return SaikoroTask;
     }());
     SaikoroBattle.SaikoroTask = SaikoroTask;
+    var PaletteSelectMode = (function () {
+        function PaletteSelectMode(gameStatus) {
+            this.name = 'PaletteSelectMode';
+            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.gameStatus = gameStatus;
+            this.init();
+        }
+        PaletteSelectMode.prototype.init = function () {
+            var _this = this;
+            setTimeout(function () { _this.do(); });
+        };
+        PaletteSelectMode.prototype.do = function () {
+            Task.TaskCtrl.do(this);
+            this.finish();
+        };
+        PaletteSelectMode.prototype.asap = function () {
+            Task.TaskCtrl.asap(this);
+        };
+        PaletteSelectMode.prototype.finish = function () {
+            Task.TaskCtrl.finish(this);
+            this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+        };
+        return PaletteSelectMode;
+    }());
     var ActionTaishouSelectMode = (function () {
         function ActionTaishouSelectMode(gameStatus) {
             this.name = 'ActionTaishouSelectMode';
