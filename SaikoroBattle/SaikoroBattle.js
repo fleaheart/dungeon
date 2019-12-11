@@ -336,6 +336,7 @@ var SaikoroBattle;
         };
         ActionTaishouSelectMode.prototype.do = function () {
             Task.TaskCtrl.do(this);
+            actionStateReaet(this.gameStatus.players);
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 var player = this.gameStatus.players[i];
                 var targetIdx = -1;
@@ -376,6 +377,7 @@ var SaikoroBattle;
             this.init();
         }
         KougekiJunjoHandanMode.prototype.init = function () {
+            actionStateReaet(this.gameStatus.players);
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
@@ -502,7 +504,9 @@ var SaikoroBattle;
             var targetIdx = this.gameStatus.attacker.targetIdx;
             this.gameStatus.defender = this.gameStatus.players[targetIdx];
             this.tasks.add(new Task.FunctionTask(_message.clear));
+            this.tasks.add(new Task.FunctionTask(function () { actionStateReaet(_this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(_this.gameStatus.players); }));
+            this.tasks.add(new Task.FunctionTask(function () { attackPlayer(_this.gameStatus.attacker); }));
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
             this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
             this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
@@ -540,6 +544,7 @@ var SaikoroBattle;
         }
         Attack2GameMode.prototype.init = function () {
             var _this = this;
+            this.tasks.add(new Task.FunctionTask(function () { defenderPlayer(_this.gameStatus.defender); }));
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             attackAction.opened = true;
@@ -644,6 +649,22 @@ var SaikoroBattle;
         for (var i = 0, len = gameStatus.players.length; i < len; i++) {
             var player = gameStatus.players[i];
             player.hitPointElement.textContent = String(player.hitPoint);
+        }
+    }
+    function attackPlayer(sbp) {
+        sbp.characterBoard.classList.add('attacker');
+    }
+    function defenderPlayer(sbp) {
+        sbp.characterBoard.classList.add('defender');
+    }
+    function actionStateReaet(players) {
+        var clearStatuses = ['attacker', 'defender'];
+        for (var i = 0, len = players.length; i < len; i++) {
+            var player = players[i];
+            for (var j = 0, jlen = clearStatuses.length; j < jlen; j++) {
+                var className = clearStatuses[j];
+                player.characterBoard.classList.remove(className);
+            }
         }
     }
     function actionSelect(actionBoxList, me, className, action) {
