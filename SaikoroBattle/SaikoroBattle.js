@@ -327,29 +327,34 @@ var SaikoroBattle;
             this.init();
         }
         ActionTaishouSelectMode.prototype.init = function () {
+        };
+        ActionTaishouSelectMode.prototype.do = function () {
+            Task.TaskCtrl.do(this);
+            actionStateReaet(this.gameStatus.players);
             actionSelectReset(this.gameStatus.players);
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 var player = this.gameStatus.players[i];
                 player.openAttackActionBoard();
                 player.openDefenseActionBoard();
             }
-        };
-        ActionTaishouSelectMode.prototype.do = function () {
-            Task.TaskCtrl.do(this);
-            actionStateReaet(this.gameStatus.players);
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 var player = this.gameStatus.players[i];
                 var targetIdx = -1;
-                while (true) {
-                    targetIdx = integerRandom(len);
-                    if (player.character.type == 'Player') {
-                        if (this.gameStatus.players[targetIdx].character.type == 'Enemy') {
-                            break;
-                        }
-                    }
-                    else if (player.character.type == 'Enemy') {
-                        if (this.gameStatus.players[targetIdx].character.type == 'Player') {
-                            break;
+                if (0 < player.hitPoint) {
+                    while (true) {
+                        targetIdx = integerRandom(len);
+                        var targetPlayer = this.gameStatus.players[targetIdx];
+                        if (0 < targetPlayer.hitPoint) {
+                            if (player.character.type == 'Player') {
+                                if (targetPlayer.character.type == 'Enemy') {
+                                    break;
+                                }
+                            }
+                            else if (player.character.type == 'Enemy') {
+                                if (targetPlayer.character.type == 'Player') {
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -381,7 +386,9 @@ var SaikoroBattle;
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
-                this.orderEntryList.push({ entry: true, me: -1 });
+                this.gameStatus.players[i].operationOrder = -1;
+                var entry = 0 < this.gameStatus.players[i].hitPoint;
+                this.orderEntryList.push({ entry: entry, me: -1 });
             }
             this.orderEntry();
         };
@@ -506,10 +513,15 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.FunctionTask(function () { actionStateReaet(_this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(_this.gameStatus.players); }));
-            this.tasks.add(new Task.FunctionTask(function () { attackPlayer(_this.gameStatus.attacker); }));
-            this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
-            this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
-            this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
+            if (this.gameStatus.attacker.hitPoint <= 0) {
+                this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'は倒れている。'); }));
+            }
+            else {
+                this.tasks.add(new Task.FunctionTask(function () { attackPlayer(_this.gameStatus.attacker); }));
+                this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'の攻撃'); }));
+                this.tasks.add(new Task.FunctionTask(function () { _this.gameStatus.attacker.openAttackActionBoard(); }));
+                this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
+            }
         };
         Attack1GameMode.prototype.callback = function (me) {
             this.gameStatus.attacker.saikoroMe = me;
@@ -529,8 +541,19 @@ var SaikoroBattle;
         };
         Attack1GameMode.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
-            this.gameStatus.gameMode.do();
+            if (this.gameStatus.attacker.hitPoint <= 0) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                }
+                else {
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+                }
+            }
+            else {
+                this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
+                this.gameStatus.gameMode.do();
+            }
         };
         return Attack1GameMode;
     }());
@@ -545,6 +568,10 @@ var SaikoroBattle;
         Attack2GameMode.prototype.init = function () {
             var _this = this;
             this.tasks.add(new Task.FunctionTask(function () { defenderPlayer(_this.gameStatus.defender); }));
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.defender.character.name + 'は倒れている。'); }));
+                return;
+            }
             var attackMe = this.gameStatus.attacker.saikoroMe;
             var attackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
             attackAction.opened = true;
@@ -572,8 +599,19 @@ var SaikoroBattle;
         };
         Attack2GameMode.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
-            this.gameStatus.gameMode.do();
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                }
+                else {
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+                }
+            }
+            else {
+                this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
+                this.gameStatus.gameMode.do();
+            }
         };
         return Attack2GameMode;
     }());
@@ -627,20 +665,35 @@ var SaikoroBattle;
         };
         Attack3GameMode.prototype.finish = function () {
             Task.TaskCtrl.finish(this);
-            var hitPoint = this.gameStatus.defender.hitPoint;
             this.gameStatus.attacker = SaikoroBattle.NullCharacter;
             this.gameStatus.defender = SaikoroBattle.NullCharacter;
-            if (0 < hitPoint) {
+            var playerAliveCount = 0;
+            var enemyAliveCount = 0;
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                var player = this.gameStatus.players[i];
+                if (0 < player.hitPoint) {
+                    if (player.character.type == 'Player') {
+                        playerAliveCount++;
+                    }
+                    else {
+                        enemyAliveCount++;
+                    }
+                }
+            }
+            if (playerAliveCount <= 0) {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            }
+            else if (enemyAliveCount <= 0) {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            }
+            else {
                 this.gameStatus.operationPos++;
                 if (0 <= this.gameStatus.operationIdx()) {
                     this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
                 }
                 else {
-                    this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
                 }
-            }
-            else {
-                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
             }
         };
         return Attack3GameMode;

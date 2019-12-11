@@ -407,31 +407,38 @@ namespace SaikoroBattle {
         }
 
         init(): void {
-            actionSelectReset(this.gameStatus.players);
-            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
-                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
-                player.openAttackActionBoard();
-                player.openDefenseActionBoard();
-            }
         }
 
         do(): void {
             Task.TaskCtrl.do(this);
 
             actionStateReaet(this.gameStatus.players);
+            actionSelectReset(this.gameStatus.players);
+            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
+                player.openAttackActionBoard();
+                player.openDefenseActionBoard();
+            }
+
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 let player: SaikoroBattlePlayer = this.gameStatus.players[i];
 
                 let targetIdx = -1;
-                while (true) {
-                    targetIdx = integerRandom(len);
-                    if (player.character.type == 'Player') {
-                        if (this.gameStatus.players[targetIdx].character.type == 'Enemy') {
-                            break;
-                        }
-                    } else if (player.character.type == 'Enemy') {
-                        if (this.gameStatus.players[targetIdx].character.type == 'Player') {
-                            break;
+                if (0 < player.hitPoint) {
+                    while (true) {
+                        targetIdx = integerRandom(len);
+                        let targetPlayer: SaikoroBattlePlayer = this.gameStatus.players[targetIdx];
+
+                        if (0 < targetPlayer.hitPoint) {
+                            if (player.character.type == 'Player') {
+                                if (targetPlayer.character.type == 'Enemy') {
+                                    break;
+                                }
+                            } else if (player.character.type == 'Enemy') {
+                                if (targetPlayer.character.type == 'Player') {
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -475,7 +482,9 @@ namespace SaikoroBattle {
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
-                this.orderEntryList.push({ entry: true, me: -1 });
+                this.gameStatus.players[i].operationOrder = -1;
+                let entry: boolean = 0 < this.gameStatus.players[i].hitPoint;
+                this.orderEntryList.push({ entry: entry, me: -1 });
             }
 
             this.orderEntry();
@@ -624,13 +633,17 @@ namespace SaikoroBattle {
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.FunctionTask((): void => { actionStateReaet(this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(this.gameStatus.players); }));
-            this.tasks.add(new Task.FunctionTask((): void => { attackPlayer(this.gameStatus.attacker); }));
-            this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'の攻撃'); }));
-            this.tasks.add(new Task.FunctionTask((): void => { this.gameStatus.attacker.openAttackActionBoard(); }));
-            this.tasks.add(new SaikoroTask(
-                (me: number): void => { this.callback(me); },
-                (me: number): void => { this.rollingFunc(me); }
-            ));
+            if (this.gameStatus.attacker.hitPoint <= 0) {
+                this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'は倒れている。'); }));
+            } else {
+                this.tasks.add(new Task.FunctionTask((): void => { attackPlayer(this.gameStatus.attacker); }));
+                this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'の攻撃'); }));
+                this.tasks.add(new Task.FunctionTask((): void => { this.gameStatus.attacker.openAttackActionBoard(); }));
+                this.tasks.add(new SaikoroTask(
+                    (me: number): void => { this.callback(me); },
+                    (me: number): void => { this.rollingFunc(me); }
+                ));
+            }
         }
 
         private callback(me: number): void {
@@ -658,8 +671,17 @@ namespace SaikoroBattle {
         finish(): void {
             Task.TaskCtrl.finish(this);
 
-            this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
-            this.gameStatus.gameMode.do();
+            if (this.gameStatus.attacker.hitPoint <= 0) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                } else {
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+                }
+            } else {
+                this.gameStatus.gameMode = new Attack2GameMode(this.gameStatus);
+                this.gameStatus.gameMode.do();
+            }
         }
     }
 
@@ -678,6 +700,10 @@ namespace SaikoroBattle {
 
         init(): void {
             this.tasks.add(new Task.FunctionTask((): void => { defenderPlayer(this.gameStatus.defender); }));
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.defender.character.name + 'は倒れている。'); }));
+                return;
+            }
 
             let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
@@ -718,8 +744,18 @@ namespace SaikoroBattle {
 
         finish(): void {
             Task.TaskCtrl.finish(this);
-            this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
-            this.gameStatus.gameMode.do();
+
+            if (this.gameStatus.defender.hitPoint <= 0) {
+                this.gameStatus.operationPos++;
+                if (0 <= this.gameStatus.operationIdx()) {
+                    this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
+                } else {
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
+                }
+            } else {
+                this.gameStatus.gameMode = new Attack3GameMode(this.gameStatus);
+                this.gameStatus.gameMode.do();
+            }
         }
     }
 
@@ -791,20 +827,34 @@ namespace SaikoroBattle {
         finish(): void {
             Task.TaskCtrl.finish(this);
 
-            let hitPoint = this.gameStatus.defender.hitPoint;
-
             this.gameStatus.attacker = NullCharacter;
             this.gameStatus.defender = NullCharacter;
 
-            if (0 < hitPoint) {
+            // 生存者確認
+            let playerAliveCount: number = 0;
+            let enemyAliveCount: number = 0;
+            for (let i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
+                if (0 < player.hitPoint) {
+                    if (player.character.type == 'Player') {
+                        playerAliveCount++;
+                    } else {
+                        enemyAliveCount++;
+                    }
+                }
+            }
+
+            if (playerAliveCount <= 0) {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            } else if (enemyAliveCount <= 0) {
+                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
+            } else {
                 this.gameStatus.operationPos++;
                 if (0 <= this.gameStatus.operationIdx()) {
                     this.gameStatus.gameMode = new Attack1GameMode(this.gameStatus);
                 } else {
-                    this.gameStatus.gameMode = new KougekiJunjoHandanMode(this.gameStatus);
+                    this.gameStatus.gameMode = new ActionTaishouSelectMode(this.gameStatus);
                 }
-            } else {
-                this.gameStatus.gameMode = new InitGameMode(this.gameStatus);
             }
         }
     }
