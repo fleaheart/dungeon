@@ -195,10 +195,7 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
 
-        init(): void {
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 let player: SaikoroBattlePlayer = this.gameStatus.players[i];
                 player.hitPoint = player.character.hitPointMax;
@@ -378,21 +375,12 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
+            setTimeout((): void => { this.finish(); }); // 未実装
         }
 
-        init(): void {
-            setTimeout((): void => { this.do(); });
-        }
+        do(): void { }
 
-        do(): void {
-            Task.TaskCtrl.do(this);
-            this.finish();
-        }
-
-        asap(): void {
-            Task.TaskCtrl.asap(this);
-        }
+        asap(): void { }
 
         finish(): void {
             Task.TaskCtrl.finish(this);
@@ -409,10 +397,6 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
-
-        init(): void {
         }
 
         do(): void {
@@ -479,10 +463,7 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
 
-        init(): void {
             actionStateReaet(this.gameStatus.players);
 
             this.order.length = 0;
@@ -622,10 +603,7 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
 
-        init(): void {
             let attackerIdx: number = this.gameStatus.operationIdx();
             if (attackerIdx == -1) {
                 throw 'no stack';
@@ -701,10 +679,7 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
 
-        init(): void {
             this.tasks.add(new Task.FunctionTask((): void => { defenderPlayer(this.gameStatus.defender); }));
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.defender.character.name + 'は倒れている。'); }));
@@ -775,10 +750,7 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            this.init();
-        }
 
-        init(): void {
             let attackMe: number = this.gameStatus.attacker.saikoroMe;
             let attackAction: AttackAction = this.gameStatus.attacker.character.attackPalette[attackMe];
 
