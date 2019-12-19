@@ -318,47 +318,60 @@ var SaikoroBattle;
     }());
     var ActionTaishouSelectMode = (function () {
         function ActionTaishouSelectMode(gameStatus) {
-            var _this = this;
             this.name = 'ActionTaishouSelectMode';
             this.mode = Task.DEFAULT_MODE;
-            this.do = function () {
-                Task.TaskCtrl.do(_this);
-                actionStateReaet(_this.gameStatus.players);
-                actionSelectReset(_this.gameStatus.players);
-                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
-                    var player = _this.gameStatus.players[i];
-                    player.openAttackActionBoard();
-                    player.openDefenseActionBoard();
+            this.gameStatus = gameStatus;
+            this.idx = 0;
+            actionStateReaet(this.gameStatus.players);
+            actionSelectReset(this.gameStatus.players);
+            for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
+                var player = this.gameStatus.players[i];
+                player.openAttackActionBoard();
+                player.openDefenseActionBoard();
+            }
+        }
+        ActionTaishouSelectMode.prototype.eventHandler = function (e) {
+            var key = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
                 }
-                for (var i = 0, len = _this.gameStatus.players.length; i < len; i++) {
-                    var player = _this.gameStatus.players[i];
-                    var targetIdx = -1;
-                    if (0 < player.hitPoint) {
-                        while (true) {
-                            targetIdx = integerRandom(len);
-                            var targetPlayer = _this.gameStatus.players[targetIdx];
-                            if (0 < targetPlayer.hitPoint) {
-                                if (player.character.type == 'Player') {
-                                    if (targetPlayer.character.type == 'Enemy') {
-                                        break;
-                                    }
+                else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
+        };
+        ActionTaishouSelectMode.prototype.do = function () {
+            Task.TaskCtrl.do(this);
+            var len = this.gameStatus.players.length;
+            while (this.idx < len) {
+                var player = this.gameStatus.players[this.idx];
+                var targetIdx = -1;
+                if (0 < player.hitPoint) {
+                    while (true) {
+                        targetIdx = integerRandom(len);
+                        var targetPlayer = this.gameStatus.players[targetIdx];
+                        if (0 < targetPlayer.hitPoint) {
+                            if (player.character.type == 'Player') {
+                                if (targetPlayer.character.type == 'Enemy') {
+                                    break;
                                 }
-                                else if (player.character.type == 'Enemy') {
-                                    if (targetPlayer.character.type == 'Player') {
-                                        break;
-                                    }
+                            }
+                            else if (player.character.type == 'Enemy') {
+                                if (targetPlayer.character.type == 'Player') {
+                                    break;
                                 }
                             }
                         }
                     }
-                    player.targetIdx = targetIdx;
                 }
-                _this.finish();
-            };
-            this.gameStatus = gameStatus;
-            setTimeout(this.do);
-        }
-        ActionTaishouSelectMode.prototype.eventHandler = function (_e) { };
+                player.targetIdx = targetIdx;
+                this.idx++;
+            }
+            if (len <= this.idx) {
+                this.finish();
+            }
+        };
         ActionTaishouSelectMode.prototype.asap = function () {
             Task.TaskCtrl.asap(this);
         };

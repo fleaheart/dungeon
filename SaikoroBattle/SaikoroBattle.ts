@@ -396,15 +396,11 @@ namespace SaikoroBattle {
 
         gameStatus: GameStatus;
 
+        idx: number;
+
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-            setTimeout(this.do);
-        }
-
-        eventHandler(_e: Event): void { }
-
-        do = (): void => {
-            Task.TaskCtrl.do(this);
+            this.idx = 0;
 
             actionStateReaet(this.gameStatus.players);
             actionSelectReset(this.gameStatus.players);
@@ -413,9 +409,25 @@ namespace SaikoroBattle {
                 player.openAttackActionBoard();
                 player.openDefenseActionBoard();
             }
+        }
 
-            for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
-                let player: SaikoroBattlePlayer = this.gameStatus.players[i];
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
+        }
+
+        do(): void {
+            Task.TaskCtrl.do(this);
+
+            let len: number = this.gameStatus.players.length;
+            while (this.idx < len) {
+                let player: SaikoroBattlePlayer = this.gameStatus.players[this.idx];
 
                 let targetIdx = -1;
                 if (0 < player.hitPoint) {
@@ -437,10 +449,14 @@ namespace SaikoroBattle {
                     }
                 }
                 player.targetIdx = targetIdx;
+
+                this.idx++;
             }
 
-            this.finish();
-        };
+            if (len <= this.idx) {
+                this.finish();
+            }
+        }
 
         asap(): void {
             Task.TaskCtrl.asap(this);
