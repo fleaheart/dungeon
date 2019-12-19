@@ -56,12 +56,13 @@ namespace SaikoroBattle {
     export let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
 
     interface GameMode extends Task.Task {
-
+        eventHandler: (e: Event) => void;
     }
 
     class NullGameMode implements GameMode {
         readonly name: string = 'NullGameMode';
         mode: Task.ModeType = Task.DEFAULT_MODE;
+        eventHandler(_e: Event): void { }
         do(): void { }
         asap(): void { }
         finish(): void { }
@@ -169,20 +170,7 @@ namespace SaikoroBattle {
     }
 
     function keyboardClick(e: Event) {
-        let key: string = Kyoutsu.getKeytop(e.target);
-        if (key == 'w') {
-            susumeruGame();
-        }
-    }
-
-    export function susumeruGame(): void {
-        if (_gameStatus.gameMode.mode == 'running') {
-            _gameStatus.gameMode.asap();
-            return;
-
-        } else if (_gameStatus.gameMode.mode == 'idle') {
-            _gameStatus.gameMode.do();
-        }
+        _gameStatus.gameMode.eventHandler(e);
     }
 
     class InitGameMode implements GameMode {
@@ -215,6 +203,17 @@ namespace SaikoroBattle {
             this.tasks.add(new Task.FunctionTask(_message.clear));
             this.tasks.add(new Task.WaitTask(Task.WaitTask.FAST));
             this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine('start'); }));
+        }
+
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
         }
 
         do(): void {
@@ -378,6 +377,8 @@ namespace SaikoroBattle {
             setTimeout((): void => { this.finish(); }); // 未実装
         }
 
+        eventHandler(_e: Event): void { }
+
         do(): void { }
 
         asap(): void { }
@@ -397,9 +398,12 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
+            setTimeout(this.do);
         }
 
-        do(): void {
+        eventHandler(_e: Event): void { }
+
+        do = (): void => {
             Task.TaskCtrl.do(this);
 
             actionStateReaet(this.gameStatus.players);
@@ -436,7 +440,7 @@ namespace SaikoroBattle {
             }
 
             this.finish();
-        }
+        };
 
         asap(): void {
             Task.TaskCtrl.asap(this);
@@ -497,6 +501,17 @@ namespace SaikoroBattle {
 
         private rollingFunc(playerIdx: number, me: number): void {
             this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
+        }
+
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
         }
 
         do(): void {
@@ -638,6 +653,17 @@ namespace SaikoroBattle {
             this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         }
 
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
+        }
+
         do(): void {
             Task.TaskCtrl.do(this);
 
@@ -699,6 +725,17 @@ namespace SaikoroBattle {
                 (me: number): void => { this.callback(me); },
                 (me: number): void => { this.rollingFunc(me); }
             ));
+        }
+
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
+            }
         }
 
         do(): void {
@@ -785,6 +822,17 @@ namespace SaikoroBattle {
             if (this.gameStatus.defender.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.defender.character.name + 'は、倒れた'); }));
                 this.tasks.add(new Task.WaitTask(Task.WaitTask.NORMAL));
+            }
+        }
+
+        eventHandler(e: Event): void {
+            let key: string = Kyoutsu.getKeytop(e.target);
+            if (key == 'w') {
+                if (this.mode == 'idle') {
+                    this.do();
+                } else if (this.mode == 'running') {
+                    this.asap();
+                }
             }
         }
 
