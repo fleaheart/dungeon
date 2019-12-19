@@ -36,10 +36,20 @@ var SaikoroBattle;
         return SaikoroBattlePlayer;
     }());
     SaikoroBattle.NullCharacter = new SaikoroBattlePlayer(new SaikoroBattle.Character(-1, 'NULL', 'NULL'));
+    var NullGameMode = (function () {
+        function NullGameMode() {
+            this.name = 'NullGameMode';
+            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+        }
+        NullGameMode.prototype.do = function () { };
+        NullGameMode.prototype.asap = function () { };
+        NullGameMode.prototype.finish = function () { };
+        return NullGameMode;
+    }());
     var GameStatus = (function () {
         function GameStatus() {
             var _this = this;
-            this.gameMode = undefined;
+            this.gameMode = new NullGameMode();
             this.players = [];
             this.operationPos = -1;
             this.attacker = SaikoroBattle.NullCharacter;
@@ -80,6 +90,7 @@ var SaikoroBattle;
         keyboard.setKeyEvent('click', keyboardClick);
         keyboard.setKeyEvent('touch', function (e) { keyboardClick(e); e.preventDefault(); });
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
+        _gameStatus.gameMode = new InitGameMode(_gameStatus);
     }
     SaikoroBattle.initMainBoard = initMainBoard;
     function createActonBoard(player) {
@@ -126,9 +137,6 @@ var SaikoroBattle;
         }
     }
     function susumeruGame() {
-        if (_gameStatus.gameMode == undefined) {
-            _gameStatus.gameMode = new InitGameMode(_gameStatus);
-        }
         if (_gameStatus.gameMode.mode == 'running') {
             _gameStatus.gameMode.asap();
             return;

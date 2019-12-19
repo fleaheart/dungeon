@@ -55,8 +55,20 @@ namespace SaikoroBattle {
 
     export let NullCharacter = new SaikoroBattlePlayer(new Character(-1, 'NULL', 'NULL'));
 
+    interface GameMode extends Task.Task {
+
+    }
+
+    class NullGameMode implements GameMode {
+        readonly name: string = 'NullGameMode';
+        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        do(): void { }
+        asap(): void { }
+        finish(): void { }
+    }
+
     class GameStatus {
-        gameMode: GameMode | undefined = undefined;
+        gameMode: GameMode = new NullGameMode();
         players: SaikoroBattlePlayer[] = [];
         operationPos: number = -1;
         attacker: SaikoroBattlePlayer = NullCharacter;
@@ -107,6 +119,8 @@ namespace SaikoroBattle {
         keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
+
+        _gameStatus.gameMode = new InitGameMode(_gameStatus);
     }
 
     function createActonBoard(player: SaikoroBattlePlayer): void {
@@ -154,10 +168,6 @@ namespace SaikoroBattle {
         return integerRandom(6);
     }
 
-    interface GameMode extends Task.Task {
-        gameStatus: GameStatus;
-    }
-
     function keyboardClick(e: Event) {
         let key: string = Kyoutsu.getKeytop(e.target);
         if (key == 'w') {
@@ -166,10 +176,6 @@ namespace SaikoroBattle {
     }
 
     export function susumeruGame(): void {
-        if (_gameStatus.gameMode == undefined) {
-            _gameStatus.gameMode = new InitGameMode(_gameStatus);
-        }
-
         if (_gameStatus.gameMode.mode == 'running') {
             _gameStatus.gameMode.asap();
             return;
