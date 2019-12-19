@@ -36,7 +36,7 @@ namespace TaskTest {
 
     class IdleGameMode implements GameMode {
         public readonly name: string = 'IdleGameMode';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         public gameStatus: GameStatus = new GameStatus();
 
@@ -56,7 +56,7 @@ namespace TaskTest {
 
     class InitGameMode implements GameMode {
         public readonly name: string = 'InitGameMode';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
 
@@ -98,13 +98,13 @@ namespace TaskTest {
             this.gameStatus.count += 4;
 
             this.gameStatus.gameMode = new SaikoroFurumadeGameMode(this.gameStatus);
-        }
+        };
 
     }
 
     class SaikoroFurumadeGameMode implements GameMode {
         public readonly name: string = 'SaikoroFurumadeGameMode';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
 
@@ -123,7 +123,7 @@ namespace TaskTest {
             dbg('saikoro:' + me);
 
             this.gameStatus.me = me;
-        }
+        };
 
         private rollingFunc(me: number): void {
             let result = getElementById('rolling');
@@ -147,13 +147,13 @@ namespace TaskTest {
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
             this.gameStatus.gameMode = new HanteiGameMode(this.gameStatus);
-        }
+        };
 
     }
 
     class HanteiGameMode implements GameMode {
         public readonly name: string = 'HanteiGameMode';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
 
@@ -184,13 +184,13 @@ namespace TaskTest {
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
             this.gameStatus.gameMode = undefined;
-        }
+        };
 
     }
 
     class NaibuTasks implements Task.Task {
         public readonly name: string = 'NaibuTasks';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         private tasks = new Task.SequentialTasks();
 
@@ -220,7 +220,7 @@ namespace TaskTest {
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
 
-        }
+        };
     }
 
     function susumeruGame(): void {
@@ -243,14 +243,14 @@ namespace TaskTest {
 
     class KougekiJunjoHandanMode implements GameMode {
         public readonly name: string = 'KougekiJunjoHandanMode';
-        public mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        public mode: Task.ModeType = Task.DEFAULT_MODE;
 
         public gameStatus: GameStatus;
 
         private tasks = new Task.ParallelTasks();
 
         private order: number[] = [];
-        private orderEntryList: { entry: boolean, me: number }[] = [];
+        private orderEntryList: { entry: boolean, me: number; }[] = [];
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
@@ -280,12 +280,12 @@ namespace TaskTest {
 
         private callback = (playerIdx: number, me: number): void => {
             this.orderEntryList[playerIdx].me = me;
-        }
+        };
 
         private rollingFunc = (playerIdx: number, me: number): void => {
             let elm = getElementById('s' + String(playerIdx));
             elm.textContent = String(me);
-        }
+        };
 
         public do(): void {
             Task.TaskCtrl.do(this);
@@ -305,10 +305,10 @@ namespace TaskTest {
             dbg('check');
 
             let existsKaburi: boolean = false;
-            let meList: { playerIdx: number, me: number, kaburi: boolean }[] = [];
+            let meList: { playerIdx: number, me: number, kaburi: boolean; }[] = [];
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 if (this.orderEntryList[i].entry) {
-                    let me = this.orderEntryList[i].me
+                    let me = this.orderEntryList[i].me;
                     let kaburi = ((me: number): boolean => {
                         let kaburi = false;
                         for (let i = 0, len: number = meList.length; i < len; i++) {
@@ -359,19 +359,19 @@ namespace TaskTest {
             dbg(orderText);
 
             if (existsKaburi) {
-                this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                this.mode = Task.DEFAULT_MODE;
                 this.orderEntry();
                 return;
             }
 
             this.finish();
-        }
+        };
 
         public finish = (): void => {
             Task.TaskCtrl.finish(this);
 
             dbg('finish');
-        }
+        };
     }
 
     function susumeruGame2(): void {

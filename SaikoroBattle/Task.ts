@@ -2,6 +2,8 @@ namespace Task {
 
     export type ModeType = 'idle' | 'running' | 'asap' | 'finish';
 
+    export const DEFAULT_MODE: ModeType = 'idle';
+
     export interface Task {
         name: string;
         mode: ModeType;
@@ -11,7 +13,6 @@ namespace Task {
     }
 
     export class TaskCtrl {
-        static readonly DEFAULT_MODE: ModeType = 'idle';
         static do(task: Task): void {
             task.mode = 'running';
         }
@@ -36,7 +37,7 @@ namespace Task {
 
     export class SequentialTasks implements Task {
         readonly name: string = 'SequentialTasks';
-        mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        mode: ModeType = DEFAULT_MODE;
         tasks: Task[] = [];
 
         private step: number = -1;
@@ -93,7 +94,7 @@ namespace Task {
 
     export class ParallelTasks implements Task {
         readonly name: string = 'ParallelTasks';
-        mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        mode: ModeType = DEFAULT_MODE;
         tasks: Task[] = [];
 
         add(task: Task): void {
@@ -104,7 +105,7 @@ namespace Task {
             TaskCtrl.do(this);
 
             for (let i = 0, len: number = this.tasks.length; i < len; i++) {
-                this.tasks[i].mode = TaskCtrl.DEFAULT_MODE;
+                this.tasks[i].mode = DEFAULT_MODE;
                 window.setTimeout((): void => { this.tasks[i].do(); });
             }
 
@@ -143,7 +144,7 @@ namespace Task {
 
     export class FunctionTask implements Task {
         readonly name: string = 'FunctionTask';
-        mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        mode: ModeType = DEFAULT_MODE;
         func: () => void;
 
         constructor(func: () => void) {
@@ -177,7 +178,7 @@ namespace Task {
         static NORMAL: WaitInterval = 300;
         static SLOW: WaitInterval = 700;
 
-        mode: ModeType = TaskCtrl.DEFAULT_MODE;
+        mode: ModeType = DEFAULT_MODE;
         millisec: WaitInterval;
 
         constructor(millisec: WaitInterval) {

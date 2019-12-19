@@ -39,7 +39,7 @@ var SaikoroBattle;
     var NullGameMode = (function () {
         function NullGameMode() {
             this.name = 'NullGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
         }
         NullGameMode.prototype.do = function () { };
         NullGameMode.prototype.asap = function () { };
@@ -149,7 +149,7 @@ var SaikoroBattle;
     var InitGameMode = (function () {
         function InitGameMode(gameStatus) {
             this.name = 'InitGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
             this.init();
@@ -192,7 +192,7 @@ var SaikoroBattle;
     var ActionSetTask = (function () {
         function ActionSetTask(players) {
             this.name = 'ActionSetTask';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.actionList = [];
             this.tasks = new Task.ParallelTasks();
             for (var i = 0, len = players.length; i < len; i++) {
@@ -247,7 +247,7 @@ var SaikoroBattle;
     var SaikoroTask = (function () {
         function SaikoroTask(callback, rollingFunc) {
             this.name = 'SaikoroTask';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.rollingCount = 0;
             this.rollingMaxCount = 200;
             this.me = -1;
@@ -306,7 +306,7 @@ var SaikoroBattle;
     var PaletteSelectMode = (function () {
         function PaletteSelectMode(gameStatus) {
             this.name = 'PaletteSelectMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.gameStatus = gameStatus;
             this.init();
         }
@@ -330,7 +330,7 @@ var SaikoroBattle;
     var ActionTaishouSelectMode = (function () {
         function ActionTaishouSelectMode(gameStatus) {
             this.name = 'ActionTaishouSelectMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.gameStatus = gameStatus;
             this.init();
         }
@@ -382,7 +382,7 @@ var SaikoroBattle;
     var KougekiJunjoHandanMode = (function () {
         function KougekiJunjoHandanMode(gameStatus) {
             this.name = 'KougekiJunjoHandanMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.ParallelTasks();
             this.order = [];
             this.orderEntryList = [];
@@ -482,7 +482,7 @@ var SaikoroBattle;
                 }
             }
             if (existsKaburi) {
-                this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                this.mode = Task.DEFAULT_MODE;
                 this.orderEntry();
                 return;
             }
@@ -504,7 +504,7 @@ var SaikoroBattle;
     var Attack1GameMode = (function () {
         function Attack1GameMode(gameStatus) {
             this.name = 'Attack1GameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
             this.init();
@@ -568,7 +568,7 @@ var SaikoroBattle;
     var Attack2GameMode = (function () {
         function Attack2GameMode(gameStatus) {
             this.name = 'Attack2GameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
             this.init();
@@ -626,7 +626,7 @@ var SaikoroBattle;
     var Attack3GameMode = (function () {
         function Attack3GameMode(gameStatus) {
             this.name = 'Attack3GameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.gameStatus = gameStatus;
             this.init();

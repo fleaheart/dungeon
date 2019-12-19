@@ -61,7 +61,7 @@ namespace SaikoroBattle {
 
     class NullGameMode implements GameMode {
         readonly name: string = 'NullGameMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
         do(): void { }
         asap(): void { }
         finish(): void { }
@@ -187,7 +187,7 @@ namespace SaikoroBattle {
 
     class InitGameMode implements GameMode {
         readonly name: string = 'InitGameMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -243,7 +243,7 @@ namespace SaikoroBattle {
 
     class ActionSetTask implements Task.Task {
         readonly name: string = 'ActionSetTask';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         private actionList: Action[] = [];
         private tasks = new Task.ParallelTasks();
@@ -302,7 +302,7 @@ namespace SaikoroBattle {
 
     export class SaikoroTask implements Task.Task {
         name: string = 'SaikoroTask';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         private callback: (me: number) => void;
         private rollingFunc: (me: number) => void;
@@ -372,7 +372,7 @@ namespace SaikoroBattle {
 
     class PaletteSelectMode implements GameMode {
         readonly name: string = 'PaletteSelectMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -403,7 +403,7 @@ namespace SaikoroBattle {
 
     class ActionTaishouSelectMode implements GameMode {
         readonly name: string = 'ActionTaishouSelectMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -468,7 +468,7 @@ namespace SaikoroBattle {
     // 攻撃順序判断
     class KougekiJunjoHandanMode implements GameMode {
         readonly name: string = 'KougekiJunjoHandanMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -589,7 +589,7 @@ namespace SaikoroBattle {
             }
 
             if (existsKaburi) {
-                this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                this.mode = Task.DEFAULT_MODE;
                 this.orderEntry();
                 return;
             }
@@ -614,7 +614,7 @@ namespace SaikoroBattle {
 
     class Attack1GameMode implements GameMode {
         readonly name: string = 'Attack1GameMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -693,7 +693,7 @@ namespace SaikoroBattle {
 
     class Attack2GameMode implements GameMode {
         readonly name: string = 'Attack2GameMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 
@@ -767,7 +767,7 @@ namespace SaikoroBattle {
 
     class Attack3GameMode implements GameMode {
         readonly name: string = 'Attack3GameMode';
-        mode: Task.ModeType = Task.TaskCtrl.DEFAULT_MODE;
+        mode: Task.ModeType = Task.DEFAULT_MODE;
 
         gameStatus: GameStatus;
 

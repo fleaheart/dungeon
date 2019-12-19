@@ -33,7 +33,7 @@ var TaskTest;
     var IdleGameMode = (function () {
         function IdleGameMode() {
             this.name = 'IdleGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.gameStatus = new GameStatus();
         }
         IdleGameMode.prototype.do = function () {
@@ -51,7 +51,7 @@ var TaskTest;
         function InitGameMode(gameStatus) {
             var _this = this;
             this.name = 'InitGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
@@ -84,7 +84,7 @@ var TaskTest;
         function SaikoroFurumadeGameMode(gameStatus) {
             var _this = this;
             this.name = 'SaikoroFurumadeGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.callback = function (me) {
                 var result = getElementById('result');
@@ -119,7 +119,7 @@ var TaskTest;
         function HanteiGameMode(gameStatus) {
             var _this = this;
             this.name = 'HanteiGameMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
@@ -144,7 +144,7 @@ var TaskTest;
         function NaibuTasks() {
             var _this = this;
             this.name = 'NaibuTasks';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.SequentialTasks();
             this.finish = function () {
                 Task.TaskCtrl.finish(_this);
@@ -187,7 +187,7 @@ var TaskTest;
         function KougekiJunjoHandanMode(gameStatus) {
             var _this = this;
             this.name = 'KougekiJunjoHandanMode';
-            this.mode = Task.TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = new Task.ParallelTasks();
             this.order = [];
             this.orderEntryList = [];
@@ -251,7 +251,7 @@ var TaskTest;
                 }
                 dbg(orderText);
                 if (existsKaburi) {
-                    _this.mode = Task.TaskCtrl.DEFAULT_MODE;
+                    _this.mode = Task.DEFAULT_MODE;
                     _this.orderEntry();
                     return;
                 }

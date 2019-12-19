@@ -1,6 +1,7 @@
 "use strict";
 var Task;
 (function (Task) {
+    Task.DEFAULT_MODE = 'idle';
     var TaskCtrl = (function () {
         function TaskCtrl() {
         }
@@ -20,14 +21,13 @@ var Task;
             }
             window.setTimeout(function () { TaskCtrl.wait(task, callback); }, 100);
         };
-        TaskCtrl.DEFAULT_MODE = 'idle';
         return TaskCtrl;
     }());
     Task.TaskCtrl = TaskCtrl;
     var SequentialTasks = (function () {
         function SequentialTasks() {
             this.name = 'SequentialTasks';
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = [];
             this.step = -1;
         }
@@ -77,7 +77,7 @@ var Task;
     var ParallelTasks = (function () {
         function ParallelTasks() {
             this.name = 'ParallelTasks';
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.tasks = [];
         }
         ParallelTasks.prototype.add = function (task) {
@@ -87,7 +87,7 @@ var Task;
             var _this = this;
             TaskCtrl.do(this);
             var _loop_1 = function (i, len) {
-                this_1.tasks[i].mode = TaskCtrl.DEFAULT_MODE;
+                this_1.tasks[i].mode = Task.DEFAULT_MODE;
                 window.setTimeout(function () { _this.tasks[i].do(); });
             };
             var this_1 = this;
@@ -133,7 +133,7 @@ var Task;
     var FunctionTask = (function () {
         function FunctionTask(func) {
             this.name = 'FunctionTask';
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.func = func;
         }
         FunctionTask.prototype.do = function () {
@@ -154,7 +154,7 @@ var Task;
     var WaitTask = (function () {
         function WaitTask(millisec) {
             this.name = 'WaitTask';
-            this.mode = TaskCtrl.DEFAULT_MODE;
+            this.mode = Task.DEFAULT_MODE;
             this.millisec = millisec;
         }
         WaitTask.prototype.do = function () {
