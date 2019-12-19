@@ -59,6 +59,18 @@ namespace SaikoroBattle {
         eventHandler: (e: Event) => void;
     }
 
+    function susumeru(gameMode: GameMode, e: Event): void {
+        let key: string = Kyoutsu.getKeytop(e.target);
+        if (key == 'w') {
+            if (gameMode.mode == 'idle') {
+                gameMode.do();
+            } else if (gameMode.mode == 'running') {
+                gameMode.asap();
+            }
+        }
+
+    }
+
     class NullGameMode implements GameMode {
         readonly name: string = 'NullGameMode';
         mode: Task.ModeType = Task.DEFAULT_MODE;
@@ -206,14 +218,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {
@@ -412,14 +417,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {
@@ -520,14 +518,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {
@@ -670,14 +661,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {
@@ -744,14 +728,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {
@@ -842,14 +819,7 @@ namespace SaikoroBattle {
         }
 
         eventHandler(e: Event): void {
-            let key: string = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                } else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         }
 
         do(): void {

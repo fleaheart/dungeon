@@ -36,6 +36,17 @@ var SaikoroBattle;
         return SaikoroBattlePlayer;
     }());
     SaikoroBattle.NullCharacter = new SaikoroBattlePlayer(new SaikoroBattle.Character(-1, 'NULL', 'NULL'));
+    function susumeru(gameMode, e) {
+        var key = Kyoutsu.getKeytop(e.target);
+        if (key == 'w') {
+            if (gameMode.mode == 'idle') {
+                gameMode.do();
+            }
+            else if (gameMode.mode == 'running') {
+                gameMode.asap();
+            }
+        }
+    }
     var NullGameMode = (function () {
         function NullGameMode() {
             this.name = 'NullGameMode';
@@ -159,15 +170,7 @@ var SaikoroBattle;
             this.tasks.add(new Task.FunctionTask(function () { _message.writeLine('start'); }));
         }
         InitGameMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         InitGameMode.prototype.do = function () {
             var _this = this;
@@ -331,15 +334,7 @@ var SaikoroBattle;
             }
         }
         ActionTaishouSelectMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         ActionTaishouSelectMode.prototype.do = function () {
             Task.TaskCtrl.do(this);
@@ -417,15 +412,7 @@ var SaikoroBattle;
             this.gameStatus.players[playerIdx].saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         };
         KougekiJunjoHandanMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         KougekiJunjoHandanMode.prototype.do = function () {
             var _this = this;
@@ -545,15 +532,7 @@ var SaikoroBattle;
             this.gameStatus.attacker.saikoroElement.innerHTML = SaikoroTask.saikoroHTML(me);
         };
         Attack1GameMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         Attack1GameMode.prototype.do = function () {
             var _this = this;
@@ -605,15 +584,7 @@ var SaikoroBattle;
             this.tasks.add(new SaikoroTask(function (me) { _this.callback(me); }, function (me) { _this.rollingFunc(me); }));
         }
         Attack2GameMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         Attack2GameMode.prototype.do = function () {
             var _this = this;
@@ -685,15 +656,7 @@ var SaikoroBattle;
             }
         }
         Attack3GameMode.prototype.eventHandler = function (e) {
-            var key = Kyoutsu.getKeytop(e.target);
-            if (key == 'w') {
-                if (this.mode == 'idle') {
-                    this.do();
-                }
-                else if (this.mode == 'running') {
-                    this.asap();
-                }
-            }
+            susumeru(this, e);
         };
         Attack3GameMode.prototype.do = function () {
             var _this = this;
