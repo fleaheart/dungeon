@@ -405,7 +405,7 @@ namespace SaikoroBattle {
             this.gameStatus = gameStatus;
             this.idx = 0;
 
-            actionStateReaet(this.gameStatus.players);
+            actionStateReset(this.gameStatus.players);
             actionSelectReset(this.gameStatus.players);
             for (let i = 0, len: number = this.gameStatus.players.length; i < len; i++) {
                 let player: SaikoroBattlePlayer = this.gameStatus.players[i];
@@ -479,8 +479,6 @@ namespace SaikoroBattle {
 
         constructor(gameStatus: GameStatus) {
             this.gameStatus = gameStatus;
-
-            actionStateReaet(this.gameStatus.players);
 
             this.order.length = 0;
             this.orderEntryList.length = 0;
@@ -635,7 +633,7 @@ namespace SaikoroBattle {
             this.gameStatus.defender = this.gameStatus.players[targetIdx];
 
             this.tasks.add(new Task.FunctionTask(_message.clear));
-            this.tasks.add(new Task.FunctionTask((): void => { actionStateReaet(this.gameStatus.players); }));
+            this.tasks.add(new Task.FunctionTask((): void => { actionStateReset(this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask((): void => { actionSelectReset(this.gameStatus.players); }));
             if (this.gameStatus.attacker.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask((): void => { _message.writeLine(this.gameStatus.attacker.character.name + 'は倒れている。'); }));
@@ -884,7 +882,7 @@ namespace SaikoroBattle {
         sbp.characterBoard.classList.add('defender');
     }
 
-    function actionStateReaet(players: SaikoroBattlePlayer[]): void {
+    function actionStateReset(players: SaikoroBattlePlayer[]): void {
         let clearStatuses: string[] = ['attacker', 'defender'];
         for (let i = 0, len: number = players.length; i < len; i++) {
             let player: SaikoroBattlePlayer = players[i];

@@ -324,7 +324,7 @@ var SaikoroBattle;
             this.mode = Task.DEFAULT_MODE;
             this.gameStatus = gameStatus;
             this.idx = 0;
-            actionStateReaet(this.gameStatus.players);
+            actionStateReset(this.gameStatus.players);
             actionSelectReset(this.gameStatus.players);
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
                 var player = this.gameStatus.players[i];
@@ -383,7 +383,6 @@ var SaikoroBattle;
             this.order = [];
             this.orderEntryList = [];
             this.gameStatus = gameStatus;
-            actionStateReaet(this.gameStatus.players);
             this.order.length = 0;
             this.orderEntryList.length = 0;
             for (var i = 0, len = this.gameStatus.players.length; i < len; i++) {
@@ -512,7 +511,7 @@ var SaikoroBattle;
             var targetIdx = this.gameStatus.attacker.targetIdx;
             this.gameStatus.defender = this.gameStatus.players[targetIdx];
             this.tasks.add(new Task.FunctionTask(_message.clear));
-            this.tasks.add(new Task.FunctionTask(function () { actionStateReaet(_this.gameStatus.players); }));
+            this.tasks.add(new Task.FunctionTask(function () { actionStateReset(_this.gameStatus.players); }));
             this.tasks.add(new Task.FunctionTask(function () { actionSelectReset(_this.gameStatus.players); }));
             if (this.gameStatus.attacker.hitPoint <= 0) {
                 this.tasks.add(new Task.FunctionTask(function () { _message.writeLine(_this.gameStatus.attacker.character.name + 'は倒れている。'); }));
@@ -714,7 +713,7 @@ var SaikoroBattle;
     function defenderPlayer(sbp) {
         sbp.characterBoard.classList.add('defender');
     }
-    function actionStateReaet(players) {
+    function actionStateReset(players) {
         var clearStatuses = ['attacker', 'defender'];
         for (var i = 0, len = players.length; i < len; i++) {
             var player = players[i];
