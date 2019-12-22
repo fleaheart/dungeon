@@ -37,8 +37,7 @@ var SaikoroBattle;
     }());
     SaikoroBattle.NullCharacter = new SaikoroBattlePlayer(new SaikoroBattle.Character(-1, 'NULL', 'NULL'));
     function susumeru(gameMode, e) {
-        var key = Kyoutsu.getKeytop(e.target);
-        if (key == 'w') {
+        if (e instanceof MouseEvent || e instanceof TouchEvent) {
             if (gameMode.mode == 'idle') {
                 gameMode.do();
             }
@@ -99,8 +98,8 @@ var SaikoroBattle;
         _message.set(messageBoard);
         var keyboard = new Kyoutsu.Keyboard();
         document.body.appendChild(keyboard.keyboard);
-        keyboard.setKeyEvent('click', keyboardClick);
-        keyboard.setKeyEvent('touch', function (e) { keyboardClick(e); e.preventDefault(); });
+        document.body.addEventListener('click', keyboardClick);
+        document.body.addEventListener('touch', function (e) { keyboardClick(e); e.preventDefault(); });
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
         _gameStatus.gameMode = new InitGameMode(_gameStatus);
     }

@@ -60,15 +60,13 @@ namespace SaikoroBattle {
     }
 
     function susumeru(gameMode: GameMode, e: Event): void {
-        let key: string = Kyoutsu.getKeytop(e.target);
-        if (key == 'w') {
+        if (e instanceof MouseEvent || e instanceof TouchEvent) {
             if (gameMode.mode == 'idle') {
                 gameMode.do();
             } else if (gameMode.mode == 'running') {
                 gameMode.asap();
             }
         }
-
     }
 
     class NullGameMode implements GameMode {
@@ -128,8 +126,8 @@ namespace SaikoroBattle {
 
         document.body.appendChild(keyboard.keyboard);
 
-        keyboard.setKeyEvent('click', keyboardClick);
-        keyboard.setKeyEvent('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
+        document.body.addEventListener('click', keyboardClick);
+        document.body.addEventListener('touch', (e: Event): void => { keyboardClick(e); e.preventDefault(); });
 
         keyboard.setKeytops([' ', 'w', ' ', 'a', ' ', 'd', ' ', ' ', ' ']);
 
