@@ -113,15 +113,21 @@ namespace Dungeon {
             }
         }
         {
-            let element = document.getElementById('kaiten_button');
+            let element = document.getElementById('hanten_button');
             if (element != null) {
-                element.addEventListener('click', clickKaiten);
+                element.addEventListener('click', clickHanten);
             }
         }
         {
             let element = document.getElementById('center_button');
             if (element != null) {
                 element.addEventListener('click', clickCenter);
+            }
+        }
+        {
+            let element = document.getElementById('kaiten_button');
+            if (element != null) {
+                element.addEventListener('click', clickKaiten);
             }
         }
     });
@@ -313,17 +319,92 @@ namespace Dungeon {
         }
     }
 
-    function clickKaiten(): void {
-        let movedMatrix: MapBlock[][] = [];
+    let _currentMapBlock: MapBlock = new MapBlock();
 
+    function clickCenter(): void {
+        if (_currentMapBlock.x < 0 || _currentMapBlock.y < 0) {
+            return;
+        }
+
+        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+
+        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
+
+        refresh();
+    }
+
+    function clickKaiten(): void {
+        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY * -1, offsetX * -1 + 1);
+
+        refresh();
+    }
+
+    function clickHanten(): void {
+        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY * -1 + 1, offsetX * -1);
+
+        refresh();
+    }
+
+    function centering(mapBlockMatrix: MapBlock[][], offsetY: number, offsetX: number): MapBlock[][] {
+        let movedMatrix: MapBlock[][] = [];
         for (let i = 0; i < MAP_IPPEN; i++) {
             movedMatrix[i] = [];
         }
 
-        for (let y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
-            let x_hairetsu = _mapBlockMatrix[y];
+        for (let y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
+            let yadd;
+            if (0 <= offsetY) {
+                yadd = offsetY + y;
+            } else {
+                yadd = (mapBlockMatrix.length + offsetY) + y;
+            }
+            if (mapBlockMatrix.length <= yadd) {
+                yadd -= mapBlockMatrix.length;
+            }
+
+            let x_hairetsu = mapBlockMatrix[y];
             for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
-                let mapBlock = _mapBlockMatrix[xlen - 1 - y][x];
+                let xadd;
+                if (0 <= offsetX) {
+                    xadd = offsetX + x;
+                } else {
+                    xadd = (x_hairetsu.length + offsetX) + x;
+                }
+                if (x_hairetsu.length <= xadd) {
+                    xadd -= x_hairetsu.length;
+                }
+                movedMatrix[yadd][xadd] = mapBlockMatrix[y][x];
+            }
+        }
+
+        return movedMatrix;
+    }
+
+    function rotarion(mapBlockMatrix: MapBlock[][]): MapBlock[][] {
+        let movedMatrix: MapBlock[][] = [];
+        for (let i = 0; i < MAP_IPPEN; i++) {
+            movedMatrix[i] = [];
+        }
+
+        for (let y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
+            let x_hairetsu = mapBlockMatrix[y];
+            for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                let mapBlock = mapBlockMatrix[xlen - 1 - y][x];
 
                 let swap: Kabe = mapBlock.W;
                 mapBlock.W = mapBlock.S;
@@ -335,58 +416,7 @@ namespace Dungeon {
             }
         }
 
-        _mapBlockMatrix = movedMatrix;
-
-        refresh();
-    }
-
-    let _currentMapBlock: MapBlock = new MapBlock();
-
-    function clickCenter(): void {
-        if (_currentMapBlock.x < 0 || _currentMapBlock.y < 0) {
-            return;
-        }
-
-        let movedMatrix: MapBlock[][] = [];
-
-        for (let i = 0; i < MAP_IPPEN; i++) {
-            movedMatrix[i] = [];
-        }
-
-        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
-        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
-
-        for (let y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
-            let yadd;
-            if (0 <= offsetY) {
-                yadd = offsetY + y;
-            } else {
-                yadd = (_mapBlockMatrix.length + offsetY) + y;
-            }
-            if (_mapBlockMatrix.length <= yadd) {
-                yadd -= _mapBlockMatrix.length;
-            }
-
-            let x_hairetsu = _mapBlockMatrix[y];
-            for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
-                let xadd;
-                if (0 <= offsetX) {
-                    xadd = offsetX + x;
-                } else {
-                    xadd = (x_hairetsu.length + offsetX) + x;
-                }
-                if (x_hairetsu.length <= xadd) {
-                    xadd -= x_hairetsu.length;
-                }
-                movedMatrix[yadd][xadd] = _mapBlockMatrix[y][x];
-            }
-        }
-
-        _mapBlockMatrix = movedMatrix;
-
-        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
-
-        refresh();
+        return movedMatrix;
     }
 
 }

@@ -84,15 +84,21 @@ var Dungeon;
             }
         }
         {
-            var element = document.getElementById('kaiten_button');
+            var element = document.getElementById('hanten_button');
             if (element != null) {
-                element.addEventListener('click', clickKaiten);
+                element.addEventListener('click', clickHanten);
             }
         }
         {
             var element = document.getElementById('center_button');
             if (element != null) {
                 element.addEventListener('click', clickCenter);
+            }
+        }
+        {
+            var element = document.getElementById('kaiten_button');
+            if (element != null) {
+                element.addEventListener('click', clickKaiten);
             }
         }
     });
@@ -244,49 +250,52 @@ var Dungeon;
             }
         }
     }
-    function clickKaiten() {
-        var movedMatrix = [];
-        for (var i = 0; i < MAP_IPPEN; i++) {
-            movedMatrix[i] = [];
-        }
-        for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
-            var x_hairetsu = _mapBlockMatrix[y];
-            for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
-                var mapBlock = _mapBlockMatrix[xlen - 1 - y][x];
-                var swap = mapBlock.W;
-                mapBlock.W = mapBlock.S;
-                mapBlock.S = mapBlock.E;
-                mapBlock.E = mapBlock.N;
-                mapBlock.N = swap;
-                movedMatrix[x][y] = mapBlock;
-            }
-        }
-        _mapBlockMatrix = movedMatrix;
-        refresh();
-    }
     var _currentMapBlock = new MapBlock();
     function clickCenter() {
         if (_currentMapBlock.x < 0 || _currentMapBlock.y < 0) {
             return;
         }
+        var offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        var offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
+        refresh();
+    }
+    function clickKaiten() {
+        var offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        var offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY * -1, offsetX * -1 + 1);
+        refresh();
+    }
+    function clickHanten() {
+        var offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        var offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = rotarion(_mapBlockMatrix);
+        _mapBlockMatrix = centering(_mapBlockMatrix, offsetY * -1 + 1, offsetX * -1);
+        refresh();
+    }
+    function centering(mapBlockMatrix, offsetY, offsetX) {
         var movedMatrix = [];
         for (var i = 0; i < MAP_IPPEN; i++) {
             movedMatrix[i] = [];
         }
-        var offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
-        var offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
-        for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
+        for (var y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
             var yadd = void 0;
             if (0 <= offsetY) {
                 yadd = offsetY + y;
             }
             else {
-                yadd = (_mapBlockMatrix.length + offsetY) + y;
+                yadd = (mapBlockMatrix.length + offsetY) + y;
             }
-            if (_mapBlockMatrix.length <= yadd) {
-                yadd -= _mapBlockMatrix.length;
+            if (mapBlockMatrix.length <= yadd) {
+                yadd -= mapBlockMatrix.length;
             }
-            var x_hairetsu = _mapBlockMatrix[y];
+            var x_hairetsu = mapBlockMatrix[y];
             for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
                 var xadd = void 0;
                 if (0 <= offsetX) {
@@ -298,12 +307,29 @@ var Dungeon;
                 if (x_hairetsu.length <= xadd) {
                     xadd -= x_hairetsu.length;
                 }
-                movedMatrix[yadd][xadd] = _mapBlockMatrix[y][x];
+                movedMatrix[yadd][xadd] = mapBlockMatrix[y][x];
             }
         }
-        _mapBlockMatrix = movedMatrix;
-        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
-        refresh();
+        return movedMatrix;
+    }
+    function rotarion(mapBlockMatrix) {
+        var movedMatrix = [];
+        for (var i = 0; i < MAP_IPPEN; i++) {
+            movedMatrix[i] = [];
+        }
+        for (var y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
+            var x_hairetsu = mapBlockMatrix[y];
+            for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                var mapBlock = mapBlockMatrix[xlen - 1 - y][x];
+                var swap = mapBlock.W;
+                mapBlock.W = mapBlock.S;
+                mapBlock.S = mapBlock.E;
+                mapBlock.E = mapBlock.N;
+                mapBlock.N = swap;
+                movedMatrix[x][y] = mapBlock;
+            }
+        }
+        return movedMatrix;
     }
 })(Dungeon || (Dungeon = {}));
 //# sourceMappingURL=constructor.js.map
