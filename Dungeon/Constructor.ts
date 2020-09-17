@@ -1,10 +1,11 @@
 namespace Dungeon {
 
-    const MAP_IPPEN = 24;
+    const MAP_IPPEN = 16;
 
     const TILE_IPPEN = 48;
     const MU_FUTOSA = 1;
-    const ARI_ARI = 6;
+    const ARI_FUTOSA = 2;
+    const HANNOU = 6;
 
     let _board: HTMLElement;
 
@@ -55,6 +56,7 @@ namespace Dungeon {
         W: Kabe = MU;
     }
 
+    let _map_ippen: number = 0;
     let _mapBlockMatrix: MapBlock[][] = [];
 
     window.addEventListener('load', (): void => {
@@ -74,9 +76,76 @@ namespace Dungeon {
 
         document.body.appendChild(_board);
 
-        for (let y = 0; y < MAP_IPPEN; y++) {
+        createMatrix(MAP_IPPEN);
+
+        {
+            let element = document.getElementById('map_ippen');
+            if (element != null) {
+                element.addEventListener('keypress', keypressMapIppen);
+            }
+        }
+        {
+            let element = document.getElementById('load_button');
+            if (element != null) {
+                element.addEventListener('click', clickLoad);
+            }
+        }
+        {
+            let element = document.getElementById('hanten_button');
+            if (element != null) {
+                element.addEventListener('click', clickHanten);
+            }
+        }
+        {
+            let element = document.getElementById('center_button');
+            if (element != null) {
+                element.addEventListener('click', clickCenter);
+            }
+        }
+        {
+            let element = document.getElementById('kaiten_button');
+            if (element != null) {
+                element.addEventListener('click', clickKaiten);
+            }
+        }
+    });
+
+    function keypressMapIppen() {
+        let element = document.getElementById('map_ippen');
+        if (!(element instanceof HTMLInputElement)) {
+            return;
+        }
+
+        if (element.value == '') {
+            return;
+        }
+
+        let map_ippen: number = Number(element.value);
+        if (isNaN(map_ippen)) {
+            return;
+        }
+        if (map_ippen % 2 != 0) {
+            return;
+        }
+
+        createMatrix(map_ippen);
+    }
+
+    function createMatrix(map_ippen: number): void {
+        _map_ippen = map_ippen;
+
+        let element = document.getElementById('map_ippen');
+        if (!(element instanceof HTMLInputElement)) {
+            return;
+        }
+        element.value = String(_map_ippen);
+
+        _board.textContent = '';
+        _mapBlockMatrix.length = 0;
+
+        for (let y = 0; y < _map_ippen; y++) {
             let x_hairetsu: MapBlock[] = [];
-            for (let x = 0; x < MAP_IPPEN; x++) {
+            for (let x = 0; x < _map_ippen; x++) {
                 let tile = document.createElement('div');
                 tile.id = 'tile_' + String(x) + '_' + String(y);
                 tile.style.display = 'inline-block';
@@ -105,47 +174,22 @@ namespace Dungeon {
             let br = document.createElement('br');
             _board.appendChild(br);
         }
-
-        {
-            let element = document.getElementById('load_button');
-            if (element != null) {
-                element.addEventListener('click', clickLoad);
-            }
-        }
-        {
-            let element = document.getElementById('hanten_button');
-            if (element != null) {
-                element.addEventListener('click', clickHanten);
-            }
-        }
-        {
-            let element = document.getElementById('center_button');
-            if (element != null) {
-                element.addEventListener('click', clickCenter);
-            }
-        }
-        {
-            let element = document.getElementById('kaiten_button');
-            if (element != null) {
-                element.addEventListener('click', clickKaiten);
-            }
-        }
-    });
+    }
 
     function getHougaku(evt: MouseEvent): Hougaku | undefined {
         let offsetX = evt.offsetX;
         let offsetY = evt.offsetY;
 
-        if (offsetX < ARI_ARI) {
+        if (offsetX < HANNOU) {
             return hougaku_W;
 
-        } else if (TILE_IPPEN - ARI_ARI * 2 < offsetX) {
+        } else if (TILE_IPPEN - HANNOU * 2 < offsetX) {
             return hougaku_E;
 
-        } else if (offsetY < ARI_ARI) {
+        } else if (offsetY < HANNOU) {
             return hougaku_N;
 
-        } else if (TILE_IPPEN - ARI_ARI * 2 < offsetY) {
+        } else if (TILE_IPPEN - HANNOU * 2 < offsetY) {
             return hougaku_S;
 
         }
@@ -202,7 +246,7 @@ namespace Dungeon {
             return;
         }
 
-        tile.style[hougaku.borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
+        tile.style[hougaku.borderStyleName] = 'red ' + String(HANNOU) + 'px solid';
 
         let mapBlock: MapBlock = pickupMapBlock(tile.id);
         let hantai: HougakuChar;
@@ -213,7 +257,7 @@ namespace Dungeon {
             } else {
                 hantai = 'W';
             }
-            tile.style.width = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
+            tile.style.width = String(TILE_IPPEN - (HANNOU + (mapBlock[hantai] != MU ? (ARI_FUTOSA - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
 
         } else if (hougaku.char == 'N' || hougaku.char == 'S') {
             if (hougaku.char == 'N') {
@@ -221,7 +265,7 @@ namespace Dungeon {
             } else {
                 hantai = 'N';
             }
-            tile.style.height = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
+            tile.style.height = String(TILE_IPPEN - (HANNOU + (mapBlock[hantai] != MU ? (ARI_FUTOSA - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
 
         }
 
@@ -255,12 +299,12 @@ namespace Dungeon {
                 line_futosa = MU_FUTOSA;
 
             } else if (mapBlock[hougaku.char] == KABE) {
-                style = 'black ' + String(ARI_ARI) + 'px solid';
-                line_futosa = ARI_ARI;
+                style = 'black ' + String(ARI_FUTOSA) + 'px solid';
+                line_futosa = ARI_FUTOSA;
 
             } else if (mapBlock[hougaku.char] == DOOR) {
-                style = 'black ' + String(ARI_ARI) + 'px dashed';
-                line_futosa = ARI_ARI;
+                style = 'black ' + String(ARI_FUTOSA) + 'px dashed';
+                line_futosa = ARI_FUTOSA;
 
             }
 
@@ -294,7 +338,30 @@ namespace Dungeon {
             return;
         }
 
-        _mapBlockMatrix = eval(element.value);
+        let mapBlockMatrix: MapBlock[][] = eval(element.value);
+        if (_map_ippen < mapBlockMatrix.length) {
+            createMatrix(mapBlockMatrix.length);
+        }
+
+        _mapBlockMatrix.length = 0;
+        for (let y = 0; y < _map_ippen; y++) {
+            let x_hairetsu: MapBlock[] = [];
+            for (let x = 0; x < _map_ippen; x++) {
+                let mapBlock: MapBlock | undefined = undefined;
+                if (y < mapBlockMatrix.length) {
+                    mapBlock = mapBlockMatrix[y][x];
+                }
+                if (mapBlock == undefined) {
+                    mapBlock = new MapBlock();
+                }
+                mapBlock.x = x;
+                mapBlock.y = y;
+
+                x_hairetsu.push(mapBlock);
+            }
+
+            _mapBlockMatrix.push(x_hairetsu);
+        }
 
         refresh();
     }
@@ -327,19 +394,19 @@ namespace Dungeon {
             return;
         }
 
-        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
-        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        let offsetX = _map_ippen / 2 - _currentMapBlock.x;
+        let offsetY = _map_ippen / 2 - _currentMapBlock.y;
 
         _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
 
-        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
+        _currentMapBlock = _mapBlockMatrix[_map_ippen / 2][_map_ippen / 2];
 
         refresh();
     }
 
     function clickKaiten(): void {
-        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
-        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        let offsetX = _map_ippen / 2 - _currentMapBlock.x;
+        let offsetY = _map_ippen / 2 - _currentMapBlock.y;
 
         _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
         _mapBlockMatrix = rotarion(_mapBlockMatrix);
@@ -349,8 +416,8 @@ namespace Dungeon {
     }
 
     function clickHanten(): void {
-        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
-        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        let offsetX = _map_ippen / 2 - _currentMapBlock.x;
+        let offsetY = _map_ippen / 2 - _currentMapBlock.y;
 
         _mapBlockMatrix = centering(_mapBlockMatrix, offsetY, offsetX);
         _mapBlockMatrix = rotarion(_mapBlockMatrix);
@@ -363,7 +430,7 @@ namespace Dungeon {
 
     function centering(mapBlockMatrix: MapBlock[][], offsetY: number, offsetX: number): MapBlock[][] {
         let movedMatrix: MapBlock[][] = [];
-        for (let i = 0; i < MAP_IPPEN; i++) {
+        for (let i = 0; i < _map_ippen; i++) {
             movedMatrix[i] = [];
         }
 
@@ -398,7 +465,7 @@ namespace Dungeon {
 
     function rotarion(mapBlockMatrix: MapBlock[][]): MapBlock[][] {
         let movedMatrix: MapBlock[][] = [];
-        for (let i = 0; i < MAP_IPPEN; i++) {
+        for (let i = 0; i < _map_ippen; i++) {
             movedMatrix[i] = [];
         }
 
