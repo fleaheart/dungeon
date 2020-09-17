@@ -80,13 +80,19 @@ var Dungeon;
         {
             var element = document.getElementById('load_button');
             if (element != null) {
-                element.addEventListener('click', load);
+                element.addEventListener('click', clickLoad);
             }
         }
         {
             var element = document.getElementById('kaiten_button');
             if (element != null) {
-                element.addEventListener('click', kaiten);
+                element.addEventListener('click', clickKaiten);
+            }
+        }
+        {
+            var element = document.getElementById('center_button');
+            if (element != null) {
+                element.addEventListener('click', clickCenter);
             }
         }
     });
@@ -119,18 +125,20 @@ var Dungeon;
         if (!(tile instanceof HTMLElement)) {
             return;
         }
+        var mapBlock = pickupMapBlock(tile.id);
+        _currentMapBlock = mapBlock;
         var hougaku = getHougaku(evt);
         if (hougaku == undefined) {
+            refresh();
             return;
         }
-        var mapBlock = pickupMapBlock(tile.id);
         var kabe = mapBlock[hougaku.char];
         kabe++;
         if (kabeHairetsu.length <= kabe) {
             kabe = 0;
         }
         mapBlock[hougaku.char] = kabeHairetsu[kabe];
-        writeTile(tile);
+        refresh();
         save();
     }
     function mousemoveTile(evt) {
@@ -211,7 +219,7 @@ var Dungeon;
         }
         element.value = JSON.stringify(_mapBlockMatrix);
     }
-    function load() {
+    function clickLoad() {
         var element = document.getElementById('maptext');
         if (!(element instanceof HTMLTextAreaElement)) {
             return;
@@ -220,17 +228,26 @@ var Dungeon;
         refresh();
     }
     function refresh() {
+        for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
+            var x_hairetsu = _mapBlockMatrix[y];
+            for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                _mapBlockMatrix[y][x].x = x;
+                _mapBlockMatrix[y][x].y = y;
+            }
+        }
+        var currentId = 'tile_' + String(_currentMapBlock.x) + '_' + String(_currentMapBlock.y);
         for (var i = 0, len = _board.childNodes.length; i < len; i++) {
             var tile = _board.childNodes[i];
             if (tile instanceof HTMLElement && tile.id.match(/^tile_/)) {
                 writeTile(tile);
+                tile.style.backgroundColor = (tile.id == currentId) ? 'pink' : '';
             }
         }
     }
-    function kaiten() {
-        var rotation = [];
+    function clickKaiten() {
+        var movedMatrix = [];
         for (var i = 0; i < MAP_IPPEN; i++) {
-            rotation[i] = [];
+            movedMatrix[i] = [];
         }
         for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
             var x_hairetsu = _mapBlockMatrix[y];
@@ -241,10 +258,51 @@ var Dungeon;
                 mapBlock.S = mapBlock.E;
                 mapBlock.E = mapBlock.N;
                 mapBlock.N = swap;
-                rotation[x][y] = mapBlock;
+                movedMatrix[x][y] = mapBlock;
             }
         }
-        _mapBlockMatrix = rotation;
+        _mapBlockMatrix = movedMatrix;
+        refresh();
+    }
+    var _currentMapBlock = new MapBlock();
+    function clickCenter() {
+        if (_currentMapBlock.x < 0 || _currentMapBlock.y < 0) {
+            return;
+        }
+        var movedMatrix = [];
+        for (var i = 0; i < MAP_IPPEN; i++) {
+            movedMatrix[i] = [];
+        }
+        var offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        var offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+        for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
+            var yadd = void 0;
+            if (0 <= offsetY) {
+                yadd = offsetY + y;
+            }
+            else {
+                yadd = (_mapBlockMatrix.length + offsetY) + y;
+            }
+            if (_mapBlockMatrix.length <= yadd) {
+                yadd -= _mapBlockMatrix.length;
+            }
+            var x_hairetsu = _mapBlockMatrix[y];
+            for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                var xadd = void 0;
+                if (0 <= offsetX) {
+                    xadd = offsetX + x;
+                }
+                else {
+                    xadd = (x_hairetsu.length + offsetX) + x;
+                }
+                if (x_hairetsu.length <= xadd) {
+                    xadd -= x_hairetsu.length;
+                }
+                movedMatrix[yadd][xadd] = _mapBlockMatrix[y][x];
+            }
+        }
+        _mapBlockMatrix = movedMatrix;
+        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
         refresh();
     }
 })(Dungeon || (Dungeon = {}));

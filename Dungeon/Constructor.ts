@@ -109,13 +109,19 @@ namespace Dungeon {
         {
             let element = document.getElementById('load_button');
             if (element != null) {
-                element.addEventListener('click', load);
+                element.addEventListener('click', clickLoad);
             }
         }
         {
             let element = document.getElementById('kaiten_button');
             if (element != null) {
-                element.addEventListener('click', kaiten);
+                element.addEventListener('click', clickKaiten);
+            }
+        }
+        {
+            let element = document.getElementById('center_button');
+            if (element != null) {
+                element.addEventListener('click', clickCenter);
             }
         }
     });
@@ -156,12 +162,14 @@ namespace Dungeon {
             return;
         }
 
+        let mapBlock = pickupMapBlock(tile.id);
+        _currentMapBlock = mapBlock;
+
         let hougaku: Hougaku | undefined = getHougaku(evt);
         if (hougaku == undefined) {
+            refresh();
             return;
         }
-
-        let mapBlock = pickupMapBlock(tile.id);
 
         let kabe: number = mapBlock[hougaku.char];
         kabe++;
@@ -170,7 +178,7 @@ namespace Dungeon {
         }
         mapBlock[hougaku.char] = kabeHairetsu[kabe];
 
-        writeTile(tile);
+        refresh();
 
         save();
     }
@@ -273,7 +281,7 @@ namespace Dungeon {
         element.value = JSON.stringify(_mapBlockMatrix);
     }
 
-    function load(): void {
+    function clickLoad(): void {
         let element = document.getElementById('maptext');
         if (!(element instanceof HTMLTextAreaElement)) {
             return;
@@ -285,19 +293,31 @@ namespace Dungeon {
     }
 
     function refresh(): void {
+        for (let y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
+            let x_hairetsu = _mapBlockMatrix[y];
+            for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                _mapBlockMatrix[y][x].x = x;
+                _mapBlockMatrix[y][x].y = y;
+            }
+        }
+
+        let currentId = 'tile_' + String(_currentMapBlock.x) + '_' + String(_currentMapBlock.y);
+
         for (let i = 0, len = _board.childNodes.length; i < len; i++) {
             let tile = _board.childNodes[i];
             if (tile instanceof HTMLElement && tile.id.match(/^tile_/)) {
                 writeTile(tile);
+
+                tile.style.backgroundColor = (tile.id == currentId) ? 'pink' : '';
             }
         }
     }
 
-    function kaiten(): void {
-        let rotation: MapBlock[][] = [];
+    function clickKaiten(): void {
+        let movedMatrix: MapBlock[][] = [];
 
         for (let i = 0; i < MAP_IPPEN; i++) {
-            rotation[i] = [];
+            movedMatrix[i] = [];
         }
 
         for (let y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
@@ -311,11 +331,60 @@ namespace Dungeon {
                 mapBlock.E = mapBlock.N;
                 mapBlock.N = swap;
 
-                rotation[x][y] = mapBlock;
+                movedMatrix[x][y] = mapBlock;
             }
         }
 
-        _mapBlockMatrix = rotation;
+        _mapBlockMatrix = movedMatrix;
+
+        refresh();
+    }
+
+    let _currentMapBlock: MapBlock = new MapBlock();
+
+    function clickCenter(): void {
+        if (_currentMapBlock.x < 0 || _currentMapBlock.y < 0) {
+            return;
+        }
+
+        let movedMatrix: MapBlock[][] = [];
+
+        for (let i = 0; i < MAP_IPPEN; i++) {
+            movedMatrix[i] = [];
+        }
+
+        let offsetX = MAP_IPPEN / 2 - _currentMapBlock.x;
+        let offsetY = MAP_IPPEN / 2 - _currentMapBlock.y;
+
+        for (let y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
+            let yadd;
+            if (0 <= offsetY) {
+                yadd = offsetY + y;
+            } else {
+                yadd = (_mapBlockMatrix.length + offsetY) + y;
+            }
+            if (_mapBlockMatrix.length <= yadd) {
+                yadd -= _mapBlockMatrix.length;
+            }
+
+            let x_hairetsu = _mapBlockMatrix[y];
+            for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                let xadd;
+                if (0 <= offsetX) {
+                    xadd = offsetX + x;
+                } else {
+                    xadd = (x_hairetsu.length + offsetX) + x;
+                }
+                if (x_hairetsu.length <= xadd) {
+                    xadd -= x_hairetsu.length;
+                }
+                movedMatrix[yadd][xadd] = _mapBlockMatrix[y][x];
+            }
+        }
+
+        _mapBlockMatrix = movedMatrix;
+
+        _currentMapBlock = _mapBlockMatrix[MAP_IPPEN / 2][MAP_IPPEN / 2];
 
         refresh();
     }
