@@ -1,11 +1,26 @@
 "use strict";
 var Dungeon;
 (function (Dungeon) {
-    var MAP_IPPEN = 48;
-    var TILE_IPPEN = 24;
+    var MAP_IPPEN = 24;
+    var TILE_IPPEN = 48;
     var MU_FUTOSA = 1;
     var ARI_ARI = 6;
     var _board;
+    function getBorderStyleName(hougaku) {
+        if (hougaku == 'N') {
+            return 'borderTop';
+        }
+        else if (hougaku == 'E') {
+            return 'borderRight';
+        }
+        if (hougaku == 'S') {
+            return 'borderBottom';
+        }
+        else if (hougaku == 'W') {
+            return 'borderLeft';
+        }
+        throw hougaku;
+    }
     var MU = 0;
     var KABE = 1;
     var DOOR = 2;
@@ -31,21 +46,21 @@ var Dungeon;
             _board = element;
             _board.style.border = 'black 1px solid';
             _board.style.padding = '4px';
-            _board.style.width = String(MAP_IPPEN * 32) + 'px';
-            _board.style.height = String(MAP_IPPEN * 32) + 'px';
+            _board.style.width = String(TILE_IPPEN * 32) + 'px';
+            _board.style.height = String(TILE_IPPEN * 32) + 'px';
             _board.style.verticalAlign = 'top';
         }
         document.body.appendChild(_board);
-        for (var y = 0; y < TILE_IPPEN; y++) {
+        for (var y = 0; y < MAP_IPPEN; y++) {
             var x_hairetsu = [];
-            for (var x = 0; x < TILE_IPPEN; x++) {
+            for (var x = 0; x < MAP_IPPEN; x++) {
                 var tile = document.createElement('div');
                 tile.id = 'tile_' + String(x) + '_' + String(y);
                 tile.style.display = 'inline-block';
                 tile.style.margin = '0px';
                 tile.style.border = 'black ' + String(MU_FUTOSA) + 'px dotted';
-                tile.style.width = String(MAP_IPPEN) + 'px';
-                tile.style.height = String(MAP_IPPEN) + 'px';
+                tile.style.width = String(TILE_IPPEN) + 'px';
+                tile.style.height = String(TILE_IPPEN) + 'px';
                 tile.style.verticalAlign = 'top';
                 tile.innerHTML = '&nbsp;';
                 tile.addEventListener('click', clickTile);
@@ -74,46 +89,39 @@ var Dungeon;
             }
         }
     });
+    function getHougaku(evt) {
+        var offsetX = evt.offsetX;
+        var offsetY = evt.offsetY;
+        if (offsetX < ARI_ARI) {
+            return 'W';
+        }
+        else if (TILE_IPPEN - ARI_ARI * 2 < offsetX) {
+            return 'E';
+        }
+        else if (offsetY < ARI_ARI) {
+            return 'N';
+        }
+        else if (TILE_IPPEN - ARI_ARI * 2 < offsetY) {
+            return 'S';
+        }
+        return undefined;
+    }
     function clickTile(evt) {
         var tile = evt.target;
         if (!(tile instanceof HTMLElement)) {
             return;
         }
+        var hougaku = getHougaku(evt);
+        if (hougaku == undefined) {
+            return;
+        }
         var mapBlock = pickupMapBlock(tile.id);
-        var offsetX = evt.offsetX;
-        var offsetY = evt.offsetY;
-        if (offsetX < ARI_ARI) {
-            var kabe = mapBlock.W;
-            kabe++;
-            if (kabeHairetsu.length <= kabe) {
-                kabe = 0;
-            }
-            mapBlock.W = kabeHairetsu[kabe];
+        var kabe = mapBlock[hougaku];
+        kabe++;
+        if (kabeHairetsu.length <= kabe) {
+            kabe = 0;
         }
-        else if (MAP_IPPEN - ARI_ARI * 2 < offsetX) {
-            var kabe = mapBlock.E;
-            kabe++;
-            if (kabeHairetsu.length <= kabe) {
-                kabe = 0;
-            }
-            mapBlock.E = kabeHairetsu[kabe];
-        }
-        else if (offsetY < ARI_ARI) {
-            var kabe = mapBlock.N;
-            kabe++;
-            if (kabeHairetsu.length <= kabe) {
-                kabe = 0;
-            }
-            mapBlock.N = kabeHairetsu[kabe];
-        }
-        else if (MAP_IPPEN - ARI_ARI * 2 < offsetY) {
-            var kabe = mapBlock.S;
-            kabe++;
-            if (kabeHairetsu.length <= kabe) {
-                kabe = 0;
-            }
-            mapBlock.S = kabeHairetsu[kabe];
-        }
+        mapBlock[hougaku] = kabeHairetsu[kabe];
         writeTile(tile);
         save();
     }
@@ -129,27 +137,32 @@ var Dungeon;
         if (!(tile instanceof HTMLElement)) {
             return;
         }
-        var mapBlock = pickupMapBlock(tile.id);
-        var offsetX = evt.offsetX;
-        var offsetY = evt.offsetY;
-        if (offsetX < ARI_ARI) {
-            tile.style.borderLeft = 'red ' + String(ARI_ARI) + 'px solid';
-            tile.style.width = String(MAP_IPPEN - (ARI_ARI + (mapBlock.E != MU ? 5 : 0) - MU_FUTOSA)) + 'px';
-        }
-        else if (MAP_IPPEN - ARI_ARI * 2 < offsetX) {
-            tile.style.borderRight = 'red ' + String(ARI_ARI) + 'px solid';
-            tile.style.width = String(MAP_IPPEN - (ARI_ARI + (mapBlock.W != MU ? 5 : 0) - MU_FUTOSA)) + 'px';
-        }
-        else if (offsetY < ARI_ARI) {
-            tile.style.borderTop = 'red ' + String(ARI_ARI) + 'px solid';
-            tile.style.height = String(MAP_IPPEN - (ARI_ARI + (mapBlock.S != MU ? 5 : 0) - MU_FUTOSA)) + 'px';
-        }
-        else if (MAP_IPPEN - ARI_ARI * 2 < offsetY) {
-            tile.style.borderBottom = 'red ' + String(ARI_ARI) + 'px solid';
-            tile.style.height = String(MAP_IPPEN - (ARI_ARI + (mapBlock.N != MU ? 5 : 0) - MU_FUTOSA)) + 'px';
-        }
-        else {
+        var hougaku = getHougaku(evt);
+        if (hougaku == undefined) {
             writeTile(tile);
+            return;
+        }
+        var borderStyleName = getBorderStyleName(hougaku);
+        tile.style[borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
+        var mapBlock = pickupMapBlock(tile.id);
+        var hantai;
+        if (hougaku == 'W' || hougaku == 'E') {
+            if (hougaku == 'W') {
+                hantai = 'E';
+            }
+            else {
+                hantai = 'W';
+            }
+            tile.style.width = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
+        }
+        else if (hougaku == 'N' || hougaku == 'S') {
+            if (hougaku == 'N') {
+                hantai = 'S';
+            }
+            else {
+                hantai = 'N';
+            }
+            tile.style.height = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
         }
     }
     function mouseoutTile(evt) {
@@ -161,58 +174,36 @@ var Dungeon;
     }
     function writeTile(tile) {
         var mapBlock = pickupMapBlock(tile.id);
-        var tate_futosa = 0;
-        if (mapBlock.N == MU) {
-            tile.style.borderTop = 'black ' + String(MU_FUTOSA) + 'px dotted';
-            tate_futosa += MU_FUTOSA;
+        var tate_tsukattabun = 0;
+        var yoko_tsukattabun = 0;
+        var hougakuHairetsu = ['N', 'E', 'S', 'W'];
+        for (var i = 0, len = hougakuHairetsu.length; i < len; i++) {
+            var hougaku = hougakuHairetsu[i];
+            var style = '';
+            var tsukattabun = 0;
+            if (mapBlock[hougaku] == MU) {
+                style = 'black ' + String(MU_FUTOSA) + 'px dotted';
+                tsukattabun = MU_FUTOSA;
+            }
+            else if (mapBlock[hougaku] == KABE) {
+                style = 'black ' + String(ARI_ARI) + 'px solid';
+                tsukattabun = ARI_ARI;
+            }
+            else if (mapBlock[hougaku] == DOOR) {
+                style = 'black ' + String(ARI_ARI) + 'px dashed';
+                tsukattabun = ARI_ARI;
+            }
+            var borderStyleName = getBorderStyleName(hougaku);
+            tile.style[borderStyleName] = style;
+            if (hougaku == 'W' || hougaku == 'E') {
+                yoko_tsukattabun += tsukattabun;
+            }
+            else if (hougaku == 'N' || hougaku == 'S') {
+                tate_tsukattabun += tsukattabun;
+            }
         }
-        else if (mapBlock.N == KABE) {
-            tile.style.borderTop = 'black ' + String(ARI_ARI) + 'px solid';
-            tate_futosa += ARI_ARI;
-        }
-        else if (mapBlock.N == DOOR) {
-            tile.style.borderTop = 'black ' + String(ARI_ARI) + 'px dashed';
-            tate_futosa += ARI_ARI;
-        }
-        if (mapBlock.S == MU) {
-            tile.style.borderBottom = 'black ' + String(MU_FUTOSA) + 'px dotted';
-            tate_futosa += MU_FUTOSA;
-        }
-        else if (mapBlock.S == KABE) {
-            tile.style.borderBottom = 'black ' + String(ARI_ARI) + 'px solid';
-            tate_futosa += ARI_ARI;
-        }
-        else if (mapBlock.S == DOOR) {
-            tile.style.borderBottom = 'black ' + String(ARI_ARI) + 'px dashed';
-            tate_futosa += ARI_ARI;
-        }
-        tile.style.height = String(MAP_IPPEN - (tate_futosa - 2)) + 'px';
-        var yoko_futosa = 0;
-        if (mapBlock.W == MU) {
-            tile.style.borderLeft = 'black ' + String(MU_FUTOSA) + 'px dotted';
-            yoko_futosa += MU_FUTOSA;
-        }
-        else if (mapBlock.W == KABE) {
-            tile.style.borderLeft = 'black ' + String(ARI_ARI) + 'px solid';
-            yoko_futosa += ARI_ARI;
-        }
-        else if (mapBlock.W == DOOR) {
-            tile.style.borderLeft = 'black ' + String(ARI_ARI) + 'px dashed';
-            yoko_futosa += ARI_ARI;
-        }
-        if (mapBlock.E == MU) {
-            tile.style.borderRight = 'black ' + String(MU_FUTOSA) + 'px dotted';
-            yoko_futosa += MU_FUTOSA;
-        }
-        else if (mapBlock.E == KABE) {
-            tile.style.borderRight = 'black ' + String(ARI_ARI) + 'px solid';
-            yoko_futosa += ARI_ARI;
-        }
-        else if (mapBlock.E == DOOR) {
-            tile.style.borderRight = 'black ' + String(ARI_ARI) + 'px dashed';
-            yoko_futosa += ARI_ARI;
-        }
-        tile.style.width = String(MAP_IPPEN - (yoko_futosa - 2)) + 'px';
+        tile.style.width = String(TILE_IPPEN - (yoko_tsukattabun - 2)) + 'px';
+        tile.style.height = String(TILE_IPPEN - (tate_tsukattabun - 2)) + 'px';
     }
     function save() {
         var element = document.getElementById('maptext');
@@ -239,7 +230,7 @@ var Dungeon;
     }
     function kaiten() {
         var rotation = [];
-        for (var i = 0; i < TILE_IPPEN; i++) {
+        for (var i = 0; i < MAP_IPPEN; i++) {
             rotation[i] = [];
         }
         for (var y = 0, ylen = _mapBlockMatrix.length; y < ylen; y++) {
