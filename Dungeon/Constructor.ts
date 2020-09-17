@@ -12,40 +12,47 @@ namespace Dungeon {
 
     type BorderStyleName = 'borderTop' | 'borderRight' | 'borderBottom' | 'borderLeft';
 
-    function getBorderStyleName(hougaku: HougakuChar): BorderStyleName & keyof CSSStyleDeclaration {
-        if (hougaku == 'N') {
-            return 'borderTop';
-
-        } else if (hougaku == 'E') {
-            return 'borderRight';
-
-        } if (hougaku == 'S') {
-            return 'borderBottom';
-
-        } else if (hougaku == 'W') {
-            return 'borderLeft';
-
-        }
-
-        throw hougaku;
+    interface Hougaku {
+        char: HougakuChar;
+        borderStyleName: BorderStyleName;
     }
 
-    type KabeType = 0 | 1 | 2;
+    let hougaku_N: Hougaku = {
+        char: 'N',
+        borderStyleName: 'borderTop'
+    };
 
-    const MU: KabeType = 0;
-    const KABE: KabeType = 1;
-    const DOOR: KabeType = 2;
+    let hougaku_E: Hougaku = {
+        char: 'E',
+        borderStyleName: 'borderRight'
+    };
 
-    let kabeHairetsu: KabeType[] = [MU, KABE, DOOR];
+    let hougaku_S: Hougaku = {
+        char: 'S',
+        borderStyleName: 'borderBottom'
+    };
+
+    let hougaku_W: Hougaku = {
+        char: 'W',
+        borderStyleName: 'borderLeft'
+    };
+
+    type Kabe = 0 | 1 | 2;
+
+    const MU: Kabe = 0;
+    const KABE: Kabe = 1;
+    const DOOR: Kabe = 2;
+
+    let kabeHairetsu: Kabe[] = [MU, KABE, DOOR];
 
     class MapBlock {
         x: number = -1;
         y: number = -1;
 
-        N: KabeType = MU;
-        E: KabeType = MU;
-        S: KabeType = MU;
-        W: KabeType = MU;
+        N: Kabe = MU;
+        E: Kabe = MU;
+        S: Kabe = MU;
+        W: Kabe = MU;
     }
 
     let _mapBlockMatrix: MapBlock[][] = [];
@@ -113,50 +120,25 @@ namespace Dungeon {
         }
     });
 
-    function getHougaku(evt: MouseEvent): HougakuChar | undefined {
+    function getHougaku(evt: MouseEvent): Hougaku | undefined {
         let offsetX = evt.offsetX;
         let offsetY = evt.offsetY;
 
         if (offsetX < ARI_ARI) {
-            return 'W';
+            return hougaku_W;
 
         } else if (TILE_IPPEN - ARI_ARI * 2 < offsetX) {
-            return 'E';
+            return hougaku_E;
 
         } else if (offsetY < ARI_ARI) {
-            return 'N';
+            return hougaku_N;
 
         } else if (TILE_IPPEN - ARI_ARI * 2 < offsetY) {
-            return 'S';
+            return hougaku_S;
 
         }
 
         return undefined;
-    }
-
-    function clickTile(evt: MouseEvent): void {
-        let tile = evt.target;
-        if (!(tile instanceof HTMLElement)) {
-            return;
-        }
-
-        let hougaku: HougakuChar | undefined = getHougaku(evt);
-        if (hougaku == undefined) {
-            return;
-        }
-
-        let mapBlock = pickupMapBlock(tile.id);
-
-        let kabe: number = mapBlock[hougaku];
-        kabe++;
-        if (kabeHairetsu.length <= kabe) {
-            kabe = 0;
-        }
-        mapBlock[hougaku] = kabeHairetsu[kabe];
-
-        writeTile(tile);
-
-        save();
     }
 
     function pickupMapBlock(id: string): MapBlock {
@@ -168,34 +150,58 @@ namespace Dungeon {
         return mapBlock;
     }
 
+    function clickTile(evt: MouseEvent): void {
+        let tile = evt.target;
+        if (!(tile instanceof HTMLElement)) {
+            return;
+        }
+
+        let hougaku: Hougaku | undefined = getHougaku(evt);
+        if (hougaku == undefined) {
+            return;
+        }
+
+        let mapBlock = pickupMapBlock(tile.id);
+
+        let kabe: number = mapBlock[hougaku.char];
+        kabe++;
+        if (kabeHairetsu.length <= kabe) {
+            kabe = 0;
+        }
+        mapBlock[hougaku.char] = kabeHairetsu[kabe];
+
+        writeTile(tile);
+
+        save();
+    }
+
     function mousemoveTile(evt: MouseEvent): void {
         let tile = evt.target;
         if (!(tile instanceof HTMLElement)) {
             return;
         }
 
-        let hougaku = getHougaku(evt);
+        let hougaku: Hougaku | undefined = getHougaku(evt);
         if (hougaku == undefined) {
             writeTile(tile);
             return;
         }
 
-        let borderStyleName = getBorderStyleName(hougaku);
-        tile.style[borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
+        tile.style[hougaku.borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
 
         let mapBlock: MapBlock = pickupMapBlock(tile.id);
         let hantai: HougakuChar;
 
-        if (hougaku == 'W' || hougaku == 'E') {
-            if (hougaku == 'W') {
+        if (hougaku.char == 'W' || hougaku.char == 'E') {
+            if (hougaku.char == 'W') {
                 hantai = 'E';
             } else {
                 hantai = 'W';
             }
             tile.style.width = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
 
-        } else if (hougaku == 'N' || hougaku == 'S') {
-            if (hougaku == 'N') {
+        } else if (hougaku.char == 'N' || hougaku.char == 'S') {
+            if (hougaku.char == 'N') {
                 hantai = 'S';
             } else {
                 hantai = 'N';
@@ -219,45 +225,44 @@ namespace Dungeon {
 
         let mapBlock: MapBlock = pickupMapBlock(tile.id);
 
-        let tate_tsukattabun = 0;
-        let yoko_tsukattabun = 0;
+        let tate_line_futosa = 0;
+        let yoko_line_futosa = 0;
 
-        let hougakuHairetsu: HougakuChar[] = ['N', 'E', 'S', 'W'];
+        let hougakuHairetsu: Hougaku[] = [hougaku_N, hougaku_E, hougaku_S, hougaku_W];
         for (let i = 0, len = hougakuHairetsu.length; i < len; i++) {
             let hougaku = hougakuHairetsu[i];
 
             let style: string = '';
-            let tsukattabun: number = 0;
+            let line_futosa: number = 0;
 
-            if (mapBlock[hougaku] == MU) {
+            if (mapBlock[hougaku.char] == MU) {
                 style = 'black ' + String(MU_FUTOSA) + 'px dotted';
-                tsukattabun = MU_FUTOSA;
+                line_futosa = MU_FUTOSA;
 
-            } else if (mapBlock[hougaku] == KABE) {
+            } else if (mapBlock[hougaku.char] == KABE) {
                 style = 'black ' + String(ARI_ARI) + 'px solid';
-                tsukattabun = ARI_ARI;
+                line_futosa = ARI_ARI;
 
-            } else if (mapBlock[hougaku] == DOOR) {
+            } else if (mapBlock[hougaku.char] == DOOR) {
                 style = 'black ' + String(ARI_ARI) + 'px dashed';
-                tsukattabun = ARI_ARI;
+                line_futosa = ARI_ARI;
 
             }
 
-            let borderStyleName: BorderStyleName = getBorderStyleName(hougaku);
-            tile.style[borderStyleName] = style;
+            tile.style[hougaku.borderStyleName] = style;
 
-            if (hougaku == 'W' || hougaku == 'E') {
-                yoko_tsukattabun += tsukattabun;
+            if (hougaku.char == 'W' || hougaku.char == 'E') {
+                yoko_line_futosa += line_futosa;
 
-            } else if (hougaku == 'N' || hougaku == 'S') {
-                tate_tsukattabun += tsukattabun;
+            } else if (hougaku.char == 'N' || hougaku.char == 'S') {
+                tate_line_futosa += line_futosa;
 
             }
 
         }
 
-        tile.style.width = String(TILE_IPPEN - (yoko_tsukattabun - 2)) + 'px';
-        tile.style.height = String(TILE_IPPEN - (tate_tsukattabun - 2)) + 'px';
+        tile.style.width = String(TILE_IPPEN - (yoko_line_futosa - 2)) + 'px';
+        tile.style.height = String(TILE_IPPEN - (tate_line_futosa - 2)) + 'px';
     }
 
     function save(): void {
@@ -300,7 +305,7 @@ namespace Dungeon {
             for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
                 let mapBlock = _mapBlockMatrix[xlen - 1 - y][x];
 
-                let swap: KabeType = mapBlock.W;
+                let swap: Kabe = mapBlock.W;
                 mapBlock.W = mapBlock.S;
                 mapBlock.S = mapBlock.E;
                 mapBlock.E = mapBlock.N;

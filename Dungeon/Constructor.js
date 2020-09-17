@@ -6,21 +6,22 @@ var Dungeon;
     var MU_FUTOSA = 1;
     var ARI_ARI = 6;
     var _board;
-    function getBorderStyleName(hougaku) {
-        if (hougaku == 'N') {
-            return 'borderTop';
-        }
-        else if (hougaku == 'E') {
-            return 'borderRight';
-        }
-        if (hougaku == 'S') {
-            return 'borderBottom';
-        }
-        else if (hougaku == 'W') {
-            return 'borderLeft';
-        }
-        throw hougaku;
-    }
+    var hougaku_N = {
+        char: 'N',
+        borderStyleName: 'borderTop'
+    };
+    var hougaku_E = {
+        char: 'E',
+        borderStyleName: 'borderRight'
+    };
+    var hougaku_S = {
+        char: 'S',
+        borderStyleName: 'borderBottom'
+    };
+    var hougaku_W = {
+        char: 'W',
+        borderStyleName: 'borderLeft'
+    };
     var MU = 0;
     var KABE = 1;
     var DOOR = 2;
@@ -93,18 +94,25 @@ var Dungeon;
         var offsetX = evt.offsetX;
         var offsetY = evt.offsetY;
         if (offsetX < ARI_ARI) {
-            return 'W';
+            return hougaku_W;
         }
         else if (TILE_IPPEN - ARI_ARI * 2 < offsetX) {
-            return 'E';
+            return hougaku_E;
         }
         else if (offsetY < ARI_ARI) {
-            return 'N';
+            return hougaku_N;
         }
         else if (TILE_IPPEN - ARI_ARI * 2 < offsetY) {
-            return 'S';
+            return hougaku_S;
         }
         return undefined;
+    }
+    function pickupMapBlock(id) {
+        id.match(/tile_(\d+)_(\d+)/);
+        var x = Number(RegExp.$1);
+        var y = Number(RegExp.$2);
+        var mapBlock = _mapBlockMatrix[y][x];
+        return mapBlock;
     }
     function clickTile(evt) {
         var tile = evt.target;
@@ -116,21 +124,14 @@ var Dungeon;
             return;
         }
         var mapBlock = pickupMapBlock(tile.id);
-        var kabe = mapBlock[hougaku];
+        var kabe = mapBlock[hougaku.char];
         kabe++;
         if (kabeHairetsu.length <= kabe) {
             kabe = 0;
         }
-        mapBlock[hougaku] = kabeHairetsu[kabe];
+        mapBlock[hougaku.char] = kabeHairetsu[kabe];
         writeTile(tile);
         save();
-    }
-    function pickupMapBlock(id) {
-        id.match(/tile_(\d+)_(\d+)/);
-        var x = Number(RegExp.$1);
-        var y = Number(RegExp.$2);
-        var mapBlock = _mapBlockMatrix[y][x];
-        return mapBlock;
     }
     function mousemoveTile(evt) {
         var tile = evt.target;
@@ -142,12 +143,11 @@ var Dungeon;
             writeTile(tile);
             return;
         }
-        var borderStyleName = getBorderStyleName(hougaku);
-        tile.style[borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
+        tile.style[hougaku.borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
         var mapBlock = pickupMapBlock(tile.id);
         var hantai;
-        if (hougaku == 'W' || hougaku == 'E') {
-            if (hougaku == 'W') {
+        if (hougaku.char == 'W' || hougaku.char == 'E') {
+            if (hougaku.char == 'W') {
                 hantai = 'E';
             }
             else {
@@ -155,8 +155,8 @@ var Dungeon;
             }
             tile.style.width = String(TILE_IPPEN - (ARI_ARI + (mapBlock[hantai] != MU ? (ARI_ARI - MU_FUTOSA) : 0) - MU_FUTOSA)) + 'px';
         }
-        else if (hougaku == 'N' || hougaku == 'S') {
-            if (hougaku == 'N') {
+        else if (hougaku.char == 'N' || hougaku.char == 'S') {
+            if (hougaku.char == 'N') {
                 hantai = 'S';
             }
             else {
@@ -174,36 +174,35 @@ var Dungeon;
     }
     function writeTile(tile) {
         var mapBlock = pickupMapBlock(tile.id);
-        var tate_tsukattabun = 0;
-        var yoko_tsukattabun = 0;
-        var hougakuHairetsu = ['N', 'E', 'S', 'W'];
+        var tate_line_futosa = 0;
+        var yoko_line_futosa = 0;
+        var hougakuHairetsu = [hougaku_N, hougaku_E, hougaku_S, hougaku_W];
         for (var i = 0, len = hougakuHairetsu.length; i < len; i++) {
             var hougaku = hougakuHairetsu[i];
             var style = '';
-            var tsukattabun = 0;
-            if (mapBlock[hougaku] == MU) {
+            var line_futosa = 0;
+            if (mapBlock[hougaku.char] == MU) {
                 style = 'black ' + String(MU_FUTOSA) + 'px dotted';
-                tsukattabun = MU_FUTOSA;
+                line_futosa = MU_FUTOSA;
             }
-            else if (mapBlock[hougaku] == KABE) {
+            else if (mapBlock[hougaku.char] == KABE) {
                 style = 'black ' + String(ARI_ARI) + 'px solid';
-                tsukattabun = ARI_ARI;
+                line_futosa = ARI_ARI;
             }
-            else if (mapBlock[hougaku] == DOOR) {
+            else if (mapBlock[hougaku.char] == DOOR) {
                 style = 'black ' + String(ARI_ARI) + 'px dashed';
-                tsukattabun = ARI_ARI;
+                line_futosa = ARI_ARI;
             }
-            var borderStyleName = getBorderStyleName(hougaku);
-            tile.style[borderStyleName] = style;
-            if (hougaku == 'W' || hougaku == 'E') {
-                yoko_tsukattabun += tsukattabun;
+            tile.style[hougaku.borderStyleName] = style;
+            if (hougaku.char == 'W' || hougaku.char == 'E') {
+                yoko_line_futosa += line_futosa;
             }
-            else if (hougaku == 'N' || hougaku == 'S') {
-                tate_tsukattabun += tsukattabun;
+            else if (hougaku.char == 'N' || hougaku.char == 'S') {
+                tate_line_futosa += line_futosa;
             }
         }
-        tile.style.width = String(TILE_IPPEN - (yoko_tsukattabun - 2)) + 'px';
-        tile.style.height = String(TILE_IPPEN - (tate_tsukattabun - 2)) + 'px';
+        tile.style.width = String(TILE_IPPEN - (yoko_line_futosa - 2)) + 'px';
+        tile.style.height = String(TILE_IPPEN - (tate_line_futosa - 2)) + 'px';
     }
     function save() {
         var element = document.getElementById('maptext');
