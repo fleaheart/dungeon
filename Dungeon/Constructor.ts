@@ -195,9 +195,10 @@ namespace Dungeon {
             return;
         }
 
+        writeTile(tile);
+
         let hougaku: Hougaku | undefined = getHougaku(evt);
         if (hougaku == undefined) {
-            writeTile(tile);
             return;
         }
 

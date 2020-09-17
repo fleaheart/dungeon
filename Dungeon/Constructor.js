@@ -152,9 +152,9 @@ var Dungeon;
         if (!(tile instanceof HTMLElement)) {
             return;
         }
+        writeTile(tile);
         var hougaku = getHougaku(evt);
         if (hougaku == undefined) {
-            writeTile(tile);
             return;
         }
         tile.style[hougaku.borderStyleName] = 'red ' + String(ARI_ARI) + 'px solid';
