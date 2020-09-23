@@ -406,12 +406,34 @@ namespace Dungeon {
 
         let currentId = 'tile_' + String(_currentMapBlock.x) + '_' + String(_currentMapBlock.y);
 
+        let mawariIdArray: string[] = [];
+        for (let x = -1; x <= 1; x++) {
+            for (let y = -2; y <= 2; y++) {
+                // マイナスになってもヒットしないだけ
+                let mawariId = 'tile_' + String(_currentMapBlock.x + x) + '_' + String(_currentMapBlock.y + y);
+                mawariIdArray.push(mawariId);
+            }
+        }
+
         for (let i = 0, len = _board.childNodes.length; i < len; i++) {
             let tile = _board.childNodes[i];
             if (tile instanceof HTMLElement && tile.id.match(/^tile_/)) {
                 writeTile(tile);
 
-                tile.style.backgroundColor = (tile.id == currentId) ? 'pink' : '';
+                let backgroundColor = '';
+
+                if (tile.id == currentId) {
+                    backgroundColor = 'pink';
+                } else {
+                    for (let m = 0, mlen = mawariIdArray.length; m < mlen; m++) {
+                        if (tile.id == mawariIdArray[m]) {
+                            backgroundColor = 'lightblue';
+                            break;
+                        }
+                    }
+                }
+
+                tile.style.backgroundColor = backgroundColor;
             }
         }
     }

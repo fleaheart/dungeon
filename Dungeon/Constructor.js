@@ -321,11 +321,30 @@ var Dungeon;
             }
         }
         var currentId = 'tile_' + String(_currentMapBlock.x) + '_' + String(_currentMapBlock.y);
+        var mawariIdArray = [];
+        for (var x = -1; x <= 1; x++) {
+            for (var y = -2; y <= 2; y++) {
+                var mawariId = 'tile_' + String(_currentMapBlock.x + x) + '_' + String(_currentMapBlock.y + y);
+                mawariIdArray.push(mawariId);
+            }
+        }
         for (var i = 0, len = _board.childNodes.length; i < len; i++) {
             var tile = _board.childNodes[i];
             if (tile instanceof HTMLElement && tile.id.match(/^tile_/)) {
                 writeTile(tile);
-                tile.style.backgroundColor = (tile.id == currentId) ? 'pink' : '';
+                var backgroundColor = '';
+                if (tile.id == currentId) {
+                    backgroundColor = 'pink';
+                }
+                else {
+                    for (var m = 0, mlen = mawariIdArray.length; m < mlen; m++) {
+                        if (tile.id == mawariIdArray[m]) {
+                            backgroundColor = 'lightblue';
+                            break;
+                        }
+                    }
+                }
+                tile.style.backgroundColor = backgroundColor;
             }
         }
     }
