@@ -8,6 +8,7 @@ namespace Dungeon {
     const HANNOU = 6;
 
     let _board: HTMLElement;
+    let _memo: HTMLInputElement;
 
     type HougakuChar = 'N' | 'E' | 'S' | 'W';
 
@@ -54,6 +55,8 @@ namespace Dungeon {
         E: Kabe = MU;
         S: Kabe = MU;
         W: Kabe = MU;
+
+        memo: string | undefined = undefined;
     }
 
     let _map_ippen: number = 0;
@@ -72,6 +75,15 @@ namespace Dungeon {
             _board.style.width = String(TILE_IPPEN * 32) + 'px';
             _board.style.height = String(TILE_IPPEN * 32) + 'px';
             _board.style.verticalAlign = 'top';
+        }
+        {
+            let element = document.getElementById('memo');
+            if (!(element instanceof HTMLInputElement)) {
+                return;
+            }
+            _memo = element;
+
+            _memo.addEventListener('change', changeMemo);
         }
 
         document.body.appendChild(_board);
@@ -153,10 +165,12 @@ namespace Dungeon {
                 tile.style.border = 'black ' + String(MU_FUTOSA) + 'px dotted';
                 tile.style.width = String(TILE_IPPEN) + 'px';
                 tile.style.height = String(TILE_IPPEN) + 'px';
-                tile.style.verticalAlign = 'top';
+                tile.style.verticalAlign = 'middle';
+                tile.style.textAlign = 'center';
                 tile.innerHTML = '&nbsp;';
 
                 tile.addEventListener('click', clickTile);
+                tile.addEventListener('dblclick', dblclickTile);
                 tile.addEventListener('mousemove', mousemoveTile);
                 tile.addEventListener('mouseout', mouseoutTile);
 
@@ -213,7 +227,6 @@ namespace Dungeon {
         }
 
         let mapBlock = pickupMapBlock(tile.id);
-        _currentMapBlock = mapBlock;
 
         let hougaku: Hougaku | undefined = getHougaku(evt);
         if (hougaku == undefined) {
@@ -231,6 +244,20 @@ namespace Dungeon {
         refresh();
 
         save();
+    }
+
+    function dblclickTile(evt: MouseEvent): void {
+        let tile = evt.target;
+        if (!(tile instanceof HTMLElement)) {
+            return;
+        }
+
+        let mapBlock = pickupMapBlock(tile.id);
+        _currentMapBlock = mapBlock;
+
+        _memo.value = _currentMapBlock.memo || '';
+
+        refresh();
     }
 
     function mousemoveTile(evt: MouseEvent): void {
@@ -317,8 +344,10 @@ namespace Dungeon {
                 tate_line_futosa += line_futosa;
 
             }
-
         }
+
+        let memo: string = mapBlock.memo || '';
+        tile.textContent = 0 < memo.length ? memo.charAt(0) : '';
 
         tile.style.width = String(TILE_IPPEN - (yoko_line_futosa - 2)) + 'px';
         tile.style.height = String(TILE_IPPEN - (tate_line_futosa - 2)) + 'px';
@@ -485,6 +514,18 @@ namespace Dungeon {
         }
 
         return movedMatrix;
+    }
+
+    function changeMemo() {
+        if (_memo.value.trim() != '') {
+            _currentMapBlock.memo = _memo.value;
+        } else {
+            _currentMapBlock.memo = undefined;
+        }
+
+        refresh();
+
+        save();
     }
 
 }
