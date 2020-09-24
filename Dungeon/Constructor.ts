@@ -7,8 +7,12 @@ namespace Dungeon {
     const ARI_FUTOSA = 2;
     const HANNOU = 6;
 
-    let _board: HTMLElement;
+    const STORAGE_HEADER = 'MAP_STORAGE_';
+    let _map_list: HTMLSelectElement;
+    let _map_name: HTMLInputElement;
     let _memo: HTMLInputElement;
+    let _board: HTMLElement;
+    let _map_text: HTMLTextAreaElement;
 
     type HougakuChar = 'N' | 'E' | 'S' | 'W';
 
@@ -62,7 +66,61 @@ namespace Dungeon {
     let _map_ippen: number = 0;
     let _mapBlockMatrix: MapBlock[][] = [];
 
+    function getElementById(elementId: string): HTMLInputElement {
+        let element = document.getElementById(elementId);
+        if (element instanceof HTMLInputElement) {
+            return element;
+        }
+        throw elementId;
+    }
+
     window.addEventListener('load', (): void => {
+
+        {
+            let element = document.getElementById('map_list');
+            if (!(element instanceof HTMLSelectElement)) {
+                return;
+            }
+            _map_list = element;
+
+            {
+                let option = document.createElement('option');
+                option.value = '';
+                option.text = '';
+                _map_list.options.add(option);
+            }
+
+            let mapNameListText: string | null = window.localStorage.getItem(STORAGE_HEADER + 'map_list');
+            if (mapNameListText != null) {
+                let mapNameList: string[] = mapNameListText.split('\t');
+                for (let i = 0, len = mapNameList.length; i < len; i++) {
+                    let mapName = mapNameList[i];
+                    if (mapName.trim() != '') {
+                        let option = document.createElement('option');
+                        option.value = mapName;
+                        option.text = mapName;
+                        _map_list.options.add(option);
+                    }
+                }
+            }
+
+            _map_list.addEventListener('change', changeMapList);
+        }
+
+        _map_name = getElementById('map_name');
+        _map_name.addEventListener('change', changeMapName);
+        _map_name.value = '';
+
+        getElementById('del_button').addEventListener('click', clickMapDel);
+
+        getElementById('map_ippen').addEventListener('keypress', keypressMapIppen);
+        getElementById('load_button').addEventListener('click', load);
+        getElementById('hanten_button').addEventListener('click', clickHanten);
+        getElementById('center_button').addEventListener('click', clickCenter);
+        getElementById('kaiten_button').addEventListener('click', clickKaiten);
+
+        _memo = getElementById('memo');
+        _memo.addEventListener('change', changeMemo);
 
         {
             let element = document.getElementById('board');
@@ -76,58 +134,88 @@ namespace Dungeon {
             _board.style.height = String(TILE_IPPEN * 32) + 'px';
             _board.style.verticalAlign = 'top';
         }
+
         {
-            let element = document.getElementById('memo');
-            if (!(element instanceof HTMLInputElement)) {
+            let element = document.getElementById('map_text');
+            if (!(element instanceof HTMLTextAreaElement)) {
                 return;
             }
-            _memo = element;
-
-            _memo.addEventListener('change', changeMemo);
+            _map_text = element;
         }
-
-        document.body.appendChild(_board);
 
         createMatrix(MAP_IPPEN);
-
-        {
-            let element = document.getElementById('map_ippen');
-            if (element != null) {
-                element.addEventListener('keypress', keypressMapIppen);
-            }
-        }
-        {
-            let element = document.getElementById('load_button');
-            if (element != null) {
-                element.addEventListener('click', clickLoad);
-            }
-        }
-        {
-            let element = document.getElementById('hanten_button');
-            if (element != null) {
-                element.addEventListener('click', clickHanten);
-            }
-        }
-        {
-            let element = document.getElementById('center_button');
-            if (element != null) {
-                element.addEventListener('click', clickCenter);
-            }
-        }
-        {
-            let element = document.getElementById('kaiten_button');
-            if (element != null) {
-                element.addEventListener('click', clickKaiten);
-            }
-        }
     });
 
-    function keypressMapIppen() {
-        let element = document.getElementById('map_ippen');
-        if (!(element instanceof HTMLInputElement)) {
+    function changeMapList(): void {
+        let mapName = _map_list.value;
+        _map_name.value = mapName;
+
+        let mapText: string | null = window.localStorage.getItem(STORAGE_HEADER + 'NAME_' + mapName);
+        if (mapText == null) {
+            createMatrix(MAP_IPPEN);
             return;
         }
 
+        _map_text.value = mapText;
+
+        load();
+    }
+
+    function changeMapName(): void {
+        let mapName = _map_name.value;
+
+        for (let i = 0, len = _map_list.options.length; i < len; i++) {
+            let option: HTMLOptionElement | null = _map_list.options.item(i);
+            if (option != null) {
+                if (option.value == mapName) {
+                    _map_list.selectedIndex = i;
+                    changeMapList();
+                    return;
+                }
+            }
+        }
+
+        let option = document.createElement('option');
+        option.value = mapName;
+        option.text = mapName;
+        _map_list.options.add(option);
+        option.selected = true;
+
+        createMatrix(MAP_IPPEN);
+
+        saveMapList();
+    }
+
+    function clickMapDel(): void {
+        let mapName = _map_list.value;
+
+        let index = _map_list.selectedIndex;
+        _map_list.options.remove(index);
+        window.localStorage.removeItem(STORAGE_HEADER + 'NAME_' + mapName);
+
+        _map_name.value = '';
+
+        saveMapList();
+    }
+
+    function saveMapList() {
+        let mapNameList: string[] = [];
+        for (let i = 0, len = _map_list.options.length; i < len; i++) {
+            let option: HTMLOptionElement | null = _map_list.options.item(i);
+            if (option != null) {
+                mapNameList.push(option.value);
+            }
+        }
+
+        mapNameList.sort();
+
+        let mapNameListText = mapNameList.join('\t');
+
+        window.localStorage.setItem(STORAGE_HEADER + 'map_list', mapNameListText);
+    }
+
+    function keypressMapIppen(): void {
+        let element = getElementById('map_ippen');
         if (element.value == '') {
             return;
         }
@@ -146,10 +234,7 @@ namespace Dungeon {
     function createMatrix(map_ippen: number): void {
         _map_ippen = map_ippen;
 
-        let element = document.getElementById('map_ippen');
-        if (!(element instanceof HTMLInputElement)) {
-            return;
-        }
+        let element = getElementById('map_ippen');
         element.value = String(_map_ippen);
 
         _board.textContent = '';
@@ -354,21 +439,18 @@ namespace Dungeon {
     }
 
     function save(): void {
-        let element = document.getElementById('maptext');
-        if (!(element instanceof HTMLTextAreaElement)) {
-            return;
+        let mapText = JSON.stringify(_mapBlockMatrix);
+        _map_text.value = mapText;
+
+        let mapName = _map_name.value;
+        if (mapName != '') {
+            window.localStorage.setItem(STORAGE_HEADER + 'NAME_' + mapName, mapText);
         }
-        element.value = JSON.stringify(_mapBlockMatrix);
     }
 
-    function clickLoad(): void {
-        let element = document.getElementById('maptext');
-        if (!(element instanceof HTMLTextAreaElement)) {
-            return;
-        }
-
-        let mapBlockMatrix: MapBlock[][] = eval(element.value);
-        if (_map_ippen < mapBlockMatrix.length) {
+    function load(): void {
+        let mapBlockMatrix: MapBlock[][] = eval(_map_text.value);
+        if (_map_ippen != mapBlockMatrix.length) {
             createMatrix(mapBlockMatrix.length);
         }
 

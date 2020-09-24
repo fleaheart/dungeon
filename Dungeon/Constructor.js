@@ -6,8 +6,12 @@ var Dungeon;
     var MU_FUTOSA = 1;
     var ARI_FUTOSA = 2;
     var HANNOU = 6;
-    var _board;
+    var STORAGE_HEADER = 'MAP_STORAGE_';
+    var _map_list;
+    var _map_name;
     var _memo;
+    var _board;
+    var _map_text;
     var hougaku_N = {
         char: 'N',
         borderStyleName: 'borderTop'
@@ -42,7 +46,52 @@ var Dungeon;
     }());
     var _map_ippen = 0;
     var _mapBlockMatrix = [];
+    function getElementById(elementId) {
+        var element = document.getElementById(elementId);
+        if (element instanceof HTMLInputElement) {
+            return element;
+        }
+        throw elementId;
+    }
     window.addEventListener('load', function () {
+        {
+            var element = document.getElementById('map_list');
+            if (!(element instanceof HTMLSelectElement)) {
+                return;
+            }
+            _map_list = element;
+            {
+                var option = document.createElement('option');
+                option.value = '';
+                option.text = '';
+                _map_list.options.add(option);
+            }
+            var mapNameListText = window.localStorage.getItem(STORAGE_HEADER + 'map_list');
+            if (mapNameListText != null) {
+                var mapNameList = mapNameListText.split('\t');
+                for (var i = 0, len = mapNameList.length; i < len; i++) {
+                    var mapName = mapNameList[i];
+                    if (mapName.trim() != '') {
+                        var option = document.createElement('option');
+                        option.value = mapName;
+                        option.text = mapName;
+                        _map_list.options.add(option);
+                    }
+                }
+            }
+            _map_list.addEventListener('change', changeMapList);
+        }
+        _map_name = getElementById('map_name');
+        _map_name.addEventListener('change', changeMapName);
+        _map_name.value = '';
+        getElementById('del_button').addEventListener('click', clickMapDel);
+        getElementById('map_ippen').addEventListener('keypress', keypressMapIppen);
+        getElementById('load_button').addEventListener('click', load);
+        getElementById('hanten_button').addEventListener('click', clickHanten);
+        getElementById('center_button').addEventListener('click', clickCenter);
+        getElementById('kaiten_button').addEventListener('click', clickKaiten);
+        _memo = getElementById('memo');
+        _memo.addEventListener('change', changeMemo);
         {
             var element = document.getElementById('board');
             if (element == null) {
@@ -56,51 +105,67 @@ var Dungeon;
             _board.style.verticalAlign = 'top';
         }
         {
-            var element = document.getElementById('memo');
-            if (!(element instanceof HTMLInputElement)) {
+            var element = document.getElementById('map_text');
+            if (!(element instanceof HTMLTextAreaElement)) {
                 return;
             }
-            _memo = element;
-            _memo.addEventListener('change', changeMemo);
+            _map_text = element;
         }
-        document.body.appendChild(_board);
         createMatrix(MAP_IPPEN);
-        {
-            var element = document.getElementById('map_ippen');
-            if (element != null) {
-                element.addEventListener('keypress', keypressMapIppen);
-            }
-        }
-        {
-            var element = document.getElementById('load_button');
-            if (element != null) {
-                element.addEventListener('click', clickLoad);
-            }
-        }
-        {
-            var element = document.getElementById('hanten_button');
-            if (element != null) {
-                element.addEventListener('click', clickHanten);
-            }
-        }
-        {
-            var element = document.getElementById('center_button');
-            if (element != null) {
-                element.addEventListener('click', clickCenter);
-            }
-        }
-        {
-            var element = document.getElementById('kaiten_button');
-            if (element != null) {
-                element.addEventListener('click', clickKaiten);
-            }
-        }
     });
-    function keypressMapIppen() {
-        var element = document.getElementById('map_ippen');
-        if (!(element instanceof HTMLInputElement)) {
+    function changeMapList() {
+        var mapName = _map_list.value;
+        _map_name.value = mapName;
+        var mapText = window.localStorage.getItem(STORAGE_HEADER + 'NAME_' + mapName);
+        if (mapText == null) {
+            createMatrix(MAP_IPPEN);
             return;
         }
+        _map_text.value = mapText;
+        load();
+    }
+    function changeMapName() {
+        var mapName = _map_name.value;
+        for (var i = 0, len = _map_list.options.length; i < len; i++) {
+            var option_1 = _map_list.options.item(i);
+            if (option_1 != null) {
+                if (option_1.value == mapName) {
+                    _map_list.selectedIndex = i;
+                    changeMapList();
+                    return;
+                }
+            }
+        }
+        var option = document.createElement('option');
+        option.value = mapName;
+        option.text = mapName;
+        _map_list.options.add(option);
+        option.selected = true;
+        createMatrix(MAP_IPPEN);
+        saveMapList();
+    }
+    function clickMapDel() {
+        var mapName = _map_list.value;
+        var index = _map_list.selectedIndex;
+        _map_list.options.remove(index);
+        window.localStorage.removeItem(STORAGE_HEADER + 'NAME_' + mapName);
+        _map_name.value = '';
+        saveMapList();
+    }
+    function saveMapList() {
+        var mapNameList = [];
+        for (var i = 0, len = _map_list.options.length; i < len; i++) {
+            var option = _map_list.options.item(i);
+            if (option != null) {
+                mapNameList.push(option.value);
+            }
+        }
+        mapNameList.sort();
+        var mapNameListText = mapNameList.join('\t');
+        window.localStorage.setItem(STORAGE_HEADER + 'map_list', mapNameListText);
+    }
+    function keypressMapIppen() {
+        var element = getElementById('map_ippen');
         if (element.value == '') {
             return;
         }
@@ -115,10 +180,7 @@ var Dungeon;
     }
     function createMatrix(map_ippen) {
         _map_ippen = map_ippen;
-        var element = document.getElementById('map_ippen');
-        if (!(element instanceof HTMLInputElement)) {
-            return;
-        }
+        var element = getElementById('map_ippen');
         element.value = String(_map_ippen);
         _board.textContent = '';
         _mapBlockMatrix.length = 0;
@@ -278,19 +340,16 @@ var Dungeon;
         tile.style.height = String(TILE_IPPEN - (tate_line_futosa - 2)) + 'px';
     }
     function save() {
-        var element = document.getElementById('maptext');
-        if (!(element instanceof HTMLTextAreaElement)) {
-            return;
+        var mapText = JSON.stringify(_mapBlockMatrix);
+        _map_text.value = mapText;
+        var mapName = _map_name.value;
+        if (mapName != '') {
+            window.localStorage.setItem(STORAGE_HEADER + 'NAME_' + mapName, mapText);
         }
-        element.value = JSON.stringify(_mapBlockMatrix);
     }
-    function clickLoad() {
-        var element = document.getElementById('maptext');
-        if (!(element instanceof HTMLTextAreaElement)) {
-            return;
-        }
-        var mapBlockMatrix = eval(element.value);
-        if (_map_ippen < mapBlockMatrix.length) {
+    function load() {
+        var mapBlockMatrix = eval(_map_text.value);
+        if (_map_ippen != mapBlockMatrix.length) {
             createMatrix(mapBlockMatrix.length);
         }
         _mapBlockMatrix.length = 0;
