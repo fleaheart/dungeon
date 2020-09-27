@@ -130,8 +130,7 @@ namespace Dungeon {
             _board = element;
             _board.style.border = 'black 1px solid';
             _board.style.padding = '4px';
-            _board.style.width = String(TILE_IPPEN * 32) + 'px';
-            _board.style.height = String(TILE_IPPEN * 32) + 'px';
+            _board.style.width = String(TILE_IPPEN * 32 + 64) + 'px';
             _board.style.verticalAlign = 'top';
         }
 
@@ -157,6 +156,11 @@ namespace Dungeon {
         }
 
         _map_text.value = mapText;
+
+        let mapBlockMatrix: MapBlock[][] = eval(_map_text.value);
+        if (mapBlockMatrix.length != _map_ippen) {
+            createMatrix(mapBlockMatrix.length);
+        }
 
         load();
     }
@@ -214,7 +218,11 @@ namespace Dungeon {
         window.localStorage.setItem(STORAGE_HEADER + 'map_list', mapNameListText);
     }
 
-    function keypressMapIppen(): void {
+    function keypressMapIppen(evt: KeyboardEvent): void {
+        if (evt.key != 'Enter') {
+            return;
+        }
+
         let element = getElementById('map_ippen');
         if (element.value == '') {
             return;
@@ -228,7 +236,39 @@ namespace Dungeon {
             return;
         }
 
+        let mapBlockMatrix: MapBlock[][] = cloneMapBlockMatrix(_mapBlockMatrix);
+
         createMatrix(map_ippen);
+
+        copyMapBlockMatrix(mapBlockMatrix, _mapBlockMatrix);
+
+        refresh();
+    }
+
+    function cloneMapBlockMatrix(mapBlockMatrix: MapBlock[][]): MapBlock[][] {
+        let cloned: MapBlock[][] = [];
+        for (let y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
+            let x_hairetsu: MapBlock[] = mapBlockMatrix[y];
+            let x_cloned: MapBlock[] = [];
+            for (let x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                x_cloned.push(x_hairetsu[x]);
+            }
+            cloned.push(x_cloned);
+        }
+        return cloned;
+    }
+
+    /**
+     * matrix1をmatrix2にコピーするが、x:0,y:0から小さいほうのサイズまで
+     */
+    function copyMapBlockMatrix(matrix1: MapBlock[][], matrix2: MapBlock[][]) {
+        for (let y = 0, ylen1 = matrix1.length, ylen2 = matrix2.length; y < ylen1 && y < ylen2; y++) {
+            let x_hairetsu1: MapBlock[] = matrix1[y];
+            let x_hairetsu2: MapBlock[] = matrix2[y];
+            for (let x = 0, xlen1 = x_hairetsu1.length, xlen2 = x_hairetsu2.length; x < xlen1 && x < xlen2; x++) {
+                x_hairetsu2[x] = x_hairetsu1[x];
+            }
+        }
     }
 
     function createMatrix(map_ippen: number): void {
@@ -450,9 +490,6 @@ namespace Dungeon {
 
     function load(): void {
         let mapBlockMatrix: MapBlock[][] = eval(_map_text.value);
-        if (_map_ippen != mapBlockMatrix.length) {
-            createMatrix(mapBlockMatrix.length);
-        }
 
         _mapBlockMatrix.length = 0;
         for (let y = 0; y < _map_ippen; y++) {

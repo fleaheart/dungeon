@@ -100,8 +100,7 @@ var Dungeon;
             _board = element;
             _board.style.border = 'black 1px solid';
             _board.style.padding = '4px';
-            _board.style.width = String(TILE_IPPEN * 32) + 'px';
-            _board.style.height = String(TILE_IPPEN * 32) + 'px';
+            _board.style.width = String(TILE_IPPEN * 32 + 64) + 'px';
             _board.style.verticalAlign = 'top';
         }
         {
@@ -122,6 +121,10 @@ var Dungeon;
             return;
         }
         _map_text.value = mapText;
+        var mapBlockMatrix = eval(_map_text.value);
+        if (mapBlockMatrix.length != _map_ippen) {
+            createMatrix(mapBlockMatrix.length);
+        }
         load();
     }
     function changeMapName() {
@@ -164,7 +167,10 @@ var Dungeon;
         var mapNameListText = mapNameList.join('\t');
         window.localStorage.setItem(STORAGE_HEADER + 'map_list', mapNameListText);
     }
-    function keypressMapIppen() {
+    function keypressMapIppen(evt) {
+        if (evt.key != 'Enter') {
+            return;
+        }
         var element = getElementById('map_ippen');
         if (element.value == '') {
             return;
@@ -176,7 +182,31 @@ var Dungeon;
         if (map_ippen % 2 != 0) {
             return;
         }
+        var mapBlockMatrix = cloneMapBlockMatrix(_mapBlockMatrix);
         createMatrix(map_ippen);
+        copyMapBlockMatrix(mapBlockMatrix, _mapBlockMatrix);
+        refresh();
+    }
+    function cloneMapBlockMatrix(mapBlockMatrix) {
+        var cloned = [];
+        for (var y = 0, ylen = mapBlockMatrix.length; y < ylen; y++) {
+            var x_hairetsu = mapBlockMatrix[y];
+            var x_cloned = [];
+            for (var x = 0, xlen = x_hairetsu.length; x < xlen; x++) {
+                x_cloned.push(x_hairetsu[x]);
+            }
+            cloned.push(x_cloned);
+        }
+        return cloned;
+    }
+    function copyMapBlockMatrix(matrix1, matrix2) {
+        for (var y = 0, ylen1 = matrix1.length, ylen2 = matrix2.length; y < ylen1 && y < ylen2; y++) {
+            var x_hairetsu1 = matrix1[y];
+            var x_hairetsu2 = matrix2[y];
+            for (var x = 0, xlen1 = x_hairetsu1.length, xlen2 = x_hairetsu2.length; x < xlen1 && x < xlen2; x++) {
+                x_hairetsu2[x] = x_hairetsu1[x];
+            }
+        }
     }
     function createMatrix(map_ippen) {
         _map_ippen = map_ippen;
@@ -349,9 +379,6 @@ var Dungeon;
     }
     function load() {
         var mapBlockMatrix = eval(_map_text.value);
-        if (_map_ippen != mapBlockMatrix.length) {
-            createMatrix(mapBlockMatrix.length);
-        }
         _mapBlockMatrix.length = 0;
         for (var y = 0; y < _map_ippen; y++) {
             var x_hairetsu = [];
