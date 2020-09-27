@@ -15,16 +15,20 @@
 
 <body>
     <textarea id="map_text" style="float:right;"></textarea>
-    <select id="map_list" style="width:256px;"></select>
-    <input type="text" id="map_name" style="width:256px;">
-    <input type="button" id="del_button" value="del">
+    <div style="position: fixed;">
+        <select id="map_list" style="width:256px;"></select>
+        <input type="text" id="map_name" style="width:256px;">
+        <input type="button" id="del_button" value="del">
+        <br>
+        <input type="text" id="map_ippen" style="width:56px;">
+        <input type="button" id="load_button" value="load">
+        <input type="button" id="hanten_button" value="hanten">
+        <input type="button" id="center_button" value="center">
+        <input type="button" id="kaiten_button" value="kaiten">
+        <input type="text" id="memo" style="width:256px;">
+    </div>
     <br>
-    <input type="text" id="map_ippen" style="width:56px;">
-    <input type="button" id="load_button" value="load">
-    <input type="button" id="hanten_button" value="hanten">
-    <input type="button" id="center_button" value="center">
-    <input type="button" id="kaiten_button" value="kaiten">
-    <input type="text" id="memo" style="width:256px;">
+    <br>
     <hr>
     <div id="board" style="user-select:none;"></div>
 </body>
