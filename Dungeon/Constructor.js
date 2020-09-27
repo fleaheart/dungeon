@@ -31,7 +31,6 @@ var Dungeon;
     var MU = 0;
     var KABE = 1;
     var DOOR = 2;
-    var kabeHairetsu = [MU, KABE, DOOR];
     var MapBlock = (function () {
         function MapBlock() {
             this.x = -1;
@@ -277,12 +276,20 @@ var Dungeon;
             refresh();
             return;
         }
-        var kabe = mapBlock[hougaku.char];
-        kabe++;
-        if (kabeHairetsu.length <= kabe) {
-            kabe = 0;
+        var kabe;
+        if (evt.shiftKey) {
+            kabe = MU;
         }
-        mapBlock[hougaku.char] = kabeHairetsu[kabe];
+        else if (evt.ctrlKey) {
+            kabe = KABE;
+        }
+        else if (evt.altKey) {
+            kabe = DOOR;
+        }
+        else {
+            return;
+        }
+        mapBlock[hougaku.char] = kabe;
         refresh();
         save();
     }

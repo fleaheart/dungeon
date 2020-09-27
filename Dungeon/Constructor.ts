@@ -49,8 +49,6 @@ namespace Dungeon {
     const KABE: Kabe = 1;
     const DOOR: Kabe = 2;
 
-    let kabeHairetsu: Kabe[] = [MU, KABE, DOOR];
-
     class MapBlock {
         x: number = -1;
         y: number = -1;
@@ -359,12 +357,18 @@ namespace Dungeon {
             return;
         }
 
-        let kabe: number = mapBlock[hougaku.char];
-        kabe++;
-        if (kabeHairetsu.length <= kabe) {
-            kabe = 0;
+        let kabe: Kabe;
+        if (evt.shiftKey) {
+            kabe = MU;
+        } else if (evt.ctrlKey) {
+            kabe = KABE;
+        } else if (evt.altKey) {
+            kabe = DOOR;
+        } else {
+            return;
         }
-        mapBlock[hougaku.char] = kabeHairetsu[kabe];
+
+        mapBlock[hougaku.char] = kabe;
 
         refresh();
 
