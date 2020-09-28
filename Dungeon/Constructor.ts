@@ -140,6 +140,8 @@ namespace Dungeon {
             _map_text = element;
         }
 
+        getElementById('backup_button').addEventListener('click', clickBackup);
+
         createMatrix(MAP_IPPEN);
     });
 
@@ -661,7 +663,7 @@ namespace Dungeon {
         return movedMatrix;
     }
 
-    function changeMemo() {
+    function changeMemo(): void {
         if (_memo.value.trim() != '') {
             _currentMapBlock.memo = _memo.value;
         } else {
@@ -671,6 +673,31 @@ namespace Dungeon {
         refresh();
 
         save();
+    }
+
+    function clickBackup(): void {
+        let backupTextArray: string[] = [];
+        let mapNameListText: string | null = window.localStorage.getItem(STORAGE_HEADER + 'map_list');
+        if (mapNameListText != null) {
+            let mapNameList: string[] = mapNameListText.split('\t');
+            for (let i = 0, len = mapNameList.length; i < len; i++) {
+                let mapName = mapNameList[i];
+                let mapText: string | null = window.localStorage.getItem(STORAGE_HEADER + 'NAME_' + mapName);
+                backupTextArray.push('{"name":"' + mapName + '","text":\n' + mapText + '\n}');
+            }
+        }
+        let backupText: string = '[' + backupTextArray.join(',\n') + ']';
+        copy(backupText);
+    }
+
+    function copy(text: string): void {
+        let textArea: HTMLTextAreaElement = document.createElement('textarea');
+        textArea.value = text;
+        let body: HTMLBodyElement = document.getElementsByTagName('body')[0];
+        body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        body.removeChild(textArea);
     }
 
 }

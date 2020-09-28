@@ -109,6 +109,7 @@ var Dungeon;
             }
             _map_text = element;
         }
+        getElementById('backup_button').addEventListener('click', clickBackup);
         createMatrix(MAP_IPPEN);
     });
     function changeMapList() {
@@ -531,6 +532,29 @@ var Dungeon;
         }
         refresh();
         save();
+    }
+    function clickBackup() {
+        var backupTextArray = [];
+        var mapNameListText = window.localStorage.getItem(STORAGE_HEADER + 'map_list');
+        if (mapNameListText != null) {
+            var mapNameList = mapNameListText.split('\t');
+            for (var i = 0, len = mapNameList.length; i < len; i++) {
+                var mapName = mapNameList[i];
+                var mapText = window.localStorage.getItem(STORAGE_HEADER + 'NAME_' + mapName);
+                backupTextArray.push('{"name":"' + mapName + '","text":\n' + mapText + '\n}');
+            }
+        }
+        var backupText = '[' + backupTextArray.join(',\n') + ']';
+        copy(backupText);
+    }
+    function copy(text) {
+        var textArea = document.createElement('textarea');
+        textArea.value = text;
+        var body = document.getElementsByTagName('body')[0];
+        body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        body.removeChild(textArea);
     }
 })(Dungeon || (Dungeon = {}));
 //# sourceMappingURL=constructor.js.map
